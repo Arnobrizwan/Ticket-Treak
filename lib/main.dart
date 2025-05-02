@@ -18,7 +18,7 @@ class TicketTrekApp extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute: AppRoutes.splash,
-      routes: AppRoutes.routes,
+      routes: AppRoutes.routes,//hhhhhhhh
     );
   }
 }
