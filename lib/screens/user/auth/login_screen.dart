@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../routes/app_routes.dart';
+import '../dashboard/home_dashboard.dart'; // 👈 Make sure this path is correct
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -89,7 +90,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                   : 'Login without remembering.'),
                             ),
                           );
-                          Navigator.pop(context);
+
+                          // 👇 Navigate to Home Dashboard
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const HomeDashboard(userName: 'Arnob'),
+                            ),
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(

@@ -11,7 +11,6 @@ class PasswordResetScreen extends StatefulWidget {
 class _PasswordResetScreenState extends State<PasswordResetScreen> {
   double _opacity = 0;
   final _formKey = GlobalKey<FormState>();
-  bool _obscureNewPassword = true;
 
   @override
   void initState() {
@@ -60,14 +59,12 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                         _buildTextField('Email', isEmail: true),
                         const SizedBox(height: 16),
                         _buildTextField('Verification Code'),
-                        const SizedBox(height: 16),
-                        _buildPasswordField('New Password'),
                         const SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Password reset successful!')),
+                                const SnackBar(content: Text('Verification successful!')),
                               );
                               Navigator.pushReplacementNamed(context, AppRoutes.login);
                             }
@@ -115,30 +112,6 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
         }
         if (isEmail && !value.contains('@')) {
           return 'Enter a valid email address';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildPasswordField(String label) {
-    return TextFormField(
-      obscureText: _obscureNewPassword,
-      decoration: InputDecoration(
-        labelText: label,
-        border: const OutlineInputBorder(),
-        suffixIcon: IconButton(
-          icon: Icon(_obscureNewPassword ? Icons.visibility : Icons.visibility_off),
-          onPressed: () {
-            setState(() {
-              _obscureNewPassword = !_obscureNewPassword;
-            });
-          },
-        ),
-      ),
-      validator: (value) {
-        if (value == null || value.length < 6) {
-          return '$label must be at least 6 characters';
         }
         return null;
       },
