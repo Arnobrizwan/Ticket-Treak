@@ -14,6 +14,7 @@ dependencies:
 
   # Lottie for splash animation
   lottie: ^2.2.0
+  intl: ^0.18.0
 
 dev_dependencies:
   flutter_test:
