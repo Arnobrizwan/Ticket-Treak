@@ -6,7 +6,8 @@ import '../screens/user/auth/login_screen.dart';
 import '../screens/user/auth/register_screen.dart';
 import '../screens/user/auth/password_reset_screen.dart';
 import '../screens/user/dashboard/home_dashboard.dart';
-import '../screens/user/flight/flight_search_page.dart'; // Updated import path for the new page
+import '../screens/user/flight/flight_search_page.dart';
+import '../screens/user/auth/edit_profile_screen.dart'; // Updated path to match your renamed file
 
 class AppRoutes {
   static const String splash = '/';
@@ -18,13 +19,7 @@ class AppRoutes {
   static const String searchFlight = '/search-flight';
   static const String myBookings = '/my-bookings';
   static const String settings = '/settings';
-  
-  // Remove duplicate route - you had both searchFlight and flightSearch defined
-  // static const String flightSearch = '/flight-search';
-  
-  // static const String savedFlights = '/saved-flights';
-  // static const String flightResults = '/flight-results';
-  // static const String flightDetail = '/flight-detail';
+  static const String editProfile = '/edit-profile';
   
   static final Map<String, WidgetBuilder> routes = {
     splash: (context) => const SplashScreen(),
@@ -32,16 +27,8 @@ class AppRoutes {
     login: (context) => const LoginScreen(),
     register: (context) => const RegisterScreen(),
     passwordReset: (context) => const PasswordResetScreen(),
-    
-    // Fix the HomeDashboard constructor by providing the required userName parameter
-    dashboard: (context) => const HomeDashboard(userName: "John Doe"), // Provide a default or get from shared preferences
-    
-    // Use the correct class name FlightSearchPage instead of FlightSearchScreen
+    dashboard: (context) => const HomeDashboard(userName: "John Doe"),
     searchFlight: (context) => const FlightSearchPage(),
-    
-    // Other routes can be uncommented as you implement them
-    // savedFlights: (context) => const SavedFlightsScreen(),
-    // flightResults: (context) => const FlightResultsScreen(),
-    // flightDetail: (context) => const FlightDetailScreen(),
+    editProfile: (context) => const EditProfileScreen(userName: "Arnob"),
   };
 }

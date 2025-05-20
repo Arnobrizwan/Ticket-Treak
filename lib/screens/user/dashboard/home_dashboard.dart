@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../../routes/app_routes.dart';
+import '../profile/edit_profile_screen.dart'; // Import EditProfileScreen
 
 class HomeDashboard extends StatelessWidget {
   final String userName;
-
   const HomeDashboard({super.key, required this.userName});
-
   @override
   Widget build(BuildContext context) {
     // Professional color palette
@@ -15,9 +14,7 @@ class HomeDashboard extends StatelessWidget {
     const textColor = Color(0xFF2D3142);
     const subtleGrey = Color(0xFFEBEEF2);
     const darkGrey = Color(0xFF8F96A3);
-
     final screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
       backgroundColor: backgroundColor,
       body: SafeArea(
@@ -31,7 +28,7 @@ class HomeDashboard extends StatelessWidget {
                   const SizedBox(height: 16),
                   
                   // Professional header with company logo and user avatar
-                  _buildEnterpriseHeader(userName, textColor, primaryColor),
+                  _buildEnterpriseHeader(context, userName, textColor, primaryColor),
                   const SizedBox(height: 24),
                   
                   // Flight status indicator - Enterprise focus
@@ -90,9 +87,9 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
-
   // Enterprise-style header with company logo and user info
-  Widget _buildEnterpriseHeader(String userName, Color textColor, Color primaryColor) {
+  // Updated to include navigation to profile page
+  Widget _buildEnterpriseHeader(BuildContext context, String userName, Color textColor, Color primaryColor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -134,28 +131,53 @@ class HomeDashboard extends StatelessWidget {
               ),
               child: IconButton(
                 icon: const Icon(Icons.notifications_none, size: 22),
-                onPressed: () {},
+                onPressed: () {
+                  // Show notifications
+                },
                 color: textColor,
                 padding: const EdgeInsets.all(8),
                 constraints: const BoxConstraints(),
               ),
             ),
             const SizedBox(width: 12),
+            // Made the user avatar clickable to navigate to profile
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                // Navigate to Edit Profile screen
+                Navigator.pushNamed(context, AppRoutes.editProfile);
+              },
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundColor: primaryColor,
-                    child: Text(
-                      userName.substring(0, 1),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                  // User avatar
+                  Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundColor: primaryColor,
+                        child: Text(
+                          userName.substring(0, 1),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
-                    ),
+                      // Small edit indicator
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: primaryColor, width: 1.5),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -174,7 +196,6 @@ class HomeDashboard extends StatelessWidget {
       ],
     );
   }
-
   // Flight status card with real-time information
   Widget _buildFlightStatusCard(BuildContext context) {
     return Container(
@@ -373,7 +394,6 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
-
   // Professional section header
   Widget _buildSectionHeader(String title) {
     return Row(
@@ -406,7 +426,6 @@ class HomeDashboard extends StatelessWidget {
       ],
     );
   }
-
   // Trip management grid for enterprise functions
   Widget _buildTripManagementGrid(BuildContext context) {
     // Check screen width to adjust layout
@@ -500,7 +519,6 @@ class HomeDashboard extends StatelessWidget {
       ],
     );
   }
-
   // Enterprise feature card
   Widget _buildEnterpriseFeatureCard({
     required IconData icon,
@@ -546,7 +564,6 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
-
   // Business trip card - Professional design
   Widget _buildBusinessTripCard(BuildContext context) {
     return Container(
@@ -724,7 +741,6 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
-
   // Trip detail row
   Widget _buildTripDetailRow({
     required String label,
@@ -763,7 +779,6 @@ class HomeDashboard extends StatelessWidget {
       ],
     );
   }
-
   // Enterprise activity card
   Widget _buildEnterpriseActivityCard({
     required String route,
@@ -873,7 +888,6 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
-
   // Travel policy card - Enterprise specific
   Widget _buildTravelPolicyCard(BuildContext context) {
     return Container(
@@ -983,7 +997,6 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
-
   // Compliance metric for travel policy
   Widget _buildComplianceMetric({
     required String label,
@@ -1013,8 +1026,7 @@ class HomeDashboard extends StatelessWidget {
       ],
     );
   }
-
-  // Professional bottom navigation
+  // Professional bottom navigation - Updated Profile tab to navigate to EditProfile
   Widget _buildBottomNavigation(BuildContext context, Color primaryColor) {
     return Container(
       decoration: BoxDecoration(
@@ -1038,35 +1050,46 @@ class HomeDashboard extends StatelessWidget {
                 icon: Icons.home,
                 label: "Home",
                 isSelected: true,
-                onTap: () {},
+                onTap: () {
+                  // Already on home
+                },
                 primaryColor: primaryColor,
               ),
               _buildNavItem(
                 icon: Icons.flight,
                 label: "Trips",
                 isSelected: false,
-                onTap: () {},
+                onTap: () {
+                  // Navigate to trips page
+                },
                 primaryColor: primaryColor,
               ),
               _buildNavItem(
                 icon: Icons.receipt_long,
                 label: "Expenses",
                 isSelected: false,
-                onTap: () {},
+                onTap: () {
+                  // Navigate to expenses page
+                },
                 primaryColor: primaryColor,
               ),
               _buildNavItem(
                 icon: Icons.notifications,
                 label: "Alerts",
                 isSelected: false,
-                onTap: () {},
+                onTap: () {
+                  // Navigate to alerts page
+                },
                 primaryColor: primaryColor,
               ),
               _buildNavItem(
                 icon: Icons.person,
                 label: "Profile",
                 isSelected: false,
-                onTap: () {},
+                onTap: () {
+                  // Navigate to profile page using named route
+                  Navigator.pushNamed(context, AppRoutes.editProfile);
+                },
                 primaryColor: primaryColor,
               ),
             ],
@@ -1075,7 +1098,6 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
-
   // Navigation item for bottom bar
   Widget _buildNavItem({
     required IconData icon,
