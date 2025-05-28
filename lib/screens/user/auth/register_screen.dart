@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../routes/app_routes.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -13,10 +15,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _termsAccepted = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _isLoading = false;
 
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmController = TextEditingController();
+
+  // Firebase instances
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   void initState() {
@@ -30,6 +40,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _confirmController.dispose();
     super.dispose();
@@ -39,15 +52,110 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return (_formKey.currentState?.validate() ?? false) && _termsAccepted;
   }
 
-  void _submitForm() {
-    final isValid = _formKey.currentState?.validate() ?? false;
+  // Firebase registration method
+  Future<void> _registerWithFirebase() async {
+    if (!isFormValid()) return;
 
-    if (_termsAccepted && isValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Account created successfully!")),
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Create user with email and password
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
       );
-      Navigator.pushReplacementNamed(context, AppRoutes.login);
+
+      // Update user display name
+      await userCredential.user?.updateDisplayName(_nameController.text.trim());
+
+      // Store additional user data in Firestore
+      await _firestore.collection('users').doc(userCredential.user?.uid).set({
+        'uid': userCredential.user?.uid,
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'createdAt': FieldValue.serverTimestamp(),
+        'lastLogin': FieldValue.serverTimestamp(),
+        'isActive': true,
+        'profilePicture': null,
+        'preferences': {
+          'notifications': true,
+          'emailUpdates': true,
+          'darkMode': false,
+        },
+      });
+
+      // Send email verification
+      await userCredential.user?.sendEmailVerification();
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text("Account created successfully! Please verify your email."),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+
+        // Navigate to login screen
+        Navigator.pushReplacementNamed(context, AppRoutes.login);
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = _getFirebaseErrorMessage(e.code);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Registration failed: ${e.toString()}"),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  // Helper method to get user-friendly error messages
+  String _getFirebaseErrorMessage(String errorCode) {
+    switch (errorCode) {
+      case 'weak-password':
+        return 'The password provided is too weak.';
+      case 'email-already-in-use':
+        return 'An account already exists for that email.';
+      case 'invalid-email':
+        return 'The email address is not valid.';
+      case 'operation-not-allowed':
+        return 'Email/password accounts are not enabled.';
+      case 'too-many-requests':
+        return 'Too many requests. Please try again later.';
+      default:
+        return 'Registration failed. Please try again.';
+    }
+  }
+
+  void _submitForm() {
+    _registerWithFirebase();
   }
 
   @override
@@ -82,11 +190,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        _buildValidatedField('Full Name'),
+                        _buildValidatedField('Full Name', _nameController),
                         const SizedBox(height: 12),
-                        _buildValidatedField('Email', isEmail: true),
+                        _buildValidatedField('Email', _emailController, isEmail: true),
                         const SizedBox(height: 12),
-                        _buildValidatedField('Phone'),
+                        _buildValidatedField('Phone', _phoneController, isPhone: true),
                         const SizedBox(height: 12),
                         _buildPasswordField(
                           'Password',
@@ -116,7 +224,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 10),
                         ElevatedButton(
-                          onPressed: isFormValid() ? _submitForm : null,
+                          onPressed: (_isLoading || !isFormValid()) ? null : _submitForm,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.indigo,
                             foregroundColor: Colors.white,
@@ -126,11 +234,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             minimumSize: const Size.fromHeight(50),
                           ),
-                          child: const Text('Sign Up', style: TextStyle(fontSize: 16)),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Sign Up', style: TextStyle(fontSize: 16)),
                         ),
                         const SizedBox(height: 20),
                         TextButton(
-                          onPressed: () {
+                          onPressed: _isLoading ? null : () {
                             Navigator.pushReplacementNamed(context, AppRoutes.login);
                           },
                           child: const Text("Already have an account? Sign In"),
@@ -148,8 +265,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildValidatedField(String label, {bool isEmail = false}) {
+  Widget _buildValidatedField(String label, TextEditingController controller, {bool isEmail = false, bool isPhone = false}) {
     return TextFormField(
+      controller: controller,
+      keyboardType: isEmail 
+          ? TextInputType.emailAddress 
+          : isPhone 
+              ? TextInputType.phone 
+              : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
         border: const OutlineInputBorder(),
@@ -158,8 +281,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (value == null || value.isEmpty) {
           return 'Please enter $label';
         }
-        if (isEmail && !value.contains('@')) {
+        if (isEmail && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
           return 'Enter a valid email address';
+        }
+        if (isPhone && !RegExp(r'^\+?[\d\s\-\(\)]{10,}$').hasMatch(value)) {
+          return 'Enter a valid phone number';
+        }
+        if (label == 'Full Name' && value.length < 2) {
+          return 'Name must be at least 2 characters';
         }
         return null;
       },
@@ -185,8 +314,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
       validator: (value) {
-        if (value == null || value.length < 6) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter $label';
+        }
+        if (value.length < 6) {
           return '$label must be at least 6 characters';
+        }
+        if (!confirm && value.length < 8) {
+          return 'Password should be at least 8 characters for better security';
+        }
+        if (!confirm) {
+          // Check for at least one uppercase, one lowercase, and one number
+          if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)').hasMatch(value)) {
+            return 'Password must contain uppercase, lowercase, and number';
+          }
         }
         if (confirm && value != _passwordController.text) {
           return 'Passwords do not match';
