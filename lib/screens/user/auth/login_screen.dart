@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../../../routes/app_routes.dart';
 import '../dashboard/home_dashboard.dart';
-import '../services/auth_service.dart';
-import '../services/user_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +13,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // Dashboard color palette
+  static const Color backgroundColor = Color(0xFFF5F7FA);
+  static const Color primaryColor = Color(0xFF3F3D9A);
+  static const Color secondaryColor = Color(0xFF6C63FF);
+  static const Color textColor = Color(0xFF2D3142);
+  static const Color subtleGrey = Color(0xFFEBEEF2);
+  static const Color darkGrey = Color(0xFF8F96A3);
+
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -44,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return _formKey.currentState?.validate() ?? false;
   }
 
-  // Firebase login method
+  // Direct Firebase login without service dependency
   Future<void> _loginWithFirebase() async {
     if (!isFormValid()) return;
 
@@ -53,26 +60,34 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final userService = Provider.of<UserService>(context, listen: false);
-
-      // Sign in with email and password using AuthService
-      UserCredential? userCredential = await authService.signInWithEmail(
-        _emailController.text.trim(),
-        _passwordController.text,
+      // Sign in with email and password
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
       );
 
-      if (userCredential?.user != null) {
-        // Update last login timestamp
-        await userService.updateLastLogin();
+      if (userCredential.user != null) {
+        // Update last login timestamp in Firestore
+        await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .update({
+            'lastLogin': FieldValue.serverTimestamp(),
+          });
         
-        // Load user data from Firestore
-        await userService.loadUserData(userCredential!.user!.uid);
+        // Get user data from Firestore
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
         
-        // Get user name for navigation
-        String userName = userService.userData?['name'] ?? 
-                         userCredential.user!.displayName ?? 
-                         'User';
+        String userName = 'User';
+        if (userDoc.exists) {
+          Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+          userName = userData['name'] ?? userCredential.user!.displayName ?? 'User';
+        } else {
+          userName = userCredential.user!.displayName ?? 'User';
+        }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -86,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           );
 
-          // Navigate to Home Dashboard with real user data
+          // Navigate to Home Dashboard with user data
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -128,38 +143,66 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Google Sign In method
+  // Google Sign In method - Direct implementation
   Future<void> _signInWithGoogle() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final authService = Provider.of<AuthService>(context, listen: false);
-      final userService = Provider.of<UserService>(context, listen: false);
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-      UserCredential? userCredential = await authService.signInWithGoogle();
+      if (googleUser == null) {
+        // User canceled the sign-in
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
 
-      if (userCredential?.user != null) {
-        // Check if user profile exists, if not create one
-        await userService.loadUserData(userCredential!.user!.uid);
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (userCredential.user != null) {
+        // Check if user profile exists in Firestore
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
         
-        if (userService.userData == null) {
+        if (!userDoc.exists) {
           // Create user profile for new Google user
-          await userService.createUserProfile(
-            uid: userCredential.user!.uid,
-            name: userCredential.user!.displayName ?? 'User',
-            email: userCredential.user!.email ?? '',
-            phone: userCredential.user!.phoneNumber ?? '',
-          );
+          await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set({
+              'name': userCredential.user!.displayName ?? 'User',
+              'email': userCredential.user!.email ?? '',
+              'phone': userCredential.user!.phoneNumber ?? '',
+              'createdAt': FieldValue.serverTimestamp(),
+              'lastLogin': FieldValue.serverTimestamp(),
+            });
         } else {
           // Update last login for existing user
-          await userService.updateLastLogin();
+          await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .update({
+              'lastLogin': FieldValue.serverTimestamp(),
+            });
         }
 
-        String userName = userService.userData?['name'] ?? 
-                         userCredential.user!.displayName ?? 
-                         'User';
+        String userName = userCredential.user!.displayName ?? 'User';
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -226,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F0FE),
+      backgroundColor: backgroundColor,
       body: SafeArea(
         child: AnimatedOpacity(
           opacity: _opacity,
@@ -238,24 +281,40 @@ class _LoginScreenState extends State<LoginScreen> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    Image.network(
-                      'https://cdn-icons-png.flaticon.com/512/201/201623.png',
-                      height: 120,
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: primaryColor,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(
+                        Icons.flight,
+                        color: Colors.white,
+                        size: 40,
+                      ),
                     ),
                     const SizedBox(height: 30),
                     const Text(
                       'Welcome Back',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 28,
                         fontWeight: FontWeight.bold,
-                        color: Colors.indigo,
+                        color: primaryColor,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Sign in to continue your journey',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: darkGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 40),
                     _buildEmailField(),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     _buildPasswordField(),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 12),
                     Row(
                       children: [
                         Checkbox(
@@ -265,27 +324,32 @@ class _LoginScreenState extends State<LoginScreen> {
                               _rememberMe = value!;
                             });
                           },
-                          activeColor: Colors.indigo,
+                          activeColor: primaryColor,
                         ),
-                        const Text("Remember Me"),
+                        const Text("Remember Me", style: TextStyle(color: textColor)),
                         const Spacer(),
                         TextButton(
                           onPressed: _isLoading ? null : () =>
                               Navigator.pushNamed(context, AppRoutes.passwordReset),
+                          style: TextButton.styleFrom(
+                            foregroundColor: primaryColor,
+                          ),
                           child: const Text('Forgot password?'),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: (_isLoading || !isFormValid()) ? null : _submitForm,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.indigo,
+                        backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                         minimumSize: const Size.fromHeight(50),
+                        elevation: 2,
                       ),
                       child: _isLoading
                           ? const SizedBox(
@@ -296,50 +360,76 @@ class _LoginScreenState extends State<LoginScreen> {
                                 strokeWidth: 2,
                               ),
                             )
-                          : const Text('Sign In', style: TextStyle(fontSize: 16)),
+                          : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.grey.shade300)),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text("Or continue with", style: TextStyle(color: darkGrey)),
+                        ),
+                        Expanded(child: Divider(color: Colors.grey.shade300)),
+                      ],
                     ),
                     const SizedBox(height: 20),
-                    const Text("Or continue with"),
-                    const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         GestureDetector(
                           onTap: _isLoading ? null : _signInWithGoogle,
                           child: Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: Colors.grey.shade300),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                             child: const Icon(
                               Icons.mail_outline, 
-                              size: 30,
-                              color: Colors.indigo,
+                              size: 24,
+                              color: primaryColor,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 30),
+                        const SizedBox(width: 20),
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.grey.shade300),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: const Icon(
                             Icons.apple, 
-                            size: 30,
-                            color: Colors.indigo,
+                            size: 24,
+                            color: primaryColor,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 30),
                     TextButton(
                       onPressed: _isLoading ? null : () => Navigator.pushReplacementNamed(
                           context, AppRoutes.register),
+                      style: TextButton.styleFrom(
+                        foregroundColor: primaryColor,
+                      ),
                       child: const Text("Don't have an account? Sign up"),
                     ),
                   ],
@@ -356,9 +446,30 @@ class _LoginScreenState extends State<LoginScreen> {
     return TextFormField(
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
-      decoration: const InputDecoration(
+      style: const TextStyle(color: textColor),
+      decoration: InputDecoration(
         labelText: 'Email',
-        border: OutlineInputBorder(),
+        labelStyle: TextStyle(color: darkGrey),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        prefixIcon: Icon(Icons.email_outlined, color: darkGrey),
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -376,11 +487,35 @@ class _LoginScreenState extends State<LoginScreen> {
     return TextFormField(
       controller: _passwordController,
       obscureText: _obscurePassword,
+      style: const TextStyle(color: textColor),
       decoration: InputDecoration(
         labelText: 'Password',
-        border: const OutlineInputBorder(),
+        labelStyle: TextStyle(color: darkGrey),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: primaryColor, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.red),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        prefixIcon: Icon(Icons.lock_outline, color: darkGrey),
         suffixIcon: IconButton(
-          icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+          icon: Icon(
+            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+            color: darkGrey,
+          ),
           onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
         ),
       ),

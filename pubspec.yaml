@@ -1,10 +1,8 @@
 name: ticket_trek
 description: A modern flight booking app built with Flutter.
 version: 1.0.0+1
-
 environment:
   sdk: '>=3.0.0 <4.0.0'
-
 dependencies:
   flutter:
     sdk: flutter
@@ -35,17 +33,16 @@ dependencies:
   cached_network_image: ^3.3.1  # For efficient image loading
   image_picker: ^1.0.7  # For profile picture selection
   fluttertoast: ^8.2.4  # For toast messages
-
+  meta: ^1.11.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
-
 flutter:
   uses-material-design: true
   assets:
     - assets/plane_loader.json
-    - assets/images/  # Directory for local images
+    # Remove assets/images/ reference since directory doesn't exist
   
   # Custom fonts (optional)
   # fonts:
