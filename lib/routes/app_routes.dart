@@ -20,7 +20,15 @@ class AppRoutes {
   static const String myBookings = '/my-bookings';
   static const String settings = '/settings';
   static const String editProfile = '/edit-profile';
-  
+  static const String payment = '/payment';
+  static const String passengerDetails = '/passenger-details';
+  static const String paymentSuccess = '/payment-success';
+  static const String viewBookings = '/view-bookings';
+  static const String homeDashboard = '/home-dashboard';
+  static const String bookingConfirmation = '/booking-confirmation';
+
+
+
   static final Map<String, WidgetBuilder> routes = {
     splash: (context) => const SplashScreen(),
     onboarding: (context) => const OnboardingScreen(),
