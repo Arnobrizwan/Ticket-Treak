@@ -27,10 +27,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmController = TextEditingController();
 
-  // Firebase instances
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   @override
   void initState() {
     super.initState();
@@ -55,7 +51,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return (_formKey.currentState?.validate() ?? false) && _termsAccepted;
   }
 
-  // Firebase registration method
+  // Enhanced Firebase registration using Provider services
   Future<void> _registerWithFirebase() async {
     if (!isFormValid()) return;
 
@@ -64,47 +60,43 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      // Create user with email and password
-      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final userService = Provider.of<UserService>(context, listen: false);
+
+      // Create user with email and password using AuthService
+      UserCredential? userCredential = await authService.signUpWithEmail(
+        _emailController.text.trim(),
+        _passwordController.text,
       );
 
-      // Update user display name
-      await userCredential.user?.updateDisplayName(_nameController.text.trim());
+      if (userCredential?.user != null) {
+        // Update user display name
+        await userCredential!.user!.updateDisplayName(_nameController.text.trim());
 
-      // Store additional user data in Firestore
-      await _firestore.collection('users').doc(userCredential.user?.uid).set({
-        'uid': userCredential.user?.uid,
-        'name': _nameController.text.trim(),
-        'email': _emailController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'createdAt': FieldValue.serverTimestamp(),
-        'lastLogin': FieldValue.serverTimestamp(),
-        'isActive': true,
-        'profilePicture': null,
-        'preferences': {
-          'notifications': true,
-          'emailUpdates': true,
-          'darkMode': false,
-        },
-      });
-
-      // Send email verification
-      await userCredential.user?.sendEmailVerification();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text("Account created successfully! Please verify your email."),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
+        // Create user profile using UserService
+        await userService.createUserProfile(
+          uid: userCredential.user!.uid,
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          phone: _phoneController.text.trim(),
         );
 
-        // Navigate to login screen
-        Navigator.pushReplacementNamed(context, AppRoutes.login);
+        // Send email verification
+        await authService.sendEmailVerification();
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("Account created successfully! Please verify your email."),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+
+          // Navigate to login screen
+          Navigator.pushReplacementNamed(context, AppRoutes.login);
+        }
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage = _getFirebaseErrorMessage(e.code);
@@ -271,10 +263,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildValidatedField(String label, TextEditingController controller, {bool isEmail = false, bool isPhone = false}) {
     return TextFormField(
       controller: controller,
-      keyboardType: isEmail 
-          ? TextInputType.emailAddress 
-          : isPhone 
-              ? TextInputType.phone 
+      keyboardType: isEmail
+          ? TextInputType.emailAddress
+          : isPhone
+              ? TextInputType.phone
               : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
