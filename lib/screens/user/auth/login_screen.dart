@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../../../routes/app_routes.dart';
 import '../dashboard/home_dashboard.dart';
 import '../services/auth_service.dart';
