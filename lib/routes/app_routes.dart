@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:ticket_trek/screens/user/booking/booking_detail_screen.dart';
+import 'package:ticket_trek/screens/user/booking/cancel_booking_screen.dart';
+import 'package:ticket_trek/screens/user/booking/my_bookings_screen.dart';
+import 'package:ticket_trek/screens/user/booking/refund_status_screen.dart';
 import '../screens/user/splash/splash_screen.dart';
 // Import screens
 import '../screens/user/onboarding/onboarding_screen.dart';
@@ -28,6 +32,7 @@ class AppRoutes {
   static const String bookingConfirmation = '/booking-confirmation';
   static const String cancelBooking = '/cancel-booking';
   static const String refundStatus = '/refund-status';
+  static const String bookingDetail = '/booking-detail';
 
 
   static final Map<String, WidgetBuilder> routes = {
@@ -38,6 +43,17 @@ class AppRoutes {
     passwordReset: (context) => const PasswordResetScreen(),
     dashboard: (context) => const HomeDashboard(userName: "John Doe"),
     searchFlight: (context) => const FlightSearchPage(),
-    editProfile: (context) => const EditProfileScreen(userName: "Arnob"),
+    myBookings: (context) => const MyBookingsScreen(),
+    bookingDetail: (context) => BookingDetailScreen(
+      bookingId: ModalRoute.of(context)!.settings.arguments as String,
+    ),
+    bookingConfirmation: (context) => const Scaffold(body: Center(child: Text('Booking Confirmation Screen'))),
+    cancelBooking: (context) => CancelBookingScreen(
+      bookingId: ModalRoute.of(context)!.settings.arguments as String,
+    ),
+    refundStatus: (context) => RefundStatusScreen(
+      bookingId: ModalRoute.of(context)!.settings.arguments as String,
+    ),
+            
   };
 }

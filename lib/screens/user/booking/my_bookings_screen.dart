@@ -15,7 +15,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> with SingleTickerPr
   // Color palette from HomeDashboard
   static const Color backgroundColor = Color(0xFFF5F7FA);
   static const Color primaryColor = Color(0xFF3F3D9A);
-  static const Color secondaryColor = Color(0xFF6C63FF);
   static const Color textColor = Color(0xFF2D3142);
   static const Color subtleGrey = Color(0xFFEBEEF2);
   static const Color darkGrey = Color(0xFF8F96A3);
