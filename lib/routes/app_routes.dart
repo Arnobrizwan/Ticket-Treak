@@ -26,7 +26,8 @@ class AppRoutes {
   static const String viewBookings = '/view-bookings';
   static const String homeDashboard = '/home-dashboard';
   static const String bookingConfirmation = '/booking-confirmation';
-
+  static const String cancelBooking = '/cancel-booking';
+  static const String refundStatus = '/refund-status';
 
 
   static final Map<String, WidgetBuilder> routes = {
