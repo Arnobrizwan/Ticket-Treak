@@ -400,7 +400,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: CachedNetworkImage(
-              imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+              imageUrl: 'https://images.unsplash.com/photo-1525130413817-d45c1d127c42?w=800&q=80',
               fit: BoxFit.cover,
               width: double.infinity,
               height: 180,
