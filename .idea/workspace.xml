@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="248ad10f-ec74-4f22-ada1-bc4e4aa6d871" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ticket_trek.iml" beforeDir="false" afterPath="$PROJECT_DIR$/ticket_trek.iml" afterDir="false" />
-    </list>
+    <list default="true" id="72e4849c-83d6-4ef9-a575-d15815098f40" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -32,13 +26,10 @@
       </file>
     </leaf>
   </component>
-  <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 5
 }]]></component>
-  <component name="ProjectId" id="2xi09ejKspgAElB5Fp9HXna1CD4" />
+  <component name="ProjectId" id="2xg78QiJA2NOppLMnR9Whag0B4N" />
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1" />
     <panes>
@@ -55,25 +46,20 @@
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "Ali",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Kera9/OneDrive/Documents/GitHub/Ticket-Treak",
-    "show.migrate.to.gradle.popup": "false"
+    "dart.analysis.tool.window.visible": "false"
   }
 }]]></component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="248ad10f-ec74-4f22-ada1-bc4e4aa6d871" name="Changes" comment="" />
-      <created>1748405436655</created>
+      <changelist id="72e4849c-83d6-4ef9-a575-d15815098f40" name="Changes" comment="" />
+      <created>1748347705089</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1748405436655</updated>
+      <updated>1748347705089</updated>
     </task>
     <servers />
   </component>

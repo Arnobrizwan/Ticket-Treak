@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "322288772938",
+    "project_id": "tickettrek-e850e",
+    "storage_bucket": "tickettrek-e850e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:322288772938:android:9f720759ca4863c29f83b3",
+        "android_client_info": {
+          "package_name": "com.example.ticket_trek"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWsRMf-1Bvmkc_ey9y-hiZh_1eqdrSEoE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
