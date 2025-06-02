@@ -36,11 +36,14 @@ class TicketTrekApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'TicketTrek',
       theme: ThemeData(
+        // Use Onboarding’s primary color as the seed
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF3F3D9A),
           brightness: Brightness.light,
         ),
         useMaterial3: true,
+
+        // AppBar matches onboarding background and text
         appBarTheme: const AppBarTheme(
           elevation: 0,
           centerTitle: true,
@@ -48,6 +51,8 @@ class TicketTrekApp extends StatelessWidget {
           foregroundColor: Color(0xFF3F3D9A),
           systemOverlayStyle: SystemUiOverlayStyle.dark,
         ),
+
+        // ElevatedButton uses onboarding’s primaryColor
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF3F3D9A),
@@ -59,6 +64,8 @@ class TicketTrekApp extends StatelessWidget {
             elevation: 2,
           ),
         ),
+
+        // TextButton text uses onboarding’s primaryColor
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             foregroundColor: const Color(0xFF3F3D9A),
@@ -67,6 +74,8 @@ class TicketTrekApp extends StatelessWidget {
             ),
           ),
         ),
+
+        // OutlinedButton uses onboarding’s primaryColor for border/text
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             foregroundColor: const Color(0xFF3F3D9A),
@@ -77,6 +86,8 @@ class TicketTrekApp extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
         ),
+
+        // Input fields match onboarding’s subtleGrey and primaryColor
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -88,7 +99,10 @@ class TicketTrekApp extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Color(0xFF3F3D9A), width: 2),
+            borderSide: const BorderSide(
+              color: Color(0xFF3F3D9A),
+              width: 2,
+            ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -98,6 +112,8 @@ class TicketTrekApp extends StatelessWidget {
           fillColor: const Color(0xFFF5F7FA),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
+
+        // Cards in the app use the same corner radius as onboarding
         cardTheme: CardThemeData(
           elevation: 4,
           shape: RoundedRectangleBorder(
@@ -105,6 +121,8 @@ class TicketTrekApp extends StatelessWidget {
           ),
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
+
+        // SnackBars float with rounded corners
         snackBarTheme: SnackBarThemeData(
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -113,6 +131,8 @@ class TicketTrekApp extends StatelessWidget {
           actionTextColor: Colors.white,
         ),
       ),
+
+      // Dark theme (seeded from the same primaryColor)
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF3F3D9A),
@@ -121,9 +141,12 @@ class TicketTrekApp extends StatelessWidget {
         useMaterial3: true,
       ),
       themeMode: ThemeMode.system,
+
       initialRoute: AppRoutes.splash,
       routes: AppRoutes.routes,
+
       builder: (context, child) {
+        // Custom error widget using onboarding palette
         ErrorWidget.builder = (FlutterErrorDetails errorDetails) {
           return Material(
             child: Container(

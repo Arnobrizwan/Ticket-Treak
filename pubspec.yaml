@@ -14,14 +14,14 @@ dependencies:
   intl: ^0.18.0
   meta: ^1.11.0
 
-  # Firebase packages
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.17.4
-  cloud_firestore: ^4.15.4
-  firebase_storage: ^11.6.0
-  firebase_messaging: ^14.7.10
-  firebase_analytics: ^10.8.0
-  google_sign_in: ^6.2.1
+  # Firebase packages (upgraded to Dart 3/Flutter 3+ versions)
+  firebase_core: ^3.13.1           # Latest stable Firebase Core (Dart 3 compatible)  [oai_citation:12‡Dart packages](https://pub.dev/packages/firebase_core?utm_source=chatgpt.com) [oai_citation:13‡Dart packages](https://pub.dev/packages/firebase_core?utm_source=chatgpt.com)
+  firebase_auth: ^5.5.4           # Uses firebase_auth_web → web ^1.x (compatible with fluttertoast)  [oai_citation:14‡Dart packages](https://pub.dev/packages/firebase_auth?utm_source=chatgpt.com) [oai_citation:15‡Dart packages](https://pub.dev/packages/firebase_analytics/versions/11.4.5/score/log.txt?utm_source=chatgpt.com)
+  cloud_firestore: ^5.6.8          # Uses cloud_firestore_web → web ^1.x (matches firebase_core_web)  [oai_citation:16‡Dart packages](https://pub.dev/packages/cloud_firestore?utm_source=chatgpt.com) [oai_citation:17‡Dart packages](https://pub.dev/packages/firebase_ui_firestore?utm_source=chatgpt.com)
+  firebase_storage: ^12.4.5        # Uses firebase_storage_web → web ^1.x    [oai_citation:18‡Dart packages](https://pub.dev/packages/firebase_storage/versions/12.4.5/license?utm_source=chatgpt.com) [oai_citation:19‡Dart packages](https://pub.dev/packages/firebase_storage_web?utm_source=chatgpt.com)
+  firebase_messaging: ^15.2.6       # Uses firebase_messaging_web → web ^1.x  [oai_citation:20‡Dart packages](https://pub.dev/packages/firebase_messaging?utm_source=chatgpt.com) [oai_citation:21‡Dart packages](https://pub.dev/packages/firebase_messaging_web/versions/1.0.7?utm_source=chatgpt.com)
+  firebase_analytics: ^11.4.5       # Uses firebase_analytics_web → web ^1.x  [oai_citation:22‡Dart packages](https://pub.dev/packages/firebase_analytics/versions/11.4.5/score/log.txt?utm_source=chatgpt.com) [oai_citation:23‡Dart packages](https://pub.dev/packages/firebase_analytics_web?utm_source=chatgpt.com)
+  google_sign_in: ^6.2.1            # Compatible with Flutter 3+ and Dart 3
 
   # State management and utilities
   provider: ^6.1.1
@@ -32,7 +32,7 @@ dependencies:
   lottie: ^2.2.0
   cached_network_image: ^3.3.1
   image_picker: ^1.0.7
-  fluttertoast: ^8.2.4
+  fluttertoast: ^8.2.12            # Latest that uses web ^1.0.0  [oai_citation:24‡Dart packages](https://pub.dev/packages/firebase_auth?utm_source=chatgpt.com)
 
 dev_dependencies:
   flutter_test:
@@ -44,11 +44,3 @@ flutter:
 
   assets:
     - assets/plane_loader.json
-
-  # Optional custom fonts (uncomment and provide font files if used)
-  # fonts:
-  #   - family: Poppins
-  #     fonts:
-  #       - asset: assets/fonts/Poppins-Regular.ttf
-  #       - asset: assets/fonts/Poppins-Bold.ttf
-  #         weight: 700
