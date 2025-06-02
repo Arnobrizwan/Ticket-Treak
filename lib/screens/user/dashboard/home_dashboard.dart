@@ -1,194 +1,365 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:intl/intl.dart';
 import '../../../routes/app_routes.dart';
-import '../profile/edit_profile_screen.dart'; // Import EditProfileScreen
 
-class HomeDashboard extends StatelessWidget {
+class HomeDashboard extends StatefulWidget {
   final String userName;
   const HomeDashboard({super.key, required this.userName});
+
+  @override
+  State<HomeDashboard> createState() => _HomeDashboardState();
+}
+
+class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateMixin {
+  // Violin color palette matching OnboardingScreen
+  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
+  static const Color primaryColor = Color(0xFF5C2E00);     // Dark Brown
+  static const Color secondaryColor = Color(0xFF8B5000);   // Amber Brown
+  static const Color textColor = Color(0xFF35281E);        // Deep Wood
+  static const Color subtleGrey = Color(0xFFDAC1A7);       // Light Tan
+  static const Color darkGrey = Color(0xFF7E5E3C);         // Medium Brown
+  static const Color accentOrange = Color(0xFFD4A373);     // Warm Highlight
+  static const Color accentGreen = Color(0xFFB28F5E);      // Muted Brown
+
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _slideAnimation;
+  
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  
+  Map<String, dynamic>? _userData;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _setupAnimations();
+    _loadUserData();
+  }
+
+  void _setupAnimations() {
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _slideAnimation = Tween<double>(
+      begin: 30.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _animationController.forward();
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final doc = await _firestore.collection('users').doc(user.uid).get();
+        if (mounted) {
+          setState(() {
+            _userData = doc.data();
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Professional color palette
-    const backgroundColor = Color(0xFFF5F7FA);
-    const primaryColor = Color(0xFF3F3D9A);
-    const secondaryColor = Color(0xFF6C63FF);
-    const textColor = Color(0xFF2D3142);
-    const subtleGrey = Color(0xFFEBEEF2);
-    const darkGrey = Color(0xFF8F96A3);
     final screenSize = MediaQuery.of(context).size;
+    final isLargeScreen = screenSize.width > 400;
+
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-                  const SizedBox(height: 16),
-                  
-                  // Professional header with company logo and user avatar
-                  _buildEnterpriseHeader(context, userName, textColor, primaryColor),
-                  const SizedBox(height: 24),
-                  
-                  // Flight status indicator - Enterprise focus
-                  _buildFlightStatusCard(context),
-                  const SizedBox(height: 24),
-                  
-                  // Trip management section - Business oriented
-                  _buildSectionHeader("Trip Management"),
-                  const SizedBox(height: 12),
-                  _buildTripManagementGrid(context),
-                  const SizedBox(height: 24),
-                  
-                  // Next trip summary - Key enterprise feature
-                  _buildSectionHeader("Next Business Trip"),
-                  const SizedBox(height: 12),
-                  _buildBusinessTripCard(context),
-                  const SizedBox(height: 24),
-                  
-                  // Recent travel activity - Clean, enterprise style
-                  _buildSectionHeader("Recent Activity"),
-                  const SizedBox(height: 12),
-                  _buildEnterpriseActivityCard(
-                    route: "KUL > BKK",
-                    date: "Apr 25, 2025",
-                    status: "Completed",
-                    flightNumber: "MH 784",
-                    isCompliant: true,
-                  ),
-                  _buildEnterpriseActivityCard(
-                    route: "LHR > DXB",
-                    date: "Apr 10, 2025",
-                    status: "Completed",
-                    flightNumber: "BA 106",
-                    isCompliant: true,
-                  ),
-                  _buildEnterpriseActivityCard(
-                    route: "JFK > LAX",
-                    date: "Mar 29, 2025",
-                    status: "Completed",
-                    flightNumber: "AA 223",
-                    isCompliant: false,
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Travel policy compliance - Enterprise feature
-                  _buildTravelPolicyCard(context),
-                  const SizedBox(height: 24),
-                ],
+      body: Stack(
+        children: [
+          // Background pattern
+          Positioned.fill(
+            child: CustomPaint(
+              painter: DottedPatternPainter(
+                color: primaryColor.withOpacity(0.02),
               ),
             ),
-            
-            // Professional bottom navigation bar
-            _buildBottomNavigation(context, primaryColor),
-          ],
-        ),
+          ),
+          
+          SafeArea(
+            child: _isLoading
+                ? _buildLoadingState()
+                : Column(
+                    children: [
+                      Expanded(
+                        child: ListView(
+                          physics: const BouncingScrollPhysics(),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isLargeScreen ? 24 : 16,
+                          ),
+                          children: [
+                            const SizedBox(height: 16),
+                            
+                            // Animated header
+                            AnimatedBuilder(
+                              animation: _animationController,
+                              builder: (context, child) {
+                                return FadeTransition(
+                                  opacity: _fadeAnimation,
+                                  child: Transform.translate(
+                                    offset: Offset(0, -_slideAnimation.value),
+                                    child: _buildStudentHeader(context),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            
+                            // Welcome banner with student focus
+                            AnimatedBuilder(
+                              animation: _animationController,
+                              builder: (context, child) {
+                                return FadeTransition(
+                                  opacity: _fadeAnimation,
+                                  child: _buildStudentWelcomeBanner(context),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 24),
+                            
+                            // Quick actions for students
+                            _buildSectionHeader("Quick Actions", Icons.flash_on),
+                            const SizedBox(height: 12),
+                            _buildStudentQuickActions(context),
+                            const SizedBox(height: 24),
+                            
+                            // Active bookings from Firebase
+                            _buildSectionHeader("My Trips", Icons.luggage),
+                            const SizedBox(height: 12),
+                            _buildActiveBookings(),
+                            const SizedBox(height: 24),
+                            
+                            // Popular student destinations
+                            _buildSectionHeader("Trending Destinations", Icons.trending_up),
+                            const SizedBox(height: 12),
+                            _buildTrendingDestinations(),
+                            const SizedBox(height: 24),
+                            
+                            // Student deals
+                            _buildSectionHeader("Student Deals", Icons.local_offer),
+                            const SizedBox(height: 12),
+                            _buildStudentDeals(),
+                            const SizedBox(height: 24),
+                            
+                            // Recent activity from Firebase
+                            _buildSectionHeader("Recent Activity", Icons.history),
+                            const SizedBox(height: 12),
+                            _buildRecentActivity(),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
+                      
+                      // Bottom navigation
+                      _buildBottomNavigation(context),
+                    ],
+                  ),
+          ),
+        ],
       ),
     );
   }
-  // Enterprise-style header with company logo and user info
-  // Updated to include navigation to profile page
-  Widget _buildEnterpriseHeader(BuildContext context, String userName, Color textColor, Color primaryColor) {
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Loading your dashboard...',
+            style: TextStyle(
+              color: darkGrey,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStudentHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Company logo and brand
+        // Logo and greeting
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              width: 45,
+              height: 45,
               decoration: BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  colors: [primaryColor, secondaryColor],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryColor.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.flight,
                 color: Colors.white,
-                size: 22,
+                size: 24,
               ),
             ),
-            const SizedBox(width: 10),
-            const Text(
-              "TicketTrek",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3F3D9A),
-              ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Hi, ${widget.userName.split(' ')[0]}! 👋',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                Text(
+                  'Ready for your next adventure?',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: darkGrey,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
         
-        // User profile and notifications
+        // Notification and profile
         Row(
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFE0E0E0)),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.notifications_none, size: 22),
-                onPressed: () {
-                  // Show notifications
-                },
-                color: textColor,
-                padding: const EdgeInsets.all(8),
-                constraints: const BoxConstraints(),
-              ),
-            ),
-            const SizedBox(width: 12),
-            // Made the user avatar clickable to navigate to profile
-            GestureDetector(
-              onTap: () {
-                // Navigate to Edit Profile screen
-                Navigator.pushNamed(context, AppRoutes.editProfile);
-              },
-              child: Row(
-                children: [
-                  // User avatar
-                  Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: primaryColor,
-                        child: Text(
-                          userName.substring(0, 1),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
+            StreamBuilder<QuerySnapshot>(
+              stream: _firestore
+                  .collection('notifications')
+                  .where('userId', isEqualTo: _auth.currentUser?.uid)
+                  .where('read', isEqualTo: false)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                final unreadCount = snapshot.data?.docs.length ?? 0;
+                return Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: subtleGrey),
                       ),
-                      // Small edit indicator
+                      child: IconButton(
+                        icon: const Icon(Icons.notifications_none, size: 22),
+                        onPressed: () {
+                          Navigator.pushNamed(context, AppRoutes.notifications);
+                        },
+                        color: textColor,
+                        padding: const EdgeInsets.all(8),
+                        constraints: const BoxConstraints(),
+                      ),
+                    ),
+                    if (unreadCount > 0)
                       Positioned(
                         right: 0,
-                        bottom: 0,
+                        top: 0,
                         child: Container(
-                          width: 10,
-                          height: 10,
+                          padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: accentOrange,
                             shape: BoxShape.circle,
-                            border: Border.all(color: primaryColor, width: 1.5),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            '$unreadCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    userName,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: textColor,
+                  ],
+                );
+              },
+            ),
+            const SizedBox(width: 12),
+            GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, AppRoutes.editProfile);
+              },
+              child: Hero(
+                tag: 'profile_avatar',
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: accentOrange,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 2,
                     ),
                   ),
-                ],
+                  child: ClipOval(
+                    child: _userData?['profileImage'] != null
+                        ? CachedNetworkImage(
+                            imageUrl: _userData!['profileImage'],
+                            fit: BoxFit.cover,
+                            placeholder: (context, url) => Center(
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => _buildAvatarPlaceholder(),
+                          )
+                        : _buildAvatarPlaceholder(),
+                  ),
+                ),
               ),
             ),
           ],
@@ -196,196 +367,108 @@ class HomeDashboard extends StatelessWidget {
       ],
     );
   }
-  // Flight status card with real-time information
-  Widget _buildFlightStatusCard(BuildContext context) {
+
+  Widget _buildAvatarPlaceholder() {
+    return Center(
+      child: Text(
+        widget.userName.substring(0, 1).toUpperCase(),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStudentWelcomeBanner(BuildContext context) {
     return Container(
+      height: 180,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: Stack(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: const BoxDecoration(
-              color: Color(0xFF3F3D9A),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(12),
-                topRight: Radius.circular(12),
+          // Background image
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: CachedNetworkImage(
+              imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: 180,
+              placeholder: (context, url) => Container(
+                color: subtleGrey,
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: subtleGrey,
               ),
             ),
-            child: Row(
+          ),
+          
+          // Gradient overlay
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withOpacity(0.2),
+                  Colors.black.withOpacity(0.7),
+                ],
+              ),
+            ),
+          ),
+          
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const Icon(
-                  Icons.flight_takeoff,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  "Next Flight",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    color: accentOrange,
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
-                    "On time",
+                    '🎓 Student Exclusive',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "SIN",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "Singapore",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        const Text(
-                          "10:30 AM",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SizedBox(height: 8),
-                          Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              Container(
-                                height: 1,
-                                color: Colors.grey.shade300,
-                              ),
-                              const Icon(
-                                Icons.flight,
-                                size: 24,
-                                color: Color(0xFF3F3D9A),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "SQ 231 · 5h 20m",
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "HKG",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          "Hong Kong",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        const Text(
-                          "3:50 PM",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                const SizedBox(height: 8),
+                const Text(
+                  'Save up to 30% on flights!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF3F3D9A),
-                          side: const BorderSide(color: Color(0xFF3F3D9A)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: const Text("Check In"),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3F3D9A),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: const Text(
-                          "View Boarding Pass",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 4),
+                Text(
+                  'Your student ID unlocks exclusive deals',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 14,
+                  ),
                 ),
               ],
             ),
@@ -394,23 +477,29 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
-  // Professional section header
-  Widget _buildSectionHeader(String title) {
+
+  Widget _buildSectionHeader(String title, IconData icon) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2D3142),
-          ),
+        Row(
+          children: [
+            Icon(icon, size: 20, color: primaryColor),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+          ],
         ),
         TextButton(
           onPressed: () {},
           style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFF3F3D9A),
+            foregroundColor: primaryColor,
             padding: EdgeInsets.zero,
             minimumSize: const Size(50, 30),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -419,157 +508,124 @@ class HomeDashboard extends StatelessWidget {
             "See All",
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ),
       ],
     );
   }
-  // Trip management grid for enterprise functions
-  Widget _buildTripManagementGrid(BuildContext context) {
-    // Check screen width to adjust layout
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isNarrow = screenWidth < 600;
-    
-    // For narrow screens, use a 2x2 grid instead of a row
-    if (isNarrow) {
-      return Wrap(
-        spacing: 12,
-        runSpacing: 12,
-        children: [
-          SizedBox(
-            width: (screenWidth - 52) / 2, // Adjust for padding and spacing
-            child: _buildEnterpriseFeatureCard(
-              icon: Icons.search,
-              title: "Book Flight",
-              onTap: () {
-                Navigator.pushNamed(context, AppRoutes.searchFlight);
-              },
-            ),
-          ),
-          SizedBox(
-            width: (screenWidth - 52) / 2,
-            child: _buildEnterpriseFeatureCard(
-              icon: Icons.book_online,
-              title: "My Bookings",
-              onTap: () {
-                Navigator.pushNamed(context, AppRoutes.myBookings);
-              },
-            ),
-          ),
-          SizedBox(
-            width: (screenWidth - 52) / 2,
-            child: _buildEnterpriseFeatureCard(
-              icon: Icons.receipt_long,
-              title: "Expenses",
-              onTap: () {},
-            ),
-          ),
-          SizedBox(
-            width: (screenWidth - 52) / 2,
-            child: _buildEnterpriseFeatureCard(
-              icon: Icons.support_agent,
-              title: "Support",
-              onTap: () {},
-            ),
-          ),
-        ],
-      );
-    }
-    
-    // Default layout for wider screens
-    return Row(
-      children: [
-        Expanded(
-          child: _buildEnterpriseFeatureCard(
-            icon: Icons.search,
-            title: "Book Flight",
+
+  Widget _buildStudentQuickActions(BuildContext context) {
+    final actions = [
+      {'icon': Icons.search, 'title': 'Search\nFlights', 'route': AppRoutes.searchFlight},
+      {'icon': Icons.discount, 'title': 'Student\nDeals', 'route': AppRoutes.deals},
+      {'icon': Icons.group, 'title': 'Group\nBooking', 'route': AppRoutes.groupBooking},
+      {'icon': Icons.support_agent, 'title': 'Support\nChat', 'route': AppRoutes.support},
+    ];
+
+    return SizedBox(
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: actions.length,
+        itemBuilder: (context, index) {
+          final action = actions[index];
+          return GestureDetector(
             onTap: () {
-              Navigator.pushNamed(context, AppRoutes.searchFlight);
+              Navigator.pushNamed(context, action['route'] as String);
             },
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildEnterpriseFeatureCard(
-            icon: Icons.book_online,
-            title: "My Bookings",
-            onTap: () {
-              Navigator.pushNamed(context, AppRoutes.myBookings);
-            },
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildEnterpriseFeatureCard(
-            icon: Icons.receipt_long,
-            title: "Expenses",
-            onTap: () {},
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildEnterpriseFeatureCard(
-            icon: Icons.support_agent,
-            title: "Support",
-            onTap: () {},
-          ),
-        ),
-      ],
-    );
-  }
-  // Enterprise feature card
-  Widget _buildEnterpriseFeatureCard({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: const Color(0xFF3F3D9A),
-              size: 22,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF2D3142),
+            child: Container(
+              width: 80,
+              margin: EdgeInsets.only(right: index < actions.length - 1 ? 12 : 0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              textAlign: TextAlign.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: primaryColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      action['icon'] as IconData,
+                      color: primaryColor,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    action['title'] as String,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
-  // Business trip card - Professional design
-  Widget _buildBusinessTripCard(BuildContext context) {
+
+  Widget _buildActiveBookings() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore
+          .collection('bookings')
+          .where('userId', isEqualTo: _auth.currentUser?.uid)
+          .where('status', whereIn: ['confirmed', 'upcoming'])
+          .orderBy('departureDate', descending: false)
+          .limit(3)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildLoadingCard();
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return _buildEmptyStateCard(
+            'No upcoming trips',
+            'Start planning your next adventure!',
+            Icons.flight_takeoff,
+          );
+        }
+
+        return Column(
+          children: snapshot.data!.docs.map((doc) {
+            final booking = doc.data() as Map<String, dynamic>;
+            return _buildBookingCard(booking);
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildBookingCard(Map<String, dynamic> booking) {
+    final departureDate = (booking['departureDate'] as Timestamp).toDate();
+    final isToday = DateFormat('yyyy-MM-dd').format(departureDate) == 
+                    DateFormat('yyyy-MM-dd').format(DateTime.now());
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        border: isToday ? Border.all(color: accentOrange, width: 2) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -579,321 +635,392 @@ class HomeDashboard extends StatelessWidget {
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: Colors.grey.shade200,
-                  width: 1,
+          if (isToday)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: accentOrange,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(14),
+                  topRight: Radius.circular(14),
+                ),
+              ),
+              child: const Center(
+                child: Text(
+                  '✈️ Flying Today!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFECECFF),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.calendar_today,
-                    color: Color(0xFF3F3D9A),
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Annual Business Summit",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color(0xFF2D3142),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        "Tokyo, Japan · May 20-25, 2025",
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE9F9EF),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          "Policy Compliant",
-                          style: TextStyle(
-                            color: Color(0xFF2E7D32),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFECECFF),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Text(
-                        "5 days left",
-                        style: TextStyle(
-                          color: Color(0xFF3F3D9A),
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
-                _buildTripDetailRow(
-                  label: "Outbound",
-                  value: "SQ 982 · May 20, 10:30 AM",
-                  icon: Icons.flight_takeoff,
-                ),
-                const SizedBox(height: 12),
-                _buildTripDetailRow(
-                  label: "Return",
-                  value: "SQ 983 · May 25, 8:45 PM",
-                  icon: Icons.flight_land,
-                ),
-                const SizedBox(height: 12),
-                _buildTripDetailRow(
-                  label: "Hotel",
-                  value: "Grand Hyatt Tokyo",
-                  icon: Icons.hotel,
-                ),
-                const SizedBox(height: 12),
-                _buildTripDetailRow(
-                  label: "Transportation",
-                  value: "Airport Shuttle Arranged",
-                  icon: Icons.directions_car,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          booking['origin'] ?? 'N/A',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        Text(
+                          booking['originCity'] ?? '',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: darkGrey,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Icon(Icons.flight_takeoff, color: primaryColor, size: 24),
+                        Text(
+                          booking['flightNumber'] ?? '',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: darkGrey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          booking['destination'] ?? 'N/A',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        Text(
+                          booking['destinationCity'] ?? '',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: darkGrey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFF3F3D9A),
-                          side: const BorderSide(color: Color(0xFF3F3D9A)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          DateFormat('MMM dd, yyyy').format(departureDate),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
                           ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: const Text("Modify Trip"),
-                      ),
+                        Text(
+                          booking['departureTime'] ?? '',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: darkGrey,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3F3D9A),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        child: const Text(
-                          "View Details",
-                          style: TextStyle(color: Colors.white),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: accentGreen.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'RM ${booking['price'] ?? '0'}',
+                        style: TextStyle(
+                          color: primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
                         ),
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  // Trip detail row
-  Widget _buildTripDetailRow({
-    required String label,
-    required String value,
-    required IconData icon,
-  }) {
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 18,
-          color: const Color(0xFF8F96A3),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF8F96A3),
-              ),
-            ),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF2D3142),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-  // Enterprise activity card
-  Widget _buildEnterpriseActivityCard({
-    required String route,
-    required String date,
-    required String status,
-    required String flightNumber,
-    required bool isCompliant,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFECECFF),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(
-                Icons.flight,
-                color: Color(0xFF3F3D9A),
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+                if (isToday) ...[
+                  const SizedBox(height: 16),
                   Row(
                     children: [
-                      Text(
-                        route,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color(0xFF2D3142),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () {},
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: primaryColor,
+                            side: BorderSide(color: primaryColor),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Check-in'),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        flightNumber,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primaryColor,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Boarding Pass',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    date,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF8F96A3),
-                    ),
-                  ),
                 ],
-              ),
+              ],
             ),
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.end,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTrendingDestinations() {
+    final destinations = [
+      {
+        'city': 'Bangkok',
+        'country': 'Thailand',
+        'price': 'From RM199',
+        'image': 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80',
+        'discount': '25% OFF',
+      },
+      {
+        'city': 'Bali',
+        'country': 'Indonesia',
+        'price': 'From RM289',
+        'image': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&q=80',
+        'discount': '30% OFF',
+      },
+      {
+        'city': 'Singapore',
+        'country': 'Singapore',
+        'price': 'From RM159',
+        'image': 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400&q=80',
+        'discount': '20% OFF',
+      },
+    ];
+
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: destinations.length,
+        itemBuilder: (context, index) {
+          final dest = destinations[index];
+          return Container(
+            width: 160,
+            margin: EdgeInsets.only(right: index < destinations.length - 1 ? 12 : 0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Stack(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE6EEFF),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    status,
-                    style: const TextStyle(
-                      color: Color(0xFF2F80ED),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                // Image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: CachedNetworkImage(
+                    imageUrl: dest['image'] as String,
+                    fit: BoxFit.cover,
+                    width: 160,
+                    height: 200,
+                    placeholder: (context, url) => Container(
+                      color: subtleGrey,
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      color: subtleGrey,
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  isCompliant ? "Policy Compliant" : "Policy Exception",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isCompliant ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F),
-                    fontWeight: FontWeight.w500,
+                
+                // Gradient
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.7),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // Discount badge
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: accentOrange,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      dest['discount'] as String,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                
+                // Content
+                Positioned(
+                  bottom: 12,
+                  left: 12,
+                  right: 12,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        dest['city'] as String,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        dest['country'] as String,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        dest['price'] as String,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
-  // Travel policy card - Enterprise specific
-  Widget _buildTravelPolicyCard(BuildContext context) {
+
+  Widget _buildStudentDeals() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore
+          .collection('deals')
+          .where('type', isEqualTo: 'student')
+          .where('active', isEqualTo: true)
+          .orderBy('discount', descending: true)
+          .limit(3)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildLoadingCard();
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          // Show static deals as fallback
+          return Column(
+            children: [
+              _buildDealCard(
+                airline: 'AirAsia',
+                route: 'KL → Bangkok',
+                originalPrice: 'RM399',
+                discountedPrice: 'RM279',
+                discount: '30%',
+                validUntil: DateTime.now().add(const Duration(days: 7)),
+              ),
+              _buildDealCard(
+                airline: 'Malaysia Airlines',
+                route: 'KL → Singapore',
+                originalPrice: 'RM299',
+                discountedPrice: 'RM209',
+                discount: '30%',
+                validUntil: DateTime.now().add(const Duration(days: 5)),
+              ),
+            ],
+          );
+        }
+
+        return Column(
+          children: snapshot.data!.docs.map((doc) {
+            final deal = doc.data() as Map<String, dynamic>;
+            return _buildDealCard(
+              airline: deal['airline'] ?? 'Unknown',
+              route: deal['route'] ?? '',
+              originalPrice: 'RM${deal['originalPrice'] ?? '0'}',
+              discountedPrice: 'RM${deal['discountedPrice'] ?? '0'}',
+              discount: '${deal['discount'] ?? '0'}%',
+              validUntil: (deal['validUntil'] as Timestamp).toDate(),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildDealCard({
+    required String airline,
+    required String route,
+    required String originalPrice,
+    required String discountedPrice,
+    required String discount,
+    required DateTime validUntil,
+  }) {
+    final daysLeft = validUntil.difference(DateTime.now()).inDays;
+    
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accentOrange.withOpacity(0.3)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -902,94 +1029,312 @@ class HomeDashboard extends StatelessWidget {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: accentOrange.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Center(
+              child: Text(
+                discount,
+                style: TextStyle(
+                  color: primaryColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFECECFF),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.policy,
-                    color: Color(0xFF3F3D9A),
-                    size: 20,
+                Text(
+                  airline,
+                  style: TextStyle(
+                    color: darkGrey,
+                    fontSize: 12,
                   ),
                 ),
-                const SizedBox(width: 12),
-                const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                Text(
+                  route,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                Row(
                   children: [
                     Text(
-                      "Travel Policy Compliance",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Color(0xFF2D3142),
-                      ),
-                    ),
-                    Text(
-                      "Q2 2025 Summary",
+                      originalPrice,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Color(0xFF8F96A3),
+                        color: darkGrey,
+                        decoration: TextDecoration.lineThrough,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      discountedPrice,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: accentOrange,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Row(
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: daysLeft <= 3 ? Colors.red.shade50 : Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '$daysLeft days left',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: daysLeft <= 3 ? Colors.red : Colors.green,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () {},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: const Text(
+                  'Book Now',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentActivity() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore
+          .collection('bookings')
+          .where('userId', isEqualTo: _auth.currentUser?.uid)
+          .where('status', isEqualTo: 'completed')
+          .orderBy('completedDate', descending: true)
+          .limit(3)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildLoadingCard();
+        }
+
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return _buildEmptyStateCard(
+            'No recent trips',
+            'Your completed trips will appear here',
+            Icons.history,
+          );
+        }
+
+        return Column(
+          children: snapshot.data!.docs.map((doc) {
+            final booking = doc.data() as Map<String, dynamic>;
+            return _buildActivityCard(
+              route: '${booking['origin'] ?? 'N/A'} → ${booking['destination'] ?? 'N/A'}',
+              date: DateFormat('MMM dd, yyyy').format(
+                (booking['completedDate'] as Timestamp).toDate(),
+              ),
+              airline: booking['airline'] ?? 'Unknown',
+              price: 'RM${booking['price'] ?? '0'}',
+              savedAmount: booking['savedAmount'] != null 
+                  ? 'Saved RM${booking['savedAmount']}' 
+                  : null,
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildActivityCard({
+    required String route,
+    required String date,
+    required String airline,
+    required String price,
+    String? savedAmount,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: subtleGrey.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.flight,
+              color: primaryColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: _buildComplianceMetric(
-                    label: "Flight Compliance",
-                    value: "92%",
-                    color: const Color(0xFF4CAF50),
+                Text(
+                  route,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: textColor,
                   ),
                 ),
-                Expanded(
-                  child: _buildComplianceMetric(
-                    label: "Hotel Compliance",
-                    value: "87%",
-                    color: const Color(0xFF2196F3),
-                  ),
-                ),
-                Expanded(
-                  child: _buildComplianceMetric(
-                    label: "Lead Time",
-                    value: "15.2d",
-                    color: const Color(0xFFFF9800),
-                  ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      airline,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: darkGrey,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '• $date',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: darkGrey,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: () {},
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF3F3D9A),
-                side: const BorderSide(color: Color(0xFF3F3D9A)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                price,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("View Full Policy Report"),
-                  SizedBox(width: 4),
-                  Icon(Icons.arrow_forward, size: 16),
-                ],
+              if (savedAmount != null)
+                Text(
+                  savedAmount,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: accentGreen,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingCard() {
+    return Container(
+      height: 100,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyStateCard(String title, String subtitle, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 48,
+              color: subtleGrey,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 14,
+                color: darkGrey,
               ),
             ),
           ],
@@ -997,37 +1342,8 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
-  // Compliance metric for travel policy
-  Widget _buildComplianceMetric({
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF8F96A3),
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-  // Professional bottom navigation - Updated Profile tab to navigate to EditProfile
-  Widget _buildBottomNavigation(BuildContext context, Color primaryColor) {
+
+  Widget _buildBottomNavigation(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1050,47 +1366,39 @@ class HomeDashboard extends StatelessWidget {
                 icon: Icons.home,
                 label: "Home",
                 isSelected: true,
-                onTap: () {
-                  // Already on home
-                },
-                primaryColor: primaryColor,
+                onTap: () {},
               ),
               _buildNavItem(
-                icon: Icons.flight,
-                label: "Trips",
+                icon: Icons.explore,
+                label: "Explore",
                 isSelected: false,
                 onTap: () {
-                  // Navigate to trips page
+                  Navigator.pushNamed(context, AppRoutes.explore);
                 },
-                primaryColor: primaryColor,
               ),
               _buildNavItem(
-                icon: Icons.receipt_long,
-                label: "Expenses",
+                icon: Icons.airplane_ticket,
+                label: "My Trips",
                 isSelected: false,
                 onTap: () {
-                  // Navigate to expenses page
+                  Navigator.pushNamed(context, AppRoutes.myBookings);
                 },
-                primaryColor: primaryColor,
               ),
               _buildNavItem(
-                icon: Icons.notifications,
-                label: "Alerts",
+                icon: Icons.local_offer,
+                label: "Deals",
                 isSelected: false,
                 onTap: () {
-                  // Navigate to alerts page
+                  Navigator.pushNamed(context, AppRoutes.deals);
                 },
-                primaryColor: primaryColor,
               ),
               _buildNavItem(
                 icon: Icons.person,
                 label: "Profile",
                 isSelected: false,
                 onTap: () {
-                  // Navigate to profile page using named route
                   Navigator.pushNamed(context, AppRoutes.editProfile);
                 },
-                primaryColor: primaryColor,
               ),
             ],
           ),
@@ -1098,13 +1406,12 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
-  // Navigation item for bottom bar
+
   Widget _buildNavItem({
     required IconData icon,
     required String label,
     required bool isSelected,
     required VoidCallback onTap,
-    required Color primaryColor,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -1116,15 +1423,15 @@ class HomeDashboard extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? primaryColor : const Color(0xFF8F96A3),
+              color: isSelected ? primaryColor : darkGrey,
               size: 24,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
-                color: isSelected ? primaryColor : const Color(0xFF8F96A3),
+                fontSize: 11,
+                color: isSelected ? primaryColor : darkGrey,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -1133,4 +1440,29 @@ class HomeDashboard extends StatelessWidget {
       ),
     );
   }
+}
+
+// Custom painter for dotted pattern
+class DottedPatternPainter extends CustomPainter {
+  final Color color;
+
+  DottedPatternPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    for (double x = 0; x < size.width; x += 30) {
+      for (double y = 0; y < size.height; y += 30) {
+        if ((x + y) % 60 == 0) {
+          canvas.drawCircle(Offset(x, y), 2, paint);
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
