@@ -1,50 +1,51 @@
 name: ticket_trek
 description: A modern flight booking app built with Flutter.
 version: 1.0.0+1
+
 environment:
   sdk: '>=3.0.0 <4.0.0'
+
 dependencies:
   flutter:
     sdk: flutter
-  
+
   # Core Flutter packages
   cupertino_icons: ^1.0.2
-  
-  # Lottie for splash animation
-  lottie: ^2.2.0
   intl: ^0.18.0
-  
+  meta: ^1.11.0
+
   # Firebase packages
   firebase_core: ^2.24.2
   firebase_auth: ^4.17.4
   cloud_firestore: ^4.15.4
-  
-  # Additional useful packages for Firebase integration
-  firebase_storage: ^11.6.0  # For profile pictures and file uploads
-  firebase_messaging: ^14.7.10  # For push notifications
-  google_sign_in: ^6.2.1  # For Google authentication
-  
+  firebase_storage: ^11.6.0
+  firebase_messaging: ^14.7.10
+  firebase_analytics: ^10.8.0
+  google_sign_in: ^6.2.1
+
   # State management and utilities
-  provider: ^6.1.1  # For state management
-  shared_preferences: ^2.2.2  # For local data storage
-  connectivity_plus: ^5.0.2  # For network connectivity checks
-  
+  provider: ^6.1.1
+  shared_preferences: ^2.2.2
+  connectivity_plus: ^5.0.2
+
   # UI and UX enhancements
-  cached_network_image: ^3.3.1  # For efficient image loading
-  image_picker: ^1.0.7  # For profile picture selection
-  fluttertoast: ^8.2.4  # For toast messages
-  meta: ^1.11.0
+  lottie: ^2.2.0
+  cached_network_image: ^3.3.1
+  image_picker: ^1.0.7
+  fluttertoast: ^8.2.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
+
 flutter:
   uses-material-design: true
+
   assets:
     - assets/plane_loader.json
-    # Remove assets/images/ reference since directory doesn't exist
-  
-  # Custom fonts (optional)
+
+  # Optional custom fonts (uncomment and provide font files if used)
   # fonts:
   #   - family: Poppins
   #     fonts:
