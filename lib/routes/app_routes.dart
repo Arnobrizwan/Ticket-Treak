@@ -16,27 +16,23 @@ import '../screens/user/dashboard/home_dashboard.dart';
 
 // ─── Flight screens ──────────────────────────────────────────────────────────
 import '../screens/user/flight/flight_search_page.dart';
-import '../screens/user/flight/flight_results_page.dart';    // You renamed it → FlightResultsPage
+import '../screens/user/flight/flight_results_page.dart';
 import '../screens/user/flight/flight_detail_screen.dart';
 import '../screens/user/flight/saved_flights_screen.dart';
 
 // ─── Booking screens ─────────────────────────────────────────────────────────
-// import '../screens/user/booking/add_ons_screen.dart';
-// import '../screens/user/booking/booking_confirmation_screen.dart';
 import '../screens/user/booking/booking_detail_screen.dart';
 import '../screens/user/booking/cancel_booking_screen.dart';
 import '../screens/user/booking/my_bookings_screen.dart';
-// import '../screens/user/booking/passenger_details_screen.dart';
-// import '../screens/user/booking/payment_screen.dart';
-// import '../screens/user/booking/payment_success_screen.dart';
+import '../screens/user/booking/passenger_details_screen.dart';
 import '../screens/user/booking/refund_status_screen.dart';
 
-// ─── Seat & Add-On screens (placeholders until you implement them) ───────────
+// ─── Seat & Add-On screens ────────────────────────────────────────────────────
 import '../screens/user/booking/seat_selection_page.dart';
 import '../screens/user/booking/addon_selection_page.dart';
 
-// ─── Notice: We do NOT attempt to import booking_summary_screen.dart 
-//           because it doesn’t exist yet.
+// ─── Models (importing for FlightBooking type, in case you need it elsewhere) ──
+import '../models/firebase_models.dart';
 
 class AppRoutes {
   // ─── Route names ────────────────────────────────────────────────────────────
@@ -64,14 +60,11 @@ class AppRoutes {
   static const String cancelBooking       = '/cancel-booking';
   static const String refundStatus        = '/refund-status';
 
-  // NEW (placeholder) sub-flows
-  // static const String addOns           = '/add-ons';
-  static const String addonSelection      = '/addon-selection';
-  // static const String passengerDetails = '/passenger-details';
+  // NEW sub-flows
   static const String seatSelection       = '/seat-selection';
-  // static const String payment          = '/payment';
-  // static const String paymentSuccess   = '/payment-success';
-  // (We have removed `bookingSummary` entirely, since its file doesn’t exist.)
+  static const String addonSelection      = '/addon-selection';
+  static const String passengerDetails    = '/passenger-details';
+  static const String payment             = '/payment'; // stubbed—for payment references
 
   // Edit Profile placeholder
   static const String editProfile         = '/edit-profile';
@@ -108,6 +101,13 @@ class AppRoutes {
       // NEW sub‐flows (no-arg placeholders)
       seatSelection:  (context) => const SeatSelectionPage(),
       addonSelection: (context) => const AddonSelectionPage(),
+      // We’ll instantiate PassengerDetailsScreen in onGenerateRoute below
+
+      // Stub payment screen (replace with your real payment widget later)
+      payment: (context) => Scaffold(
+            appBar: AppBar(title: const Text('Payment')),
+            body: const Center(child: Text('Payment screen not implemented yet')),
+          ),
 
       // Edit Profile placeholder
       editProfile: (context) => Scaffold(
@@ -148,7 +148,7 @@ class AppRoutes {
   // Use this for screens that *do* require constructor arguments.
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      // ─── Flight Detail (reads its own arguments via ModalRoute.of(context)) ──
+      // ─── Flight Detail (reads args via ModalRoute.of(context)) ─────────────
       case flightDetail: {
         final args = settings.arguments as Map<String, dynamic>?;
         if (args != null) {
@@ -233,7 +233,15 @@ class AppRoutes {
         break;
       }
 
-      // Since there is no `booking_summary_screen.dart` yet, we do not handle it here.
+      // ─── Passenger Details (no arguments needed in constructor) ─────────────
+      case passengerDetails: {
+        // Even if you passed a “bookingId”/“booking” in arguments,
+        // PassengerDetailsScreen’s constructor currently doesn’t accept parameters.
+        return MaterialPageRoute(
+          builder: (context) => const PassengerDetailsScreen(),
+          settings: settings,
+        );
+      }
 
       default:
         return null;
@@ -241,7 +249,3 @@ class AppRoutes {
     return null;
   }
 }
-
-
-
-

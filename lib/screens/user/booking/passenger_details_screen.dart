@@ -1,12 +1,24 @@
+// lib/screens/user/booking/passenger_details_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import '../../../routes/app_routes.dart';
+import 'package:ticket_trek/routes/app_routes.dart'; // Make sure this path matches your project
+
+/// ─── “Violin” color palette (top-level constants) ───────────────────────────
+const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
+const Color primaryColor     = Color(0xFF5C2E00); // Dark Brown
+const Color secondaryColor   = Color(0xFF8B5000); // Amber Brown
+const Color textColor        = Color(0xFF35281E); // Deep Wood
+const Color subtleGrey       = Color(0xFFDAC1A7); // Light Tan
+const Color darkGrey         = Color(0xFF7E5E3C); // Medium Brown
+const Color accentColor      = Color(0xFFD4A373); // Warm Highlight
+const Color errorColor       = Color(0xFFEF4444); // Red for errors
 
 class PassengerDetailsScreen extends StatefulWidget {
-  const PassengerDetailsScreen({super.key});
+  const PassengerDetailsScreen({Key? key}) : super(key: key);
 
   @override
   State<PassengerDetailsScreen> createState() => _PassengerDetailsScreenState();
@@ -14,22 +26,10 @@ class PassengerDetailsScreen extends StatefulWidget {
 
 class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     with TickerProviderStateMixin {
-  // Enhanced color palette
-  static const Color backgroundColor = Color(0xFFF8FAFC);
-  static const Color primaryColor = Color(0xFF3F3D9A);
-  static const Color secondaryColor = Color(0xFF6C63FF);
-  static const Color accentColor = Color(0xFF10B981);
-  static const Color textColor = Color(0xFF1E293B);
-  static const Color subtleGrey = Color(0xFFF1F5F9);
-  static const Color darkGrey = Color(0xFF64748B);
-  static const Color errorColor = Color(0xFFEF4444);
-  static const Color warningColor = Color(0xFFF59E0B);
-
-  final _formKey = GlobalKey<FormState>();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Animation controllers
+  // Animation controllers (slide, fade, scale)
   late AnimationController _slideController;
   late AnimationController _fadeController;
   late AnimationController _scaleController;
@@ -37,35 +37,37 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
 
-  // Passenger data structure
+  // Passenger data list
   List<PassengerData> _passengers = [];
   int _currentPassengerIndex = 0;
-  bool _isLoading = false;
-  bool _autoSaveEnabled = true;
+  bool _isLoading        = false;
+  bool _autoSaveEnabled  = true;
   String? _draftId;
 
-  // Page state
-  PageController _pageController = PageController();
-  Map<String, dynamic>? _bookingData;
+  // Optional user profile (for autofill)
   Map<String, dynamic>? _userProfile;
+
+  // Booking-related data passed from previous route (e.g. { 'adults': 2, ... })
+  Map<String, dynamic>? _bookingData;
+
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
     super.initState();
     _setupAnimations();
-    _initializePassengers();
-    _loadUserProfile();
-    _loadBookingData();
+    _initializePassengers();    // default to 1 passenger
+    _loadUserProfile();         // attempt to autofill from user document
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Get booking data from previous screens
+    // If this screen was pushed with arguments (e.g. {'adults': 2, ...}), pick them up:
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null) {
       _bookingData = args;
-      final adultsCount = args['adults'] as int? ?? 1;
+      final int adultsCount = args['adults'] as int? ?? 1;
       _initializePassengers(count: adultsCount);
     }
   }
@@ -91,24 +93,13 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
       parent: _slideController,
       curve: Curves.easeOutCubic,
     ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    );
+    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
+    );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.9,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.elasticOut,
-    ));
-
-    // Start animations
     _slideController.forward();
     _fadeController.forward();
     _scaleController.forward();
@@ -125,29 +116,23 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
       if (user != null) {
         final doc = await _firestore.collection('users').doc(user.uid).get();
         if (doc.exists) {
-          setState(() {
-            _userProfile = doc.data();
-          });
+          _userProfile = doc.data();
           _autofillFirstPassenger();
         }
       }
     } catch (e) {
-      print('Error loading user profile: $e');
+      debugPrint('Error loading user profile: $e');
     }
-  }
-
-  void _loadBookingData() {
-    // Load any existing booking data if user is returning to this screen
   }
 
   void _autofillFirstPassenger() {
     if (_userProfile != null && _passengers.isNotEmpty) {
-      final firstPassenger = _passengers[0];
-      firstPassenger.fullNameController.text = _userProfile!['fullName'] ?? '';
-      firstPassenger.emailController.text = _userProfile!['email'] ?? '';
-      firstPassenger.phoneController.text = _userProfile!['phone'] ?? '';
+      final first = _passengers[0];
+      first.fullNameController.text      = _userProfile!['fullName']  ?? '';
+      first.emailController.text         = _userProfile!['email']     ?? '';
+      first.phoneController.text         = _userProfile!['phone']     ?? '';
       if (_userProfile!['nationality'] != null) {
-        firstPassenger.nationality = _userProfile!['nationality'];
+        first.nationality = _userProfile!['nationality'];
       }
       setState(() {});
     }
@@ -159,48 +144,44 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     _fadeController.dispose();
     _scaleController.dispose();
     _pageController.dispose();
-    for (var passenger in _passengers) {
-      passenger.dispose();
+    for (var p in _passengers) {
+      p.dispose();
     }
     super.dispose();
   }
 
-  // Auto-save functionality
-  void _autoSave() async {
+  /// ─── Auto-save drafts (any Firestore permission error is caught) ───────────
+  Future<void> _autoSave() async {
     if (!_autoSaveEnabled) return;
-
     try {
       final user = _auth.currentUser;
       if (user != null) {
-        final draftData = {
+        final draftData = <String, dynamic>{
           'userId': user.uid,
           'passengers': _passengers.map((p) => p.toMap()).toList(),
           'lastUpdated': FieldValue.serverTimestamp(),
-          'bookingData': _bookingData,
         };
-
         if (_draftId == null) {
-          final doc = await _firestore.collection('passenger_drafts').add(draftData);
-          _draftId = doc.id;
+          final docRef = await _firestore.collection('passenger_drafts').add(draftData);
+          _draftId = docRef.id;
         } else {
           await _firestore.collection('passenger_drafts').doc(_draftId).update(draftData);
         }
       }
     } catch (e) {
-      print('Auto-save error: $e');
+      // Print permission errors but do not crash the screen
+      debugPrint('Auto-save error: $e');
     }
   }
 
-  // Form validation
   bool _validateCurrentPassenger() {
     return _passengers[_currentPassengerIndex].isValid();
   }
 
   bool _validateAllPassengers() {
-    return _passengers.every((passenger) => passenger.isValid());
+    return _passengers.every((p) => p.isValid());
   }
 
-  // Navigation between passengers
   void _nextPassenger() {
     if (_currentPassengerIndex < _passengers.length - 1) {
       if (_validateCurrentPassenger()) {
@@ -216,6 +197,7 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
         _showValidationError();
       }
     } else {
+      // Last passenger: save them all
       _saveAllPassengers();
     }
   }
@@ -236,12 +218,10 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text('Please fill in all required fields correctly'),
-            ),
+          children: const [
+            Icon(Icons.error_outline, color: Colors.white),
+            SizedBox(width: 8),
+            Expanded(child: Text('Please fill in all required fields')),
           ],
         ),
         backgroundColor: errorColor,
@@ -252,18 +232,19 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     );
   }
 
-  // Date picker with enhanced UI
   Future<void> _selectDate(BuildContext context, int passengerIndex) async {
     final passenger = _passengers[passengerIndex];
-    
+    final DateTime now     = DateTime.now();
+    final DateTime initial = passenger.dateOfBirth ?? now.subtract(const Duration(days: 365 * 25));
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: passenger.dateOfBirth ?? DateTime.now().subtract(const Duration(days: 365 * 25)),
+      initialDate: initial,
       firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
+      lastDate: now,
+      builder: (ctx, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
+          data: Theme.of(ctx).copyWith(
             colorScheme: const ColorScheme.light(
               primary: primaryColor,
               onPrimary: Colors.white,
@@ -278,24 +259,23 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
 
     if (picked != null) {
       setState(() {
-        passenger.dateOfBirth = picked;
+        passenger.dateOfBirth        = picked;
         passenger.dobController.text = DateFormat('dd/MM/yyyy').format(picked);
       });
       _autoSave();
     }
   }
 
-  // Nationality picker
   void _showNationalityPicker(int passengerIndex) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => NationalityPicker(
+      builder: (ctx) => NationalityPicker(
         selectedNationality: _passengers[passengerIndex].nationality,
-        onSelected: (nationality) {
+        onSelected: (nat) {
           setState(() {
-            _passengers[passengerIndex].nationality = nationality;
+            _passengers[passengerIndex].nationality = nat;
           });
           _autoSave();
         },
@@ -303,7 +283,6 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     );
   }
 
-  // Save all passengers
   Future<void> _saveAllPassengers() async {
     if (!_validateAllPassengers()) {
       _showValidationError();
@@ -316,45 +295,40 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
 
     try {
       final user = _auth.currentUser;
-      if (user == null) {
-        throw Exception('User not authenticated');
-      }
+      if (user == null) throw Exception('User not authenticated');
 
-      // Create booking with passenger details
-      final bookingData = {
+      final Map<String, dynamic> bookingData = {
         'userId': user.uid,
         'bookingId': _generateBookingId(),
         'passengers': _passengers.map((p) => p.toFirestoreMap()).toList(),
-        'flightDetails': _bookingData,
+        'flightDetails': _bookingData ?? <String, dynamic>{},
         'status': 'pending_payment',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      final bookingRef = await _firestore.collection('bookings').add(bookingData);
+      final DocumentReference<Map<String, dynamic>> bookingRef =
+          await _firestore.collection('bookings').add(bookingData);
 
-      // Delete draft if exists
+      // Delete draft if it exists
       if (_draftId != null) {
         await _firestore.collection('passenger_drafts').doc(_draftId).delete();
       }
 
-      // Show success message
       _showSuccessMessage();
 
-      // Navigate to payment with booking ID
-      await Future.delayed(const Duration(milliseconds: 1500));
-      
-      if (mounted) {
-        Navigator.pushNamed(
-          context,
-          AppRoutes.payment,
-          arguments: {
-            ...(_bookingData ?? {}),
-            'bookingId': bookingRef.id,
-            'passengers': _passengers.map((p) => p.toMap()).toList(),
-          },
-        );
-      }
+      await Future.delayed(const Duration(milliseconds: 1200));
+      if (!mounted) return;
+
+      Navigator.pushNamed(
+        context,
+        AppRoutes.payment,
+        arguments: {
+          ...(_bookingData ?? <String, dynamic>{}),
+          'bookingId': bookingRef.id,
+          'passengers': _passengers.map((p) => p.toMap()).toList(),
+        },
+      );
     } catch (e) {
       _showErrorMessage('Failed to save passenger details: $e');
     } finally {
@@ -416,6 +390,7 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,  // ← ensure scaffold moves up when keyboard opens
       backgroundColor: backgroundColor,
       body: SafeArea(
         child: FadeTransition(
@@ -426,9 +401,7 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
               children: [
                 _buildHeader(),
                 _buildProgressIndicator(),
-                Expanded(
-                  child: _buildPassengerForm(),
-                ),
+                Expanded(child: _buildPassengerForm()),
                 _buildBottomNavigation(),
               ],
             ),
@@ -438,9 +411,12 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     );
   }
 
+  /// ─── Header (with “+ Add Passenger” on last page) ─────────────────────────
   Widget _buildHeader() {
+    final bool isLastPassenger = (_currentPassengerIndex == _passengers.length - 1);
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -456,6 +432,7 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
         children: [
           Row(
             children: [
+              // Back button
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
@@ -464,10 +441,16 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
                     color: subtleGrey,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.arrow_back_ios_new, size: 20),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new,
+                    size: 20,
+                    color: darkGrey,
+                  ),
                 ),
               ),
               const SizedBox(width: 16),
+
+              // Title + subtitle
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,8 +464,8 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
                       ),
                     ),
                     Text(
-                      'Step 3 of 4 • Almost there!',
-                      style: TextStyle(
+                      'Step ${_currentPassengerIndex + 1} of ${_passengers.length}  •  Almost there!',
+                      style: const TextStyle(
                         fontSize: 14,
                         color: darkGrey,
                       ),
@@ -490,6 +473,8 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
                   ],
                 ),
               ),
+
+              // Auto-save indicator
               if (_autoSaveEnabled)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -522,14 +507,52 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
                 ),
             ],
           ),
+
+          // “+ Add Passenger” button if this is the last passenger page
+          if (isLastPassenger) ...[
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _passengers.add(PassengerData(_passengers.length + 1));
+                    _currentPassengerIndex = _passengers.length - 1;
+                  });
+                  _pageController.animateToPage(
+                    _passengers.length - 1,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                icon: const Icon(Icons.add, color: primaryColor, size: 20),
+                label: const Text(
+                  'Add Passenger',
+                  style: TextStyle(
+                    color: primaryColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: primaryColor),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
+  /// ─── Progress indicator (simple linear) ─────────────────────────────────
   Widget _buildProgressIndicator() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Column(
         children: [
           Row(
@@ -544,8 +567,8 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
               ),
               const Spacer(),
               Text(
-                '${((_currentPassengerIndex + 1) / _passengers.length * 100).round()}% Complete',
-                style: TextStyle(
+                '${((_currentPassengerIndex + 1) / _passengers.length * 100).round()}% Done',
+                style: const TextStyle(
                   fontSize: 14,
                   color: darkGrey,
                   fontWeight: FontWeight.w500,
@@ -565,129 +588,128 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     );
   }
 
+  /// ─── The PageView that shows each passenger’s form ─────────────────────────
   Widget _buildPassengerForm() {
-    return PageView.builder(
-      controller: _pageController,
-      onPageChanged: (index) {
-        setState(() {
-          _currentPassengerIndex = index;
-        });
-      },
-      itemCount: _passengers.length,
-      itemBuilder: (context, index) {
-        return ScaleTransition(
-          scale: _scaleAnimation,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: PassengerFormCard(
-              passenger: _passengers[index],
-              onDateSelect: () => _selectDate(context, index),
-              onNationalitySelect: () => _showNationalityPicker(index),
-              onFieldChanged: _autoSave,
+    // Dynamically add extra bottom padding equal to the keyboard height + 90px
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom + 90.0;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: PageView.builder(
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentPassengerIndex = index;
+          });
+        },
+        itemCount: _passengers.length,
+        itemBuilder: (context, index) {
+          return ScaleTransition(
+            scale: _scaleAnimation,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: PassengerFormCard(
+                passenger: _passengers[index],
+                onDateSelect: () => _selectDate(context, index),
+                onNationalitySelect: () => _showNationalityPicker(index),
+                onFieldChanged: _autoSave,
+              ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
+  /// ─── Bottom navigation: “Previous” / “Next” or “Continue to Payment” ──────
   Widget _buildBottomNavigation() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+    final bool isLast = (_currentPassengerIndex == _passengers.length - 1);
+
+    return SafeArea(
+      child: Container(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          if (_currentPassengerIndex > 0)
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        child: Row(
+          children: [
+            if (_currentPassengerIndex > 0)
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _previousPassenger,
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: primaryColor),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Previous',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: primaryColor,
+                    ),
+                  ),
+                ),
+              )
+            else
+              const Spacer(),
+
+            if (_currentPassengerIndex > 0) const SizedBox(width: 12),
             Expanded(
-              child: OutlinedButton(
-                onPressed: _isLoading ? null : _previousPassenger,
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: primaryColor),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+              flex: 2,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _nextPassenger,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  elevation: 2,
                 ),
-                child: const Text(
-                  'Previous',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: primaryColor,
-                  ),
-                ),
-              ),
-            ),
-          if (_currentPassengerIndex > 0) const SizedBox(width: 16),
-          Expanded(
-            flex: 2,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _nextPassenger,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 2,
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _currentPassengerIndex == _passengers.length - 1
-                              ? 'Continue to Payment'
-                              : 'Next Passenger',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            isLast ? 'Continue to Payment' : 'Next Passenger',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          _currentPassengerIndex == _passengers.length - 1
-                              ? Icons.payment
-                              : Icons.arrow_forward,
-                          size: 18,
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 8),
+                          Icon(isLast ? Icons.payment : Icons.arrow_forward, size: 18),
+                        ],
+                      ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-// Passenger Data Model
+/// ─── Passenger Data Model ─────────────────────────────────────────────────
 class PassengerData {
   final int passengerNumber;
-  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController fullNameController       = TextEditingController();
   final TextEditingController passportNumberController = TextEditingController();
-  final TextEditingController dobController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController phoneController = TextEditingController();
-  
+  final TextEditingController dobController            = TextEditingController();
+  final TextEditingController emailController          = TextEditingController();
+  final TextEditingController phoneController          = TextEditingController();
+
   String nationality = 'Malaysia';
   DateTime? dateOfBirth;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -698,6 +720,7 @@ class PassengerData {
     return formKey.currentState?.validate() ?? false;
   }
 
+  /// Used for storing in “passenger_drafts” or local debugging
   Map<String, dynamic> toMap() {
     return {
       'passengerNumber': passengerNumber,
@@ -710,6 +733,7 @@ class PassengerData {
     };
   }
 
+  /// Used when writing into the “bookings” collection
   Map<String, dynamic> toFirestoreMap() {
     return {
       'fullName': fullNameController.text.trim(),
@@ -718,8 +742,8 @@ class PassengerData {
       'nationality': nationality,
       'contactEmail': emailController.text.trim(),
       'contactPhone': phoneController.text.trim(),
-      'age': dateOfBirth != null 
-          ? DateTime.now().year - dateOfBirth!.year 
+      'age': dateOfBirth != null
+          ? DateTime.now().year - dateOfBirth!.year
           : null,
     };
   }
@@ -733,7 +757,7 @@ class PassengerData {
   }
 }
 
-// Passenger Form Card Widget
+/// ─── Passenger Form Card Widget ─────────────────────────────────────────────
 class PassengerFormCard extends StatelessWidget {
   final PassengerData passenger;
   final VoidCallback onDateSelect;
@@ -741,12 +765,12 @@ class PassengerFormCard extends StatelessWidget {
   final VoidCallback onFieldChanged;
 
   const PassengerFormCard({
-    super.key,
+    Key? key,
     required this.passenger,
     required this.onDateSelect,
     required this.onNationalitySelect,
     required this.onFieldChanged,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -769,17 +793,18 @@ class PassengerFormCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header icon + text
               Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: _PassengerDetailsScreenState.primaryColor.withOpacity(0.1),
+                      color: primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.person,
-                      color: _PassengerDetailsScreenState.primaryColor,
+                      color: primaryColor,
                       size: 24,
                     ),
                   ),
@@ -792,14 +817,16 @@ class PassengerFormCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: _PassengerDetailsScreenState.textColor,
+                          color: textColor,
                         ),
                       ),
                       Text(
-                        passenger.passengerNumber == 1 ? 'Primary passenger' : 'Additional passenger',
-                        style: TextStyle(
+                        passenger.passengerNumber == 1
+                            ? 'Primary passenger'
+                            : 'Additional passenger',
+                        style: const TextStyle(
                           fontSize: 14,
-                          color: _PassengerDetailsScreenState.darkGrey,
+                          color: darkGrey,
                         ),
                       ),
                     ],
@@ -807,7 +834,7 @@ class PassengerFormCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 32),
-              
+
               // Full Name
               _buildTextField(
                 controller: passenger.fullNameController,
@@ -822,11 +849,10 @@ class PassengerFormCard extends StatelessWidget {
                   }
                   return null;
                 },
-                onChanged: (value) => onFieldChanged(),
+                onChanged: (_) => onFieldChanged(),
               ),
-              
               const SizedBox(height: 20),
-              
+
               // Passport Number
               _buildTextField(
                 controller: passenger.passportNumberController,
@@ -842,12 +868,11 @@ class PassengerFormCard extends StatelessWidget {
                   }
                   return null;
                 },
-                onChanged: (value) => onFieldChanged(),
+                onChanged: (_) => onFieldChanged(),
               ),
-              
               const SizedBox(height: 20),
-              
-              // Date of Birth and Nationality Row
+
+              // Date of Birth + Nationality side-by-side
               Row(
                 children: [
                   Expanded(
@@ -861,7 +886,8 @@ class PassengerFormCard extends StatelessWidget {
                           return 'Please select date of birth';
                         }
                         if (passenger.dateOfBirth != null) {
-                          final age = DateTime.now().year - passenger.dateOfBirth!.year;
+                          final age =
+                              DateTime.now().year - passenger.dateOfBirth!.year;
                           if (age < 0 || age > 120) {
                             return 'Invalid date of birth';
                           }
@@ -880,10 +906,9 @@ class PassengerFormCard extends StatelessWidget {
                   ),
                 ],
               ),
-              
               const SizedBox(height: 20),
-              
-              // Email
+
+              // Contact Email
               _buildTextField(
                 controller: passenger.emailController,
                 label: 'Contact Email',
@@ -891,19 +916,19 @@ class PassengerFormCard extends StatelessWidget {
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter email address';
+                    return 'Please enter email';
                   }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                    return 'Please enter a valid email address';
+                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                      .hasMatch(value)) {
+                    return 'Enter a valid email';
                   }
                   return null;
                 },
-                onChanged: (value) => onFieldChanged(),
+                onChanged: (_) => onFieldChanged(),
               ),
-              
               const SizedBox(height: 20),
-              
-              // Phone
+
+              // Contact Phone
               _buildTextField(
                 controller: passenger.phoneController,
                 label: 'Contact Phone',
@@ -912,14 +937,14 @@ class PassengerFormCard extends StatelessWidget {
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter phone number';
+                    return 'Please enter phone';
                   }
                   if (value.length < 8) {
-                    return 'Please enter a valid phone number';
+                    return 'Enter a valid phone number';
                   }
                   return null;
                 },
-                onChanged: (value) => onFieldChanged(),
+                onChanged: (_) => onFieldChanged(),
               ),
             ],
           ),
@@ -947,8 +972,8 @@ class PassengerFormCard extends StatelessWidget {
       onChanged: onChanged,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon, color: _PassengerDetailsScreenState.darkGrey),
-        labelStyle: TextStyle(color: _PassengerDetailsScreenState.darkGrey),
+        prefixIcon: Icon(icon, color: darkGrey),
+        labelStyle: TextStyle(color: darkGrey),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -959,14 +984,14 @@ class PassengerFormCard extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _PassengerDetailsScreenState.primaryColor, width: 2),
+          borderSide: const BorderSide(color: primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _PassengerDetailsScreenState.errorColor),
+          borderSide: const BorderSide(color: errorColor),
         ),
         filled: true,
-        fillColor: _PassengerDetailsScreenState.subtleGrey,
+        fillColor: subtleGrey,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
@@ -985,9 +1010,9 @@ class PassengerFormCard extends StatelessWidget {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(Icons.calendar_today, color: _PassengerDetailsScreenState.darkGrey),
-        suffixIcon: Icon(Icons.arrow_drop_down, color: _PassengerDetailsScreenState.darkGrey),
-        labelStyle: TextStyle(color: _PassengerDetailsScreenState.darkGrey),
+        prefixIcon: Icon(Icons.calendar_today, color: darkGrey),
+        suffixIcon: Icon(Icons.arrow_drop_down, color: darkGrey),
+        labelStyle: TextStyle(color: darkGrey),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -998,14 +1023,14 @@ class PassengerFormCard extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _PassengerDetailsScreenState.primaryColor, width: 2),
+          borderSide: const BorderSide(color: primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _PassengerDetailsScreenState.errorColor),
+          borderSide: const BorderSide(color: errorColor),
         ),
         filled: true,
-        fillColor: _PassengerDetailsScreenState.subtleGrey,
+        fillColor: subtleGrey,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
@@ -1018,26 +1043,29 @@ class PassengerFormCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         decoration: BoxDecoration(
-          color: _PassengerDetailsScreenState.subtleGrey,
+          color: subtleGrey,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey.shade300),
         ),
         child: Row(
           children: [
-            const Icon(Icons.flag, color: _PassengerDetailsScreenState.darkGrey, size: 20),
+            const Icon(Icons.flag, color: darkGrey, size: 20),
             const SizedBox(width: 12),
+            // Force single-line + ellipsis if too long
             Expanded(
               child: Text(
                 nationality,
                 style: const TextStyle(
                   fontSize: 16,
-                  color: _PassengerDetailsScreenState.textColor,
+                  color: textColor,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Icon(Icons.arrow_drop_down, color: _PassengerDetailsScreenState.darkGrey),
+            const Icon(Icons.arrow_drop_down, color: darkGrey),
           ],
         ),
       ),
@@ -1045,16 +1073,16 @@ class PassengerFormCard extends StatelessWidget {
   }
 }
 
-// Nationality Picker Widget
+/// ─── Nationality Picker ─────────────────────────────────────────────────────
 class NationalityPicker extends StatefulWidget {
   final String selectedNationality;
   final Function(String) onSelected;
 
   const NationalityPicker({
-    super.key,
+    Key? key,
     required this.selectedNationality,
     required this.onSelected,
-  });
+  }) : super(key: key);
 
   @override
   State<NationalityPicker> createState() => _NationalityPickerState();
@@ -1070,7 +1098,7 @@ class _NationalityPickerState extends State<NationalityPicker> {
     'United States', 'United Kingdom', 'Canada', 'Australia',
     'New Zealand', 'Japan', 'South Korea', 'China', 'India',
     'Germany', 'France', 'Italy', 'Spain', 'Netherlands',
-    // Add more countries as needed
+    // (add more countries as needed)
   ];
 
   @override
@@ -1084,7 +1112,7 @@ class _NationalityPickerState extends State<NationalityPicker> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredCountries = _countries
-          .where((country) => country.toLowerCase().contains(query))
+          .where((c) => c.toLowerCase().contains(query))
           .toList();
     });
   }
@@ -1119,10 +1147,7 @@ class _NationalityPickerState extends State<NationalityPicker> {
                 const SizedBox(height: 16),
                 const Text(
                   'Select Nationality',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -1134,7 +1159,8 @@ class _NationalityPickerState extends State<NationalityPicker> {
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(color: Colors.grey.shade300),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
                   ),
                 ),
               ],
@@ -1143,20 +1169,20 @@ class _NationalityPickerState extends State<NationalityPicker> {
           Expanded(
             child: ListView.builder(
               itemCount: _filteredCountries.length,
-              itemBuilder: (context, index) {
+              itemBuilder: (ctx, index) {
                 final country = _filteredCountries[index];
                 final isSelected = country == widget.selectedNationality;
-                
                 return ListTile(
                   title: Text(
                     country,
                     style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                      color: isSelected ? _PassengerDetailsScreenState.primaryColor : null,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color: isSelected ? primaryColor : null,
                     ),
                   ),
                   trailing: isSelected
-                      ? const Icon(Icons.check, color: _PassengerDetailsScreenState.primaryColor)
+                      ? const Icon(Icons.check, color: primaryColor)
                       : null,
                   onTap: () {
                     widget.onSelected(country);

@@ -150,7 +150,12 @@ class TicketTrekApp extends StatelessWidget {
       themeMode: ThemeMode.system,
 
       initialRoute: AppRoutes.splash,
+
+      // 1) register all “no‐arg” routes:
       routes: AppRoutes.routes,
+
+      // 2) register the “argument‐needing” routes (like /passenger‐details):
+      onGenerateRoute: AppRoutes.onGenerateRoute,
 
       builder: (context, child) {
         // Custom error widget using onboarding palette

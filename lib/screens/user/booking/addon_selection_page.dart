@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:ticket_trek/routes/app_routes.dart';
 import 'package:ticket_trek/models/addon_model.dart';
 import 'package:ticket_trek/models/firebase_models.dart';
 import 'package:ticket_trek/services/addon_service.dart';
@@ -309,12 +310,22 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
       // Navigate to booking summary/confirmation
       Navigator.pushNamed(
         context,
-        '/booking-summary',
+       AppRoutes.passengerDetails,
         arguments: {
-          'bookingId': _bookingId,
-          'booking': updatedBooking,
-        },
-      );
+    'adults': _adults,                   // <— number of passengers (required)
+    'bookingId': _bookingId,             // optional—you can still pass this if needed
+    'flightOffer': _flightOffer,         // pass your entire flightOffer Map
+    'selectedSeats': _selectedSeats,     // pass the seat selection map
+    'seatCost': _seatCost,               // pass seat cost
+    'originCode': _originCode,
+    'destinationCode': _destinationCode,
+    'departureDate': _departureDate,
+    'travelClass': _travelClass,
+    'isStudentFare': _isStudentFare,
+    'addOns': _addonSelection.selectedAddons.keys.toList(), 
+    //'booking': updatedBooking,          
+  },
+);
     } catch (e) {
       setState(() {
         _isSaving = false;

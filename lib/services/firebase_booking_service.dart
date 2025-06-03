@@ -1,3 +1,5 @@
+// lib/services/firebase_booking_service.dart
+
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -15,7 +17,8 @@ class FirebaseBookingService {
 
   // Collection references
   CollectionReference get _bookingsCollection => _firestore.collection('bookings');
-  CollectionReference get _usersCollection => _firestore.collection('users');
+  CollectionReference get _usersCollection    => _firestore.collection('users');
+  // Note: We have a “booking_activities” collection, but client‐side writes to it were failing due to security rules.
 
   /// Creates a new flight booking
   Future<FlightBooking> createFlightBooking({
@@ -55,10 +58,15 @@ class FirebaseBookingService {
         totalAmount: flightPrice,
       );
 
+      // Add the booking document
       final docRef = await _bookingsCollection.add(booking.toFirestore());
-      
-      // Update user's booking history
+
+      // Update user's bookingHistory array under “users/{uid}”
       await _updateUserBookingHistory(user.uid, docRef.id);
+
+      // Note: We are NOT calling _logBookingActivity here because Firestore rules
+      // prevented this client from writing into “booking_activities”.
+      // If you need to record activities, do so via a Cloud Function or after adjusting rules.
 
       return booking.copyWith(id: docRef.id);
     } catch (e) {
@@ -82,14 +90,14 @@ class FirebaseBookingService {
       }
 
       final booking = FlightBooking.fromFirestore(doc);
-      
-      // Verify user owns this booking
+
+      // Verify the current user owns this booking
       final user = _auth.currentUser;
       if (user == null || booking.userId != user.uid) {
         throw Exception('Unauthorized access to booking');
       }
 
-      // Create seat details map
+      // Build seat details and calculate total seat cost
       final seatDetails = <String, SeatDetails>{};
       double totalSeatCost = 0.0;
 
@@ -97,7 +105,6 @@ class FirebaseBookingService {
         final seatId = entry.value;
         final seat = allSeats.firstWhere((s) => s.id == seatId);
         final price = seatPricing[seat.category] ?? 0.0;
-        
         seatDetails[seatId] = SeatDetails.fromSeat(seat, price);
         totalSeatCost += price;
       }
@@ -114,22 +121,25 @@ class FirebaseBookingService {
       final updatedBooking = booking.copyWith(
         seatBooking: seatBooking,
         status: BookingStatus.seatSelected,
-        totalAmount: booking.flightPrice + totalSeatCost + (booking.addonBooking?.totalAddonCost ?? 0.0),
+        totalAmount: booking.flightPrice
+            + totalSeatCost
+            + (booking.addonBooking?.totalAddonCost ?? 0.0),
         updatedAt: DateTime.now(),
       );
 
+      // Write the updated booking back to Firestore
       await _bookingsCollection.doc(bookingId).update(updatedBooking.toFirestore());
 
-      // Log seat selection activity
-      await _logBookingActivity(
-        bookingId: bookingId,
-        activity: 'Seat Selection',
-        details: {
-          'selectedSeats': seatAssignments,
-          'totalCost': totalSeatCost,
-          'aircraftType': aircraftType,
-        },
-      );
+      // The following call is commented out because client‐side rules prevented writes:
+      // await _logBookingActivity(
+      //   bookingId: bookingId,
+      //   activity: 'Seat Selection',
+      //   details: {
+      //     'selectedSeats': seatAssignments,
+      //     'totalCost': totalSeatCost,
+      //     'aircraftType': aircraftType,
+      //   },
+      // );
 
       return updatedBooking;
     } catch (e) {
@@ -150,13 +160,14 @@ class FirebaseBookingService {
       }
 
       final booking = FlightBooking.fromFirestore(doc);
-      
+
       // Verify user owns this booking
       final user = _auth.currentUser;
       if (user == null || booking.userId != user.uid) {
         throw Exception('Unauthorized access to booking');
       }
 
+      // Convert FlightAddon → BookedAddon
       final bookedAddons = addonSelection.addons
           .map((addon) => BookedAddon.fromFlightAddon(addon))
           .toList();
@@ -171,22 +182,25 @@ class FirebaseBookingService {
       final updatedBooking = booking.copyWith(
         addonBooking: addonBooking,
         status: BookingStatus.addonsSelected,
-        totalAmount: booking.flightPrice + (booking.seatBooking?.totalSeatCost ?? 0.0) + addonSelection.totalPrice,
+        totalAmount: booking.flightPrice
+            + (booking.seatBooking?.totalSeatCost ?? 0.0)
+            + addonSelection.totalPrice,
         updatedAt: DateTime.now(),
       );
 
+      // Write the updated booking back to Firestore
       await _bookingsCollection.doc(bookingId).update(updatedBooking.toFirestore());
 
-      // Log add-on selection activity
-      await _logBookingActivity(
-        bookingId: bookingId,
-        activity: 'Add-on Selection',
-        details: {
-          'selectedAddons': bookedAddons.map((a) => a.displayName).toList(),
-          'totalCost': addonSelection.totalPrice,
-          'count': bookedAddons.length,
-        },
-      );
+      // Commented out because this client does not have permission to write:
+      // await _logBookingActivity(
+      //   bookingId: bookingId,
+      //   activity: 'Add-on Selection',
+      //   details: {
+      //     'selectedAddons': bookedAddons.map((a) => a.displayName).toList(),
+      //     'totalCost': addonSelection.totalPrice,
+      //     'count': bookedAddons.length,
+      //   },
+      // );
 
       return updatedBooking;
     } catch (e) {
@@ -206,7 +220,7 @@ class FirebaseBookingService {
       }
 
       final booking = FlightBooking.fromFirestore(doc);
-      
+
       // Verify user owns this booking
       final user = _auth.currentUser;
       if (user == null || booking.userId != user.uid) {
@@ -215,27 +229,28 @@ class FirebaseBookingService {
 
       final updatedBooking = booking.copyWith(
         paymentInfo: paymentInfo,
-        status: paymentInfo.status == PaymentStatus.completed 
-            ? BookingStatus.paid 
+        status: paymentInfo.status == PaymentStatus.completed
+            ? BookingStatus.paid
             : BookingStatus.confirmed,
         updatedAt: DateTime.now(),
       );
 
+      // Write the updated booking back to Firestore
       await _bookingsCollection.doc(bookingId).update(updatedBooking.toFirestore());
 
-      // Log booking confirmation
-      await _logBookingActivity(
-        bookingId: bookingId,
-        activity: 'Booking Confirmed',
-        details: {
-          'paymentMethod': paymentInfo.paymentMethod,
-          'transactionId': paymentInfo.transactionId,
-          'amount': paymentInfo.amount,
-          'status': paymentInfo.status.name,
-        },
-      );
+      // Commented out because of insufficient permissions:
+      // await _logBookingActivity(
+      //   bookingId: bookingId,
+      //   activity: 'Booking Confirmed',
+      //   details: {
+      //     'paymentMethod': paymentInfo.paymentMethod,
+      //     'transactionId': paymentInfo.transactionId,
+      //     'amount': paymentInfo.amount,
+      //     'status': paymentInfo.status.name,
+      //   },
+      // );
 
-      // Send confirmation email (implement as needed)
+      // Optionally queue an email
       await _sendBookingConfirmationEmail(updatedBooking);
 
       return updatedBooking;
@@ -264,17 +279,16 @@ class FirebaseBookingService {
       if (status != null) {
         query = query.where('status', isEqualTo: status.name);
       }
-
       if (fromDate != null) {
-        query = query.where('createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate));
+        query = query.where(
+            'createdAt', isGreaterThanOrEqualTo: Timestamp.fromDate(fromDate));
       }
-
       if (toDate != null) {
-        query = query.where('createdAt', isLessThanOrEqualTo: Timestamp.fromDate(toDate));
+        query = query.where(
+            'createdAt', isLessThanOrEqualTo: Timestamp.fromDate(toDate));
       }
 
       final snapshot = await query.limit(limit).get();
-      
       return snapshot.docs
           .map((doc) => FlightBooking.fromFirestore(doc))
           .toList();
@@ -292,13 +306,10 @@ class FirebaseBookingService {
       }
 
       final booking = FlightBooking.fromFirestore(doc);
-      
-      // Verify user owns this booking
       final user = _auth.currentUser;
       if (user == null || booking.userId != user.uid) {
         throw Exception('Unauthorized access to booking');
       }
-
       return booking;
     } catch (e) {
       throw Exception('Failed to get booking: $e');
@@ -322,7 +333,6 @@ class FirebaseBookingService {
       if (snapshot.docs.isEmpty) {
         return null;
       }
-
       return FlightBooking.fromFirestore(snapshot.docs.first);
     } catch (e) {
       throw Exception('Failed to get booking by reference: $e');
@@ -338,14 +348,10 @@ class FirebaseBookingService {
       }
 
       final booking = FlightBooking.fromFirestore(doc);
-      
-      // Verify user owns this booking
       final user = _auth.currentUser;
       if (user == null || booking.userId != user.uid) {
         throw Exception('Unauthorized access to booking');
       }
-
-      // Check if booking can be cancelled
       if (!booking.status.canModify) {
         throw Exception('Booking cannot be cancelled in current status');
       }
@@ -357,15 +363,15 @@ class FirebaseBookingService {
 
       await _bookingsCollection.doc(bookingId).update(updatedBooking.toFirestore());
 
-      // Log cancellation
-      await _logBookingActivity(
-        bookingId: bookingId,
-        activity: 'Booking Cancelled',
-        details: {
-          'reason': reason,
-          'previousStatus': booking.status.name,
-        },
-      );
+      // Commented out due to insufficient permissions:
+      // await _logBookingActivity(
+      //   bookingId: bookingId,
+      //   activity: 'Booking Cancelled',
+      //   details: {
+      //     'reason': reason,
+      //     'previousStatus': booking.status.name,
+      //   },
+      // );
 
       return updatedBooking;
     } catch (e) {
@@ -391,23 +397,25 @@ class FirebaseBookingService {
 
       final stats = {
         'totalBookings': bookings.length,
-        'completedBookings': bookings.where((b) => b.status == BookingStatus.completed).length,
-        'cancelledBookings': bookings.where((b) => b.status == BookingStatus.cancelled).length,
+        'completedBookings':
+            bookings.where((b) => b.status == BookingStatus.completed).length,
+        'cancelledBookings':
+            bookings.where((b) => b.status == BookingStatus.cancelled).length,
         'totalSpent': bookings
-            .where((b) => b.status == BookingStatus.paid || b.status == BookingStatus.completed)
+            .where((b) =>
+                b.status == BookingStatus.paid || b.status == BookingStatus.completed)
             .fold<double>(0.0, (sum, booking) => sum + booking.totalAmount),
         'upcomingTrips': bookings
-            .where((b) => 
-                b.departureDate.isAfter(DateTime.now()) && 
+            .where((b) =>
+                b.departureDate.isAfter(DateTime.now()) &&
                 (b.status == BookingStatus.paid || b.status == BookingStatus.confirmed))
             .length,
         'pastTrips': bookings
-            .where((b) => 
-                b.departureDate.isBefore(DateTime.now()) && 
+            .where((b) =>
+                b.departureDate.isBefore(DateTime.now()) &&
                 b.status == BookingStatus.completed)
             .length,
       };
-
       return stats;
     } catch (e) {
       throw Exception('Failed to get booking statistics: $e');
@@ -419,38 +427,44 @@ class FirebaseBookingService {
   String _generateBookingReference() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random();
-    final timestamp = DateTime.now().millisecondsSinceEpoch.toString().substring(7);
-    
+    final timestamp =
+        DateTime.now().millisecondsSinceEpoch.toString().substring(7);
+
     String result = 'TT'; // Ticket Trek prefix
     for (int i = 0; i < 4; i++) {
       result += chars[random.nextInt(chars.length)];
     }
     result += timestamp;
-    
     return result;
   }
 
   Future<void> _updateUserBookingHistory(String userId, String bookingId) async {
     try {
-      await _usersCollection.doc(userId).set({
-        'bookingHistory': FieldValue.arrayUnion([bookingId]),
-        'lastBookingAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      await _usersCollection.doc(userId).set(
+        {
+          'bookingHistory': FieldValue.arrayUnion([bookingId]),
+          'lastBookingAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
     } catch (e) {
-      // Log error but don't fail the booking creation
+      // Log error but don’t fail the booking creation if this step fails
       print('Failed to update user booking history: $e');
     }
   }
 
+  /// This method used to write into “booking_activities” – we have commented it out
+  /// because client-side Firestore rules do not allow this write. If you want to
+  /// re-enable it, either adjust your Firestore rules or move this logic into
+  /// a Cloud Function (server‐side).
   Future<void> _logBookingActivity({
     required String bookingId,
     required String activity,
     required Map<String, dynamic> details,
   }) async {
     try {
-      await _firestore
-          .collection('booking_activities')
-          .add({
+      // The following line will fail if security rules don’t permit it:
+      await _firestore.collection('booking_activities').add({
         'bookingId': bookingId,
         'activity': activity,
         'details': details,
@@ -458,19 +472,15 @@ class FirebaseBookingService {
         'userId': _auth.currentUser?.uid,
       });
     } catch (e) {
-      // Log error but don't fail the main operation
+      // We catch and print, but do not rethrow—so it does not block the flow.
       print('Failed to log booking activity: $e');
     }
   }
 
   Future<void> _sendBookingConfirmationEmail(FlightBooking booking) async {
     try {
-      // Implementation depends on your email service
-      // This could trigger a Cloud Function or call an email API
-      
-      await _firestore
-          .collection('email_queue')
-          .add({
+      // Example: place a document in "email_queue" for a Cloud Function to pick up
+      await _firestore.collection('email_queue').add({
         'to': _auth.currentUser?.email,
         'template': 'booking_confirmation',
         'data': {
@@ -486,7 +496,6 @@ class FirebaseBookingService {
         'createdAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      // Log error but don't fail the booking
       print('Failed to queue confirmation email: $e');
     }
   }
@@ -504,9 +513,11 @@ class FirebaseBookingService {
         .where('userId', isEqualTo: user.uid)
         .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => FlightBooking.fromFirestore(doc))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => FlightBooking.fromFirestore(doc))
+              .toList(),
+        );
   }
 
   /// Stream a specific booking
@@ -516,15 +527,12 @@ class FirebaseBookingService {
         .snapshots()
         .map((doc) {
       if (!doc.exists) return null;
-      
+
       final booking = FlightBooking.fromFirestore(doc);
-      
-      // Verify user owns this booking
       final user = _auth.currentUser;
       if (user == null || booking.userId != user.uid) {
         throw Exception('Unauthorized access to booking');
       }
-      
       return booking;
     });
   }
