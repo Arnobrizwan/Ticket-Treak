@@ -12,39 +12,30 @@ class SavedFlightsScreen extends StatefulWidget {
   State<SavedFlightsScreen> createState() => _SavedFlightsScreenState();
 }
 
-class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProviderStateMixin {
-  // Violin color palette (same as everywhere)
-  static const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
-  static const Color primaryColor = Color(0xFF5C2E00);     // Dark Brown
-  static const Color secondaryColor = Color(0xFF8B5000);   // Amber Brown
-  static const Color textColor = Color(0xFF35281E);        // Deep Wood
-  static const Color subtleGrey = Color(0xFFDAC1A7);       // Light Tan
-  static const Color darkGrey = Color(0xFF7E5E3C);         // Medium Brown
-  static const Color accentOrange = Color(0xFFD4A373);     // Warm Highlight
-  static const Color accentGreen = Color(0xFFB28F5E);      // Muted Brown
+class _SavedFlightsScreenState extends State<SavedFlightsScreen>
+    with TickerProviderStateMixin {
+  // Violin color palette (matching OnboardingScreen) - STRICTLY FOLLOWING
+  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
+  static const Color primaryColor    = Color(0xFF5C2E00);  // Dark Brown
+  static const Color secondaryColor  = Color(0xFF8B5000);  // Amber Brown
+  static const Color textColor       = Color(0xFF35281E);  // Deep Wood
+  static const Color subtleGrey      = Color(0xFFDAC1A7);  // Light Tan
+  static const Color darkGrey        = Color(0xFF7E5E3C);  // Medium Brown
+  static const Color accentOrange    = Color(0xFFD4A373);  // Warm Highlight
+  static const Color successColor    = Color(0xFF8B5000);  // Success (using secondary)
 
   late final String _userId;
   final _firestore = FirebaseFirestore.instance;
 
   // Animation controllers
-  late AnimationController _slideController;
-  late AnimationController _fadeController;
-  late AnimationController _refreshController;
-  late Animation<double> _slideAnimation;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _refreshAnimation;
+  late final AnimationController _slideController;
+  late final AnimationController _fadeController;
+  late final AnimationController _refreshController;
+  late final Animation<double> _slideAnimation;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<double> _refreshAnimation;
 
   bool _isRefreshing = false;
-
-  // Airline logos mapping
-  final Map<String, String> _airlineLogos = {
-    'MH': 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=100&h=100&fit=crop',
-    'AK': 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=100&h=100&fit=crop',
-    'SQ': 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=100&h=100&fit=crop',
-    'TG': 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=100&h=100&fit=crop',
-    'GA': 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=100&h=100&fit=crop',
-    'EK': 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=100&h=100&fit=crop',
-  };
 
   @override
   void initState() {
@@ -64,7 +55,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
       vsync: this,
     );
     _refreshController = AnimationController(
-      duration: const Duration(seconds: 1),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
@@ -92,26 +83,36 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
 
   Future<void> _refreshList() async {
     if (_isRefreshing) return;
-    
+
     setState(() => _isRefreshing = true);
     _refreshController.forward();
-    
+
+    // Simulate a short delay, since Firestore stream updates automatically.
     await Future.delayed(const Duration(milliseconds: 800));
-    
+
     setState(() => _isRefreshing = false);
     _refreshController.reverse();
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Saved flights refreshed'),
-        backgroundColor: accentGreen,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.refresh, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              const Text('Saved flights refreshed', style: TextStyle(fontSize: 14)),
+            ],
+          ),
+          backgroundColor: successColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(milliseconds: 1200),
         ),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
+      );
+    }
   }
 
   @override
@@ -124,7 +125,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
       backgroundColor: backgroundColor,
       body: CustomScrollView(
         slivers: [
-          _buildEnhancedAppBar(),
+          _buildModernAppBar(),
           _buildSavedFlightsList(),
         ],
       ),
@@ -137,53 +138,54 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
       appBar: _buildSimpleAppBar(),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: subtleGrey.withOpacity(0.3),
+                  color: primaryColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.login, size: 64, color: darkGrey),
+                child: Icon(Icons.bookmark_border, size: 60, color: primaryColor),
               ),
               const SizedBox(height: 24),
               const Text(
                 "Login Required",
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: textColor,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
-                "Please log in to view and manage your saved flights",
+                "Please sign in to view and manage your saved flights",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   color: darkGrey,
+                  height: 1.4,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 30),
               ElevatedButton.icon(
                 onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
-                icon: const Icon(Icons.login, color: Colors.white),
+                icon: const Icon(Icons.login, color: Colors.white, size: 18),
                 label: const Text(
                   "Sign In",
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
@@ -201,7 +203,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
         "Saved Flights",
         style: TextStyle(
           color: Colors.white,
-          fontSize: 18,
+          fontSize: 16,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -213,14 +215,20 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
           borderRadius: BorderRadius.circular(8),
         ),
         child: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacementNamed(context, '/home');
+            }
+          },
         ),
       ),
     );
   }
 
-  Widget _buildEnhancedAppBar() {
+  Widget _buildModernAppBar() {
     return SliverAppBar(
       expandedHeight: 120.0,
       floating: false,
@@ -228,13 +236,21 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
       backgroundColor: primaryColor,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
-        title: const Text(
-          "Saved Flights",
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.bookmark, color: Colors.white, size: 18),
+            const SizedBox(width: 6),
+            const Text(
+              "Saved Flights",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
         background: Container(
           decoration: BoxDecoration(
@@ -247,11 +263,11 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
           child: Stack(
             children: [
               Positioned(
-                right: -50,
-                top: -50,
+                right: -30,
+                top: -30,
                 child: Container(
-                  width: 200,
-                  height: 200,
+                  width: 120,
+                  height: 120,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white.withOpacity(0.1),
@@ -259,11 +275,11 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
                 ),
               ),
               Positioned(
-                left: -30,
-                bottom: -30,
+                left: -16,
+                bottom: -16,
                 child: Container(
-                  width: 120,
-                  height: 120,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white.withOpacity(0.05),
@@ -278,11 +294,17 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
         margin: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 20),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacementNamed(context, '/home');
+            }
+          },
         ),
       ),
       actions: [
@@ -290,7 +312,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(10),
           ),
           child: AnimatedBuilder(
             animation: _refreshAnimation,
@@ -298,7 +320,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
               return Transform.rotate(
                 angle: _refreshAnimation.value * 2 * 3.14159,
                 child: IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
                   onPressed: _isRefreshing ? null : _refreshList,
                   tooltip: "Refresh",
                 ),
@@ -317,10 +339,10 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
         backgroundColor: primaryColor,
         color: Colors.white,
         child: StreamBuilder<QuerySnapshot>(
+          // Simplified query - only filter by userId, no complex ordering
           stream: _firestore
               .collection('savedFlights')
               .where('userId', isEqualTo: _userId)
-              .orderBy('savedAt', descending: true)
               .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
@@ -332,6 +354,19 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
             }
 
             final docs = snapshot.data!.docs;
+
+            // Sort in memory instead of in Firestore query
+            docs.sort((a, b) {
+              final aData = a.data() as Map<String, dynamic>;
+              final bData = b.data() as Map<String, dynamic>;
+              final aTime = aData['savedAt'] as Timestamp?;
+              final bTime = bData['savedAt'] as Timestamp?;
+              if (aTime == null && bTime == null) return 0;
+              if (aTime == null) return 1;
+              if (bTime == null) return -1;
+              return bTime.compareTo(aTime); // Descending order (newest first)
+            });
+
             if (docs.isEmpty) {
               return _buildEmptyState();
             }
@@ -340,7 +375,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
               animation: _slideAnimation,
               builder: (context, child) {
                 return Transform.translate(
-                  offset: Offset(0, 50 * _slideAnimation.value),
+                  offset: Offset(0, 40 * _slideAnimation.value),
                   child: FadeTransition(
                     opacity: _fadeAnimation,
                     child: _buildFlightsList(docs),
@@ -355,7 +390,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
   }
 
   Widget _buildLoadingState() {
-    return Container(
+    return SizedBox(
       height: MediaQuery.of(context).size.height * 0.6,
       child: Center(
         child: Column(
@@ -366,21 +401,18 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
               height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: primaryColor.withOpacity(0.3),
-                  width: 4,
+                gradient: LinearGradient(
+                  colors: [primaryColor, secondaryColor],
                 ),
-              ),
-              child: Container(
-                margin: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: [primaryColor, secondaryColor],
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryColor.withOpacity(0.3),
+                    blurRadius: 15,
+                    spreadRadius: 4,
                   ),
-                ),
-                child: const Icon(Icons.bookmark, color: Colors.white, size: 24),
+                ],
               ),
+              child: const Icon(Icons.bookmark, color: Colors.white, size: 32),
             ),
             const SizedBox(height: 24),
             const Text(
@@ -391,6 +423,14 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
                 fontWeight: FontWeight.w600,
               ),
             ),
+            const SizedBox(height: 6),
+            Text(
+              "Just a moment",
+              style: TextStyle(
+                fontSize: 12,
+                color: darkGrey,
+              ),
+            ),
           ],
         ),
       ),
@@ -398,133 +438,154 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
   }
 
   Widget _buildErrorState(String error) {
-    return Container(
+    return SizedBox(
       height: MediaQuery.of(context).size.height * 0.6,
-      padding: const EdgeInsets.all(24),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.red.shade50,
-                shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.error_outline, size: 48, color: Colors.red.shade700),
               ),
-              child: Icon(Icons.error_outline, size: 48, color: Colors.red.shade700),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "Oops! Something went wrong",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: textColor,
+              const SizedBox(height: 20),
+              const Text(
+                "Unable to load saved flights",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "Error loading saved flights: $error",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: darkGrey,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: _refreshList,
-              icon: const Icon(Icons.refresh),
-              label: const Text("Try Again"),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 8),
+              Text(
+                "Please check your connection and try again",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: darkGrey,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: _refreshList,
+                icon: const Icon(Icons.refresh, size: 16),
+                label: const Text(
+                  "Try Again",
+                  style: TextStyle(fontSize: 14),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildEmptyState() {
-    return Container(
+    return SizedBox(
       height: MediaQuery.of(context).size.height * 0.6,
-      padding: const EdgeInsets.all(24),
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: subtleGrey.withOpacity(0.3),
-                shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: subtleGrey.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(Icons.bookmark_border, size: 60, color: darkGrey),
               ),
-              child: Icon(Icons.bookmark_border, size: 64, color: darkGrey),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "No Saved Flights Yet",
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              "Start saving your favorite flights to see them here",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                color: darkGrey,
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.pushReplacementNamed(context, '/flight-search'),
-              icon: const Icon(Icons.search, color: Colors.white),
-              label: const Text(
-                "Search Flights",
+              const SizedBox(height: 24),
+              const Text(
+                "No Saved Flights Yet",
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
+                  color: textColor,
                 ),
+                textAlign: TextAlign.center,
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () => Navigator.pop(context),
-              icon: Icon(Icons.arrow_back, color: primaryColor),
-              label: Text(
-                "Go Back",
+              const SizedBox(height: 12),
+              Text(
+                "Start saving your favorite flights to see them here.\nEasily compare and book later!",
+                textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: primaryColor,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: darkGrey,
+                  height: 1.4,
                 ),
               ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: primaryColor),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () => Navigator.pushReplacementNamed(context, '/flight-search'),
+                    icon: const Icon(Icons.search, color: Colors.white, size: 16),
+                    label: const Text(
+                      "Search Flights",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        Navigator.pushReplacementNamed(context, '/home');
+                      }
+                    },
+                    icon: Icon(Icons.arrow_back, color: primaryColor, size: 16),
+                    label: Text(
+                      "Go Back",
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: primaryColor),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -533,18 +594,18 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
   Widget _buildFlightsList(List<QueryDocumentSnapshot> docs) {
     return Column(
       children: [
-        // Summary header
+        // Enhanced summary header
         Container(
           margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -553,10 +614,12 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [primaryColor.withOpacity(0.1), accentOrange.withOpacity(0.1)]),
-                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    colors: [primaryColor.withOpacity(0.1), accentOrange.withOpacity(0.1)],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(Icons.bookmark, color: primaryColor, size: 24),
+                child: Icon(Icons.bookmark, color: primaryColor, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -571,10 +634,11 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
                         color: textColor,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      "${docs.length} flight${docs.length == 1 ? '' : 's'} saved",
+                      "${docs.length} flight${docs.length == 1 ? '' : 's'} saved for later",
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: darkGrey,
                       ),
                     ),
@@ -582,17 +646,17 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: accentGreen.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  color: successColor,
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
                   "${docs.length}",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: accentGreen,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -604,7 +668,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
           itemCount: docs.length,
           itemBuilder: (context, index) {
             return _buildEnhancedFlightCard(docs[index], index);
@@ -615,406 +679,473 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
   }
 
   Widget _buildEnhancedFlightCard(QueryDocumentSnapshot doc, int index) {
-    final saved = doc.data() as Map<String, dynamic>;
-    final offer = saved['rawOfferJson'] as Map<String, dynamic>;
+    try {
+      final saved = doc.data() as Map<String, dynamic>;
+      final offer = saved['rawOfferJson'] as Map<String, dynamic>? ?? {};
 
-    // Parse flight data
-    final priceInfo = offer['price'] as Map<String, dynamic>;
-    final totalPrice = priceInfo['total'] as String;
-    final currency = priceInfo['currency'] as String;
+      if (offer.isEmpty) {
+        return _buildErrorCard("Invalid flight data", index);
+      }
 
-    final itineraries = offer['itineraries'] as List<dynamic>;
-    final firstItin = itineraries[0] as Map<String, dynamic>;
-    final durationStr = firstItin['duration'] as String;
-    final segments = firstItin['segments'] as List<dynamic>;
-    final firstSeg = segments[0] as Map<String, dynamic>;
-    final dep = firstSeg['departure'] as Map<String, dynamic>;
-    final arr = firstSeg['arrival'] as Map<String, dynamic>;
-    final carrier = firstSeg['carrierCode'] as String;
-    final flightNo = firstSeg['number'] as String;
-    final depAt = DateTime.parse(dep['at'] as String);
-    final arrAt = DateTime.parse(arr['at'] as String);
+      // Parse flight data safely
+      final priceInfo  = offer['price'] as Map<String, dynamic>? ?? {};
+      final totalPrice = priceInfo['total'] as String? ?? 'N/A';
+      final currency   = priceInfo['currency'] as String? ?? 'MYR';
 
-    final depTimeFmt = DateFormat('HH:mm').format(depAt);
-    final arrTimeFmt = DateFormat('HH:mm').format(arrAt);
-    final depDateFmt = DateFormat('MMM dd').format(depAt);
+      final itineraries = offer['itineraries'] as List<dynamic>? ?? [];
+      if (itineraries.isEmpty) {
+        return _buildErrorCard("No itinerary data", index);
+      }
 
-    // Saved date
-    final savedAt = saved['savedAt'] as Timestamp?;
-    final savedDate = savedAt?.toDate();
+      final firstItin  = itineraries[0] as Map<String, dynamic>;
+      final durationStr= firstItin['duration'] as String? ?? 'N/A';
+      final segments   = firstItin['segments'] as List<dynamic>? ?? [];
+      if (segments.isEmpty) {
+        return _buildErrorCard("No segment data", index);
+      }
 
-    return Dismissible(
-      key: Key(doc.id),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.red.shade400, Colors.red.shade700],
+      final firstSeg  = segments[0] as Map<String, dynamic>;
+      final dep       = firstSeg['departure'] as Map<String, dynamic>? ?? {};
+      final arr       = firstSeg['arrival'] as Map<String, dynamic>? ?? {};
+      final carrier   = firstSeg['carrierCode'] as String? ?? 'N/A';
+      final flightNo  = firstSeg['number'] as String? ?? 'N/A';
+
+      final depAtStr  = dep['at'] as String?;
+      final arrAtStr  = arr['at'] as String?;
+      if (depAtStr == null || arrAtStr == null) {
+        return _buildErrorCard("Invalid time data", index);
+      }
+
+      final depAt      = DateTime.parse(depAtStr);
+      final arrAt      = DateTime.parse(arrAtStr);
+      final depTimeFmt = DateFormat('HH:mm').format(depAt);
+      final arrTimeFmt = DateFormat('HH:mm').format(arrAt);
+      final depDateFmt = DateFormat('MMM dd').format(depAt);
+
+      // Saved date
+      final savedAt    = saved['savedAt'] as Timestamp?;
+      final savedDate  = savedAt?.toDate();
+
+      return Dismissible(
+        key: Key(doc.id),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.red.shade400, Colors.red.shade700],
+            ),
+            borderRadius: BorderRadius.circular(20),
           ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.delete_forever, color: Colors.white, size: 28),
-            const SizedBox(height: 4),
-            const Text(
-              "Remove",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-      confirmDismiss: (direction) async {
-        return await _showDeleteConfirmation(context);
-      },
-      onDismissed: (_) async {
-        await _deleteSavedFlight(doc.id);
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 15,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Header with saved date and index
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primaryColor.withOpacity(0.1), accentOrange.withOpacity(0.1)],
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.delete_forever, color: Colors.white, size: 28),
+              const SizedBox(height: 6),
+              const Text(
+                "Remove",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
                 ),
               ),
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Saved Flight ${index + 1}",
-                    style: TextStyle(
-                      color: primaryColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+            ],
+          ),
+        ),
+        confirmDismiss: (direction) async {
+          return await _showDeleteConfirmation(context);
+        },
+        onDismissed: (_) async {
+          await _deleteSavedFlight(doc.id);
+        },
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Header with airline and saved date
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [primaryColor.withOpacity(0.05), secondaryColor.withOpacity(0.05)],
                   ),
-                  if (savedDate != null)
-                    Text(
-                      "Saved ${DateFormat('MMM dd').format(savedDate)}",
-                      style: TextStyle(
-                        color: darkGrey,
-                        fontSize: 12,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Airline info with logo
-                  Row(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: subtleGrey.withOpacity(0.3),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.network(
-                            _airlineLogos[carrier] ?? 'https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=100&h=100&fit=crop',
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: primaryColor.withOpacity(0.1),
-                                child: Center(
-                                  child: Text(
-                                    carrier,
-                                    style: TextStyle(
-                                      color: primaryColor,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    // Airline logo
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: _getAirlineColor(carrier),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _getAirlineColor(carrier).withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _getAirlineName(carrier),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: textColor,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              "$carrier $flightNo",
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: darkGrey,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            "$currency $totalPrice",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: accentGreen,
-                            ),
-                          ),
-                          if (saved['isStudentFare'] == true)
-                            Text(
-                              "Student Fare",
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: accentGreen,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
                         ],
                       ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Flight timeline
-                  Row(
-                    children: [
-                      // Departure
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              depTimeFmt,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: textColor,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              dep['iataCode'] as String,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: darkGrey,
-                              ),
-                            ),
-                            Text(
-                              depDateFmt,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: darkGrey,
-                              ),
-                            ),
-                          ],
+                      child: Center(
+                        child: Text(
+                          carrier,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
-
-                      // Flight path
-                      Expanded(
-                        flex: 3,
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Container(
-                                    height: 2,
-                                    decoration: BoxDecoration(
-                                      color: primaryColor,
-                                      borderRadius: BorderRadius.circular(1),
-                                    ),
-                                  ),
-                                ),
-                                Icon(Icons.flight, color: primaryColor, size: 20),
-                                Expanded(
-                                  child: Container(
-                                    height: 2,
-                                    decoration: BoxDecoration(
-                                      color: primaryColor,
-                                      borderRadius: BorderRadius.circular(1),
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ],
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _getAirlineName(carrier),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _formatDuration(durationStr),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "$carrier $flightNo",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: darkGrey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "$currency $totalPrice",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: successColor,
+                          ),
+                        ),
+                        if (savedDate != null)
+                          Text(
+                            "Saved ${DateFormat('MMM dd').format(savedDate)}",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: darkGrey,
+                            ),
+                          ),
+                        if (saved['isStudentFare'] == true)
+                          Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: successColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text(
+                              "STUDENT",
                               style: TextStyle(
-                                fontSize: 12,
-                                color: darkGrey,
-                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            if (segments.length > 1)
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Flight timeline
+                    Row(
+                      children: [
+                        // Departure
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
                               Text(
-                                "${segments.length - 1} stop${segments.length > 2 ? 's' : ''}",
+                                depTimeFmt,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: textColor,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                dep['iataCode'] as String? ?? 'N/A',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: primaryColor,
+                                ),
+                              ),
+                              Text(
+                                depDateFmt,
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: Colors.orange,
+                                  color: darkGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Flight path
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: primaryColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      height: 2,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [primaryColor, secondaryColor],
+                                        ),
+                                        borderRadius: BorderRadius.circular(1),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: primaryColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.flight, color: Colors.white, size: 16),
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      height: 2,
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [secondaryColor, primaryColor],
+                                        ),
+                                        borderRadius: BorderRadius.circular(1),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: primaryColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                _formatDuration(durationStr),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: darkGrey,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                          ],
+                              if (segments.length > 1)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 4),
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: accentOrange.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    "${segments.length - 1} stop${segments.length > 2 ? 's' : ''}",
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: accentOrange,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                      ),
 
-                      // Arrival
-                      Expanded(
-                        flex: 2,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              arrTimeFmt,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
+                        // Arrival
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                arrTimeFmt,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: textColor,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                arr['iataCode'] as String? ?? 'N/A',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: primaryColor,
+                                ),
+                              ),
+                              // ← Here is the corrected line: use arrAt instead of arr
+                              Text(
+                                DateFormat('MMM dd').format(arrAt),
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: darkGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Action buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _navigateToDetails(saved, offer),
+                            icon: Icon(Icons.info_outline, color: primaryColor, size: 18),
+                            label: const Text(
+                              "View Details",
+                              style: TextStyle(
                                 color: textColor,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              arr['iataCode'] as String,
-                              style: TextStyle(
-                                fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: darkGrey,
-                              ),
-                            ),
-                            Text(
-                              DateFormat('MMM dd').format(arrAt),
-                              style: TextStyle(
                                 fontSize: 12,
-                                color: darkGrey,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Action buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _navigateToDetails(saved, offer),
-                          icon: Icon(Icons.info_outline, color: primaryColor),
-                          label: Text(
-                            "View Details",
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: primaryColor),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: primaryColor),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _bookFlight(offer),
-                          icon: const Icon(Icons.credit_card, color: Colors.white),
-                          label: const Text(
-                            "Book Now",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _bookFlight(offer),
+                            icon: const Icon(Icons.flight_takeoff, color: Colors.white, size: 18),
+                            label: const Text(
+                              "Book Now",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
                             ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: accentGreen,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+      );
+    } catch (e) {
+      return _buildErrorCard("Error loading flight: $e", index);
+    }
+  }
+
+  Widget _buildErrorCard(String message, int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red.shade200),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.error_outline, color: Colors.red.shade700, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              "Saved Flight ${index + 1}: $message",
+              style: TextStyle(color: Colors.red.shade700, fontSize: 12),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   // Helper methods
+  Color _getAirlineColor(String carrier) {
+    final colors = {
+      'MH': Color(0xFF5C2E00), // Malaysia Airlines - Brown
+      'AK': Color(0xFFDC2626), // AirAsia - Red
+      'SQ': Color(0xFF8B5000), // Singapore Airlines - Amber Brown
+      'TG': Color(0xFF7C2D92), // Thai Airways - Purple
+      'GA': Color(0xFFB28F5E), // Garuda - Muted Brown
+      'EK': Color(0xFFB91C1C), // Emirates - Dark Red
+    };
+    return colors[carrier] ?? primaryColor;
+  }
+
   String _formatDuration(String isoDuration) {
     final regex = RegExp(r'PT(\d+)H(\d+)M');
     final match = regex.firstMatch(isoDuration);
@@ -1047,23 +1178,30 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: Text(
-            "Remove Saved Flight?",
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.bold,
-            ),
+          title: Row(
+            children: [
+              Icon(Icons.delete_forever, color: Colors.red.shade700, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                "Remove Flight?",
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
           content: Text(
-            "This flight will be permanently removed from your saved flights.",
-            style: TextStyle(color: darkGrey),
+            "This flight will be permanently removed from your saved flights. You can always save it again later.",
+            style: TextStyle(color: darkGrey, fontSize: 14),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
                 "Cancel",
-                style: TextStyle(color: darkGrey),
+                style: TextStyle(color: darkGrey, fontSize: 14),
               ),
             ),
             ElevatedButton(
@@ -1071,12 +1209,13 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red.shade700,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               child: const Text(
                 "Remove",
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white, fontSize: 14),
               ),
             ),
           ],
@@ -1088,29 +1227,41 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
   Future<void> _deleteSavedFlight(String docId) async {
     try {
       await _firestore.collection('savedFlights').doc(docId).delete();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Flight removed from saved flights'),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white, size: 18),
+                const SizedBox(width: 8),
+                const Text('Flight removed from saved flights', style: TextStyle(fontSize: 14)),
+              ],
+            ),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(milliseconds: 1200),
           ),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error removing flight: $e'),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error removing flight: $e', style: const TextStyle(fontSize: 14)),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(milliseconds: 1200),
           ),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+        );
+      }
     }
   }
 
@@ -1120,38 +1271,37 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen> with TickerProv
       '/flight-detail',
       arguments: {
         'offer': offer,
-        'originCode': saved['originCode'] as String,
-        'destinationCode': saved['destinationCode'] as String,
-        'departureDate': saved['departureDateStr'] as String,
-        'adults': saved['adults'] as int,
-        'travelClass': saved['travelClass'] as String,
-        'direct': saved['direct'] as bool,
-        'isStudentFare': saved['isStudentFare'] as bool,
+        'originCode': saved['originCode'] as String? ?? '',
+        'destinationCode': saved['destinationCode'] as String? ?? '',
+        'departureDate': saved['departureDateStr'] as String? ?? '',
+        'adults': saved['adults'] as int? ?? 1,
+        'travelClass': saved['travelClass'] as String? ?? '',
+        'direct': saved['direct'] as bool? ?? false,
+        'isStudentFare': saved['isStudentFare'] as bool? ?? false,
       },
     );
   }
 
   void _bookFlight(Map<String, dynamic> offer) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Proceeding to booking...'),
-        backgroundColor: accentGreen,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.flight_takeoff, color: Colors.white, size: 18),
+              const SizedBox(width: 8),
+              const Text('Redirecting to booking...', style: TextStyle(fontSize: 14)),
+            ],
+          ),
+          backgroundColor: primaryColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(milliseconds: 1200),
         ),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
-  }
-}
-
-// Color extension to darken a color by [amount]:
-extension ColorExtension on Color {
-  Color darken([double amount = .1]) {
-    assert(amount >= 0 && amount <= 1);
-    final hsl = HSLColor.fromColor(this);
-    final darker = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
-    return darker.toColor();
+      );
+    }
   }
 }

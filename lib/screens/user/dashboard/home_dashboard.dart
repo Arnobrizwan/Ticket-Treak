@@ -1,3 +1,5 @@
+// lib/screens/user/dashboard/home_dashboard.dart
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -16,23 +18,23 @@ class HomeDashboard extends StatefulWidget {
 class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateMixin {
   // Violin color palette matching OnboardingScreen
   static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
-  static const Color primaryColor = Color(0xFF5C2E00);     // Dark Brown
-  static const Color secondaryColor = Color(0xFF8B5000);   // Amber Brown
-  static const Color textColor = Color(0xFF35281E);        // Deep Wood
-  static const Color subtleGrey = Color(0xFFDAC1A7);       // Light Tan
-  static const Color darkGrey = Color(0xFF7E5E3C);         // Medium Brown
-  static const Color accentOrange = Color(0xFFD4A373);     // Warm Highlight
-  static const Color accentGreen = Color(0xFFB28F5E);      // Muted Brown
+  static const Color primaryColor    = Color(0xFF5C2E00);  // Dark Brown
+  static const Color secondaryColor  = Color(0xFF8B5000);  // Amber Brown
+  static const Color textColor       = Color(0xFF35281E);  // Deep Wood
+  static const Color subtleGrey      = Color(0xFFDAC1A7);  // Light Tan
+  static const Color darkGrey        = Color(0xFF7E5E3C);  // Medium Brown
+  static const Color accentOrange    = Color(0xFFD4A373);  // Warm Highlight
+  static const Color accentGreen     = Color(0xFFB28F5E);  // Muted Brown
 
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _slideAnimation;
-  
+  late Animation<double>   _fadeAnimation;
+  late Animation<double>   _slideAnimation;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+  final FirebaseAuth      _auth      = FirebaseAuth.instance;
+
   Map<String, dynamic>? _userData;
-  bool _isLoading = true;
+  bool                 _isLoading = true;
 
   @override
   void initState() {
@@ -47,21 +49,13 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
 
-    _slideAnimation = Tween<double>(
-      begin: 30.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation = Tween<double>(begin: 30.0, end: 0.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic),
+    );
 
     _animationController.forward();
   }
@@ -73,8 +67,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
         final doc = await _firestore.collection('users').doc(user.uid).get();
         if (mounted) {
           setState(() {
-            _userData = doc.data();
-            _isLoading = false;
+            _userData   = doc.data();
+            _isLoading  = false;
           });
         }
       }
@@ -94,7 +88,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
+    final screenSize    = MediaQuery.of(context).size;
     final isLargeScreen = screenSize.width > 400;
 
     return Scaffold(
@@ -109,7 +103,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               ),
             ),
           ),
-          
+
           SafeArea(
             child: _isLoading
                 ? _buildLoadingState()
@@ -123,7 +117,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                           ),
                           children: [
                             const SizedBox(height: 16),
-                            
+
                             // Animated header
                             AnimatedBuilder(
                               animation: _animationController,
@@ -138,7 +132,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                               },
                             ),
                             const SizedBox(height: 20),
-                            
+
                             // Welcome banner with student focus
                             AnimatedBuilder(
                               animation: _animationController,
@@ -150,31 +144,39 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                               },
                             ),
                             const SizedBox(height: 24),
-                            
+
                             // Quick actions for students
                             _buildSectionHeader("Quick Actions", Icons.flash_on),
                             const SizedBox(height: 12),
                             _buildStudentQuickActions(context),
                             const SizedBox(height: 24),
-                            
+
                             // Active bookings from Firebase
                             _buildSectionHeader("My Trips", Icons.luggage),
                             const SizedBox(height: 12),
                             _buildActiveBookings(),
                             const SizedBox(height: 24),
-                            
+
+                            // ─────────────────────────
+                            // Saved Flights Section
+                            _buildSectionHeader("Saved Flights", Icons.bookmark),
+                            const SizedBox(height: 12),
+                            _buildSavedFlightsSection(),
+                            const SizedBox(height: 24),
+                            // ─────────────────────────
+
                             // Popular student destinations
                             _buildSectionHeader("Trending Destinations", Icons.trending_up),
                             const SizedBox(height: 12),
                             _buildTrendingDestinations(),
                             const SizedBox(height: 24),
-                            
+
                             // Student deals
                             _buildSectionHeader("Student Deals", Icons.local_offer),
                             const SizedBox(height: 12),
                             _buildStudentDeals(),
                             const SizedBox(height: 24),
-                            
+
                             // Recent activity from Firebase
                             _buildSectionHeader("Recent Activity", Icons.history),
                             const SizedBox(height: 12),
@@ -183,7 +185,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                           ],
                         ),
                       ),
-                      
+
                       // Bottom navigation
                       _buildBottomNavigation(context),
                     ],
@@ -194,6 +196,9 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
     );
   }
 
+  // ───────────────────────────────────────────────────────────
+  // Loading / Empty / Error States
+  // ───────────────────────────────────────────────────────────
   Widget _buildLoadingState() {
     return Center(
       child: Column(
@@ -215,6 +220,72 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
     );
   }
 
+  Widget _buildEmptyStateCard(String title, String subtitle, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            Icon(icon, size: 48, color: subtleGrey),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 14,
+                color: darkGrey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingCard() {
+    return Container(
+      height: 100,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+        ),
+      ),
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────
+  // Header, Welcome Banner, and Section Builders
+  // ───────────────────────────────────────────────────────────
   Widget _buildStudentHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -226,9 +297,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               width: 45,
               height: 45,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [primaryColor, secondaryColor],
-                ),
+                gradient: LinearGradient(colors: [primaryColor, secondaryColor]),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -238,11 +307,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.flight,
-                color: Colors.white,
-                size: 24,
-              ),
+              child: const Icon(Icons.flight, color: Colors.white, size: 24),
             ),
             const SizedBox(width: 12),
             Column(
@@ -258,17 +323,14 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                 ),
                 Text(
                   'Ready for your next adventure?',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: darkGrey,
-                  ),
+                  style: TextStyle(fontSize: 13, color: darkGrey),
                 ),
               ],
             ),
           ],
         ),
-        
-        // Notification and profile
+
+        // Notification and profile avatar
         Row(
           children: [
             StreamBuilder<QuerySnapshot>(
@@ -307,10 +369,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                             color: accentOrange,
                             shape: BoxShape.circle,
                           ),
-                          constraints: const BoxConstraints(
-                            minWidth: 16,
-                            minHeight: 16,
-                          ),
+                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
                           child: Text(
                             '$unreadCount',
                             style: const TextStyle(
@@ -328,9 +387,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
             ),
             const SizedBox(width: 12),
             GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, AppRoutes.editProfile);
-              },
+              onTap: () => Navigator.pushNamed(context, AppRoutes.editProfile),
               child: Hero(
                 tag: 'profile_avatar',
                 child: Container(
@@ -339,15 +396,12 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                   decoration: BoxDecoration(
                     color: accentOrange,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white,
-                      width: 2,
-                    ),
+                    border: Border.all(color: Colors.white, width: 2),
                   ),
                   child: ClipOval(
                     child: _userData?['profileImage'] != null
                         ? CachedNetworkImage(
-                            imageUrl: _userData!['profileImage'],
+                            imageUrl: _userData!['profileImage']!,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => Center(
                               child: CircularProgressIndicator(
@@ -406,16 +460,12 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               height: 180,
               placeholder: (context, url) => Container(
                 color: subtleGrey,
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: const Center(child: CircularProgressIndicator()),
               ),
-              errorWidget: (context, url, error) => Container(
-                color: subtleGrey,
-              ),
+              errorWidget: (context, url, error) => Container(color: subtleGrey),
             ),
           ),
-          
+
           // Gradient overlay
           Container(
             decoration: BoxDecoration(
@@ -430,7 +480,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               ),
             ),
           ),
-          
+
           // Content
           Padding(
             padding: const EdgeInsets.all(20),
@@ -617,7 +667,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
 
   Widget _buildBookingCard(Map<String, dynamic> booking) {
     final departureDate = (booking['departureDate'] as Timestamp).toDate();
-    final isToday = DateFormat('yyyy-MM-dd').format(departureDate) == 
+    final isToday = DateFormat('yyyy-MM-dd').format(departureDate) ==
                     DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     return Container(
@@ -677,10 +727,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                         ),
                         Text(
                           booking['originCity'] ?? '',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: darkGrey,
-                          ),
+                          style: TextStyle(fontSize: 12, color: darkGrey),
                         ),
                       ],
                     ),
@@ -710,10 +757,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                         ),
                         Text(
                           booking['destinationCity'] ?? '',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: darkGrey,
-                          ),
+                          style: TextStyle(fontSize: 12, color: darkGrey),
                         ),
                       ],
                     ),
@@ -735,10 +779,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                         ),
                         Text(
                           booking['departureTime'] ?? '',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: darkGrey,
-                          ),
+                          style: TextStyle(fontSize: 12, color: darkGrey),
                         ),
                       ],
                     ),
@@ -860,16 +901,12 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                     height: 200,
                     placeholder: (context, url) => Container(
                       color: subtleGrey,
-                      child: const Center(
-                        child: CircularProgressIndicator(),
-                      ),
+                      child: const Center(child: CircularProgressIndicator()),
                     ),
-                    errorWidget: (context, url, error) => Container(
-                      color: subtleGrey,
-                    ),
+                    errorWidget: (context, url, error) => Container(color: subtleGrey),
                   ),
                 ),
-                
+
                 // Gradient
                 Container(
                   decoration: BoxDecoration(
@@ -884,7 +921,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                     ),
                   ),
                 ),
-                
+
                 // Discount badge
                 Positioned(
                   top: 12,
@@ -905,7 +942,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                     ),
                   ),
                 ),
-                
+
                 // Content
                 Positioned(
                   bottom: 12,
@@ -1005,15 +1042,15 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
   }
 
   Widget _buildDealCard({
-    required String airline,
-    required String route,
-    required String originalPrice,
-    required String discountedPrice,
-    required String discount,
+    required String  airline,
+    required String  route,
+    required String  originalPrice,
+    required String  discountedPrice,
+    required String  discount,
     required DateTime validUntil,
   }) {
     final daysLeft = validUntil.difference(DateTime.now()).inDays;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -1099,14 +1136,14 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: daysLeft <= 3 ? Colors.red.shade50 : Colors.green.shade50,
+                  color: (daysLeft <= 3) ? Colors.red.shade50 : Colors.green.shade50,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '$daysLeft days left',
                   style: TextStyle(
                     fontSize: 11,
-                    color: daysLeft <= 3 ? Colors.red : Colors.green,
+                    color: (daysLeft <= 3) ? Colors.red : Colors.green,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -1123,10 +1160,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                 ),
                 child: const Text(
                   'Book Now',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 12),
                 ),
               ),
             ],
@@ -1168,8 +1202,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               ),
               airline: booking['airline'] ?? 'Unknown',
               price: 'RM${booking['price'] ?? '0'}',
-              savedAmount: booking['savedAmount'] != null 
-                  ? 'Saved RM${booking['savedAmount']}' 
+              savedAmount: booking['savedAmount'] != null
+                  ? 'Saved RM${booking['savedAmount']}'
                   : null,
             );
           }).toList(),
@@ -1207,11 +1241,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               color: subtleGrey.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              Icons.flight,
-              color: primaryColor,
-              size: 20,
-            ),
+            child: Icon(Icons.flight, color: primaryColor, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1231,18 +1261,12 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                   children: [
                     Text(
                       airline,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: darkGrey,
-                      ),
+                      style: TextStyle(fontSize: 12, color: darkGrey),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       '• $date',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: darkGrey,
-                      ),
+                      style: TextStyle(fontSize: 12, color: darkGrey),
                     ),
                   ],
                 ),
@@ -1272,73 +1296,6 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildLoadingCard() {
-    return Container(
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyStateCard(String title, String subtitle, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Center(
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 48,
-              color: subtleGrey,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 14,
-                color: darkGrey,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -1409,8 +1366,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
 
   Widget _buildNavItem({
     required IconData icon,
-    required String label,
-    required bool isSelected,
+    required String   label,
+    required bool     isSelected,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -1421,11 +1378,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: isSelected ? primaryColor : darkGrey,
-              size: 24,
-            ),
+            Icon(icon, color: isSelected ? primaryColor : darkGrey, size: 24),
             const SizedBox(height: 4),
             Text(
               label,
@@ -1440,12 +1393,228 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
       ),
     );
   }
+
+  // ───────────────────────────────────────────────────────────
+  // Saved Flights Section (MUST be inside _HomeDashboardState)
+  // ───────────────────────────────────────────────────────────
+  Widget _buildSavedFlightsSection() {
+    final currentUid = _auth.currentUser?.uid;
+    if (currentUid == null) {
+      return _buildEmptyStateCard(
+        'Not logged in',
+        'Please sign in to see your saved flights',
+        Icons.bookmark_border,
+      );
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore
+          .collection('savedFlights')
+          .where('userId', isEqualTo: currentUid)
+          .orderBy('savedAt', descending: true)
+          .limit(3)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildLoadingCard();
+        }
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return _buildEmptyStateCard(
+            'No saved flights',
+            'Tap on any flight to save it and it will appear here',
+            Icons.bookmark_border,
+          );
+        }
+
+        return Column(
+          children: snapshot.data!.docs.map((doc) {
+            final savedData = doc.data() as Map<String, dynamic>;
+            final offer     = savedData['rawOfferJson'] as Map<String, dynamic>? ?? {};
+
+            // Pull out a few fields safely
+            String originCode          = savedData['originCode']       ?? 'N/A';
+            String destinationCode     = savedData['destinationCode']  ?? 'N/A';
+            String departureDateStr    = savedData['departureDateStr'] ?? '';
+            String flightNumber        = 'N/A';
+            String airlineCode         = 'N/A';
+            String price               = 'N/A';
+            String currency            = 'MYR';
+
+            try {
+              final priceInfo   = (offer['price'] as Map<String, dynamic>?);
+              if (priceInfo != null) {
+                price    = priceInfo['total']?.toString()    ?? price;
+                currency = priceInfo['currency']?.toString() ?? currency;
+              }
+              final itineraries = (offer['itineraries'] as List<dynamic>?);
+              if (itineraries != null && itineraries.isNotEmpty) {
+                final firstItin = itineraries[0] as Map<String, dynamic>;
+                final segments  = (firstItin['segments'] as List<dynamic>?);
+                if (segments != null && segments.isNotEmpty) {
+                  final firstSeg = (segments[0] as Map<String, dynamic>);
+                  flightNumber   =
+                      "${firstSeg['carrierCode'] ?? 'XX'} ${firstSeg['number'] ?? ''}";
+                  airlineCode    = (firstSeg['carrierCode'] ?? 'XX').toString();
+                }
+              }
+            } catch (_) {
+              // ignore; fall back to defaults
+            }
+
+            // Format departure date
+            String departureDateFormatted = departureDateStr.isNotEmpty
+                ? DateFormat('MMM dd, yyyy')
+                    .format(DateTime.parse(departureDateStr))
+                : 'N/A';
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Airline logo placeholder / colored box
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: _getAirlineColor(airlineCode),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Text(
+                        airlineCode,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Flight info (origin → destination, number, date)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "$originCode → $destinationCode",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          flightNumber,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: darkGrey,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          departureDateFormatted,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: darkGrey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Price + “Details” button
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        "$currency $price",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: accentGreen,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.flightDetail,
+                            arguments: {
+                              'offer': offer,
+                              'originCode': originCode,
+                              'destinationCode': destinationCode,
+                              'departureDate': departureDateStr,
+                              'adults': savedData['adults'] ?? 1,
+                              'travelClass': savedData['travelClass'] ?? '',
+                              'direct': savedData['direct'] ?? false,
+                              'isStudentFare': savedData['isStudentFare'] ?? false,
+                            },
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: primaryColor),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        ),
+                        child: const Text(
+                          "Details",
+                          style: TextStyle(
+                            color: primaryColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  /// Helper method to pick a background color based on carrier code.
+  Color _getAirlineColor(String carrier) {
+    final colors = {
+      'MH': const Color(0xFF5C2E00), // Malaysia Airlines – Brown
+      'AK': const Color(0xFFDC2626), // AirAsia – Red
+      'SQ': const Color(0xFF8B5000), // Singapore Airlines – Amber Brown
+      'TG': const Color(0xFF7C2D92), // Thai Airways – Purple
+      'GA': const Color(0xFFB28F5E), // Garuda – Muted Brown
+      'EK': const Color(0xFFB91C1C), // Emirates – Dark Red
+    };
+    return colors[carrier] ?? primaryColor;
+  }
 }
 
+// ───────────────────────────────────────────────────────────
 // Custom painter for dotted pattern
+// ───────────────────────────────────────────────────────────
 class DottedPatternPainter extends CustomPainter {
   final Color color;
-
   DottedPatternPainter({required this.color});
 
   @override
