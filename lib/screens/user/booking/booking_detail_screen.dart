@@ -4,8 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:ticket_trek/routes/app_routes.dart'; // For navigation
 // import 'package:path_provider/path_provider.dart'; // For PDF generation (optional)
 // import 'package:pdf/widgets.dart' as pw; // For PDF generation (optional)
-// import 'dart:io'; // For PDF generation (optional)
-// import 'package:share_plus/share_plus.dart'; // For sharing ticket
+// import 'package:pdf/pdf.dart'; // For PDF page format and colors (optional)
+// import 'dart:io'; // For File operations (optional)
+// import 'package:share_plus/share_plus.dart'; // For sharing ticket (optional, if sharing files)
 
 // --- Color Palette (consistent with other screens) ---
 const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
@@ -50,20 +51,21 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   String _departureDateStr = 'N/A';
   String _departureTimeStr = 'N/A';
   String _flightNumber = 'N/A';
-  String _airlineName = 'TicketTrek'; // Default or fetch if available
+  String _airlineName = 'Batik Airlines'; // Default airline if not found
 
   List<Map<String, dynamic>> _passengers = [];
 
-  // Seat and Addons
   Map<String, dynamic> _seatBookingDetails = {};
   List<dynamic> _selectedAddons = [];
 
   double _totalPrice = 0.0;
   String _currency = 'MYR';
 
-  // Controller for email input dialog
   final TextEditingController _emailController = TextEditingController();
-  String? _userEmailForReceipt; // To store user's primary email if available
+  final TextEditingController _phoneController =
+      TextEditingController(); // For SMS dialog
+  String? _userEmailForReceipt;
+  String? _userPhoneForReceipt; // To store user's primary phone
 
   @override
   void initState() {
@@ -74,6 +76,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   @override
   void dispose() {
     _emailController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -87,6 +90,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     try {
       final docSnapshot =
           await _firestore.collection('bookings').doc(widget.bookingId).get();
+      debugPrint(
+          "Fetched booking document for ID (${widget.bookingId}): ${docSnapshot.exists ? docSnapshot.data() : 'Does not exist'}");
 
       if (!mounted) return;
 
@@ -116,8 +121,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   void _parseBookingData() {
-    if (_bookingDataFromFirestore == null) return;
+    if (_bookingDataFromFirestore == null) {
+      debugPrint(
+          "_parseBookingData: _bookingDataFromFirestore is null. Cannot parse.");
+      return;
+    }
     final data = _bookingDataFromFirestore!;
+    debugPrint("_parseBookingData: Starting parsing for booking data: $data");
 
     _displayBookingReference =
         data['bookingReference'] as String? ?? data['bookingId'] as String?;
@@ -126,43 +136,95 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     final createdAtTimestamp = data['createdAt'] as Timestamp?;
     _bookingCreationDate = createdAtTimestamp?.toDate();
 
-    final flightDetailsMap =
-        data['flightDetails'] as Map<String, dynamic>? ?? {};
+    // --- Enhanced Flight Details Parsing ---
+    _originCode = data['originCode'] as String? ?? 'N/A';
+    _destinationCode = data['destinationCode'] as String? ?? 'N/A';
+
     final flightOfferMap = data['flightOffer'] as Map<String, dynamic>? ?? {};
+    debugPrint("_parseBookingData: flightOfferMap: $flightOfferMap");
 
-    _originCode = data['originCode'] as String? ??
-        flightDetailsMap['from'] as String? ??
-        flightOfferMap['origin'] as String? ??
-        'N/A';
-    _destinationCode = data['destinationCode'] as String? ??
-        flightDetailsMap['to'] as String? ??
-        flightOfferMap['destination'] as String? ??
-        'N/A';
-
-    _originCity = flightDetailsMap['fromCity'] as String? ??
-        flightOfferMap['originCity'] as String? ??
-        _originCode;
-    _destinationCity = flightDetailsMap['toCity'] as String? ??
-        flightOfferMap['destinationCity'] as String? ??
-        _destinationCode;
+    _originCity = flightOfferMap['originCityName'] as String? ?? _originCode;
+    _destinationCity =
+        flightOfferMap['destinationCityName'] as String? ?? _destinationCode;
 
     final departureTimestamp = data['departureDate'] as Timestamp?;
     if (departureTimestamp != null) {
       _departureDateStr =
-          DateFormat('dd MMM yy').format(departureTimestamp.toDate());
+          DateFormat('yyyy-MM-dd').format(departureTimestamp.toDate());
       _departureTimeStr =
           DateFormat('hh:mm a').format(departureTimestamp.toDate());
+      debugPrint(
+          "_parseBookingData: Parsed top-level departureDate: $_departureDateStr, $_departureTimeStr");
     } else {
-      _departureDateStr = flightDetailsMap['departureDate'] as String? ?? 'N/A';
-      _departureTimeStr = flightDetailsMap['departureTime'] as String? ?? 'N/A';
+      _departureDateStr = 'N/A';
+      _departureTimeStr = 'N/A';
+      debugPrint(
+          "_parseBookingData: Top-level departureDate Timestamp is null.");
     }
 
-    _flightNumber = flightDetailsMap['flightNumber'] as String? ??
-        flightOfferMap['flightNumber'] as String? ??
-        'N/A';
-    _airlineName = flightDetailsMap['airline'] as String? ??
-        flightOfferMap['airlineName'] as String? ??
-        'TicketTrek Airlines';
+    String? tempFlightNumber;
+    String? tempAirlineCode;
+    String? parsedAirlineName;
+
+    if (flightOfferMap.isNotEmpty) {
+      final itineraries = flightOfferMap['itineraries'] as List<dynamic>?;
+      if (itineraries != null && itineraries.isNotEmpty) {
+        final firstItinerary = itineraries.first as Map<String, dynamic>?;
+        if (firstItinerary != null) {
+          final segments = firstItinerary['segments'] as List<dynamic>?;
+          if (segments != null && segments.isNotEmpty) {
+            final firstSegment = segments.first as Map<String, dynamic>?;
+            if (firstSegment != null) {
+              tempFlightNumber = firstSegment['number'] as String? ??
+                  firstSegment['flightNumber'] as String?;
+              tempAirlineCode = firstSegment['carrierCode'] as String?;
+              parsedAirlineName = firstSegment['airlineName'] as String?;
+
+              final segmentDeparture =
+                  firstSegment['departure'] as Map<String, dynamic>?;
+              if (segmentDeparture != null &&
+                  segmentDeparture['at'] is String) {
+                try {
+                  final segmentDateTime =
+                      DateTime.parse(segmentDeparture['at'] as String);
+                  if (departureTimestamp != null &&
+                      departureTimestamp.toDate().hour == 0 &&
+                      departureTimestamp.toDate().minute == 0) {
+                    _departureTimeStr =
+                        DateFormat('hh:mm a').format(segmentDateTime);
+                    debugPrint(
+                        "_parseBookingData: Updated departureTimeStr from segment: $_departureTimeStr");
+                  }
+                  _departureDateStr =
+                      DateFormat('yyyy-MM-dd').format(segmentDateTime);
+                  debugPrint(
+                      "_parseBookingData: Updated departureDateStr from segment: $_departureDateStr");
+                } catch (e) {
+                  debugPrint(
+                      "Error parsing segment departure 'at' string: ${segmentDeparture['at']}. Error: $e");
+                }
+              }
+            }
+          }
+        }
+      }
+      tempFlightNumber ??= flightOfferMap['flightNumber'] as String?;
+      tempAirlineCode ??=
+          (flightOfferMap['validatingAirlineCodes'] as List<dynamic>?)?.first
+                  as String? ??
+              flightOfferMap['carrierCode'] as String?;
+      parsedAirlineName ??= flightOfferMap['airlineName'] as String?;
+    }
+
+    _flightNumber = tempFlightNumber ?? 'N/A';
+    // Use parsedAirlineName if available, then tempAirlineCode, then default to "Batik Airlines"
+    _airlineName = parsedAirlineName ?? (tempAirlineCode ?? 'Batik Airlines');
+    if (_airlineName.isEmpty)
+      _airlineName = 'Batik Airlines'; // Ensure it's not empty string
+
+    debugPrint(
+        "_parseBookingData: Final FlightNumber: $_flightNumber, Airline: $_airlineName");
+    // --- End of Enhanced Flight Details Parsing ---
 
     final passengersData = data['passengers'] as List<dynamic>?;
     _passengers = passengersData?.map((p) {
@@ -171,16 +233,16 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         }).toList() ??
         [];
 
-    // Attempt to get user's email from primary passenger for pre-filling
     if (_passengers.isNotEmpty) {
       final primaryPassenger = _passengers.firstWhere(
           (p) => p['isPrimaryPassenger'] == true,
           orElse: () => _passengers.first);
       _userEmailForReceipt = primaryPassenger['contactEmail'] as String?;
+      _userPhoneForReceipt =
+          primaryPassenger['contactPhone'] as String?; // Get phone for SMS
     }
-    // If not found in passenger, try from booking document top level (if you store it there)
-    _userEmailForReceipt ??=
-        data['userEmail'] as String?; // Assuming 'userEmail' might be a field
+    _userEmailForReceipt ??= data['userEmail'] as String?;
+    _userPhoneForReceipt ??= data['userPhone'] as String?; // Fallback for phone
 
     _seatBookingDetails = data['seatBooking'] as Map<String, dynamic>? ?? {};
     final addonBookingMap = data['addonBooking'] as Map<String, dynamic>? ?? {};
@@ -190,30 +252,39 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         (data['flightPrice'] as num?)?.toDouble() ??
         0.0;
     _currency = data['currency'] as String? ?? 'MYR';
+    debugPrint("_parseBookingData: Parsing complete.");
   }
 
-  void _sendReceipt(String method, {String? email}) {
+  void _sendReceipt(String method, {String? contactInfo}) {
     String message;
     if (method == "Email") {
-      message = email != null && email.isNotEmpty
-          ? 'Email receipt is being sent to $email.'
+      message = contactInfo != null && contactInfo.isNotEmpty
+          ? 'Email receipt is being sent to $contactInfo.'
           : 'Email address not provided for receipt.';
+      // TODO: Implement actual email sending logic here
+    } else if (method == "SMS") {
+      message = contactInfo != null && contactInfo.isNotEmpty
+          ? 'SMS receipt is being sent to $contactInfo.'
+          : 'Phone number not provided for SMS receipt.';
+      // TODO: Implement actual SMS sending logic here
     } else {
       message = '$method receipt functionality is not yet implemented.';
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: accentColor,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: accentColor,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
   }
 
   Future<void> _showEmailReceiptDialog() async {
-    _emailController.text = _userEmailForReceipt ?? ''; // Pre-fill if available
-    final _formKey = GlobalKey<FormState>(); // For validation
+    _emailController.text = _userEmailForReceipt ?? '';
+    final formKey = GlobalKey<FormState>();
 
     return showDialog<void>(
       context: context,
@@ -234,7 +305,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           ),
           content: SingleChildScrollView(
             child: Form(
-              key: _formKey,
+              key: formKey,
               child: ListBody(
                 children: <Widget>[
                   Text(
@@ -292,8 +363,100 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8))),
               onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _sendReceipt("Email", email: _emailController.text);
+                if (formKey.currentState!.validate()) {
+                  _sendReceipt("Email", contactInfo: _emailController.text);
+                  Navigator.of(dialogContext).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showSmsReceiptDialog() async {
+    _phoneController.text = _userPhoneForReceipt ?? '';
+    final formKey = GlobalKey<FormState>();
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: backgroundColor,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          title: Row(
+            children: [
+              Icon(Icons.sms_outlined, color: primaryColor),
+              SizedBox(width: 10),
+              Text('Send SMS Receipt',
+                  style:
+                      TextStyle(color: textColor, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: ListBody(
+                children: <Widget>[
+                  Text(
+                      'Enter the phone number to send the booking receipt to (with country code):',
+                      style: TextStyle(color: darkGrey)),
+                  SizedBox(height: 15),
+                  TextFormField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      hintText: '+1234567890',
+                      labelText: 'Phone Number',
+                      labelStyle: TextStyle(color: primaryColor),
+                      prefixIcon:
+                          Icon(Icons.phone_android_rounded, color: darkGrey),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: primaryColor, width: 2),
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a phone number.';
+                      }
+                      if (!RegExp(r"^\+?[0-9\s-]{8,15}$").hasMatch(value)) {
+                        // Basic validation
+                        return 'Please enter a valid phone number.';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.spaceBetween,
+          actionsPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel',
+                  style:
+                      TextStyle(color: darkGrey, fontWeight: FontWeight.bold)),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            ElevatedButton.icon(
+              icon: Icon(Icons.send_rounded, size: 18),
+              label: Text('Send Receipt'),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8))),
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  _sendReceipt("SMS", contactInfo: _phoneController.text);
                   Navigator.of(dialogContext).pop();
                 }
               },
@@ -305,9 +468,11 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
   }
 
   Future<void> _downloadTicket() async {
+    // PDF Generation and sharing code commented out as per request
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('Ticket download functionality is not yet implemented.'),
+        content:
+            Text('Ticket download (PDF) functionality is not yet implemented.'),
         backgroundColor: accentColor,
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.all(16),
@@ -426,7 +591,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       case 'confirmed':
       case 'payment_successful':
       case 'pending_payment':
-      case 'addons selected': // Added from your screenshot
+      case 'addons selected':
         statusColor = successColor;
         statusIcon = Icons.check_circle_rounded;
         break;
@@ -672,18 +837,16 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
 
   Widget _buildSeatDetailsCard() {
     String seatsDisplay = "Not specified";
-    // Example: if seatBooking contains a list of selected seats
     if (_seatBookingDetails['selectedSeats'] is List &&
         (_seatBookingDetails['selectedSeats'] as List).isNotEmpty) {
       seatsDisplay = (_seatBookingDetails['selectedSeats'] as List).join(", ");
     } else if (_seatBookingDetails['seats'] is String &&
         (_seatBookingDetails['seats'] as String).isNotEmpty) {
-      // If seats is a single string
       seatsDisplay = _seatBookingDetails['seats'];
     } else if (_passengers.isNotEmpty &&
-        _passengers.any(
-            (p) => p['seat'] != null && (p['seat'] as String).isNotEmpty)) {
-      // If seats are per passenger, collect them
+        _passengers.any((p) =>
+            p['seat'] != null &&
+            (p['seat'] is String && (p['seat'] as String).isNotEmpty))) {
       seatsDisplay = _passengers
           .map((p) => p['seat'] as String? ?? '')
           .where((s) => s.isNotEmpty)
@@ -931,8 +1094,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               child: OutlinedButton.icon(
                 icon: Icon(Icons.email_outlined, size: 18),
                 label: Text('Email Receipt'),
-                onPressed:
-                    _showEmailReceiptDialog, // Updated to call the dialog
+                onPressed: _showEmailReceiptDialog,
                 style: OutlinedButton.styleFrom(
                     foregroundColor: primaryColor,
                     side: BorderSide(color: primaryColor),
@@ -946,8 +1108,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               child: OutlinedButton.icon(
                 icon: Icon(Icons.sms_outlined, size: 18),
                 label: Text('SMS Receipt'),
-                onPressed: () =>
-                    _sendReceipt('SMS'), // Still placeholder for SMS
+                onPressed: _showSmsReceiptDialog, // Call the new SMS dialog
                 style: OutlinedButton.styleFrom(
                     foregroundColor: primaryColor,
                     side: BorderSide(color: primaryColor),
