@@ -14,15 +14,15 @@ class SavedFlightsScreen extends StatefulWidget {
 
 class _SavedFlightsScreenState extends State<SavedFlightsScreen>
     with TickerProviderStateMixin {
-  // Violin color palette (matching OnboardingScreen) - STRICTLY FOLLOWING
-  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
-  static const Color primaryColor    = Color(0xFF5C2E00);  // Dark Brown
-  static const Color secondaryColor  = Color(0xFF8B5000);  // Amber Brown
-  static const Color textColor       = Color(0xFF35281E);  // Deep Wood
-  static const Color subtleGrey      = Color(0xFFDAC1A7);  // Light Tan
-  static const Color darkGrey        = Color(0xFF7E5E3C);  // Medium Brown
-  static const Color accentOrange    = Color(0xFFD4A373);  // Warm Highlight
-  static const Color successColor    = Color(0xFF8B5000);  // Success (using secondary)
+  // Violin color palette (matching OnboardingScreen)
+  static const Color backgroundColor = Color(0xFFF5F0E1);
+  static const Color primaryColor    = Color(0xFF5C2E00);
+  static const Color secondaryColor  = Color(0xFF8B5000);
+  static const Color textColor       = Color(0xFF35281E);
+  static const Color subtleGrey      = Color(0xFFDAC1A7);
+  static const Color darkGrey        = Color(0xFF7E5E3C);
+  static const Color accentOrange    = Color(0xFFD4A373);
+  static const Color successColor    = Color(0xFF8B5000);
 
   late final String _userId;
   final _firestore = FirebaseFirestore.instance;
@@ -87,7 +87,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
     setState(() => _isRefreshing = true);
     _refreshController.forward();
 
-    // Simulate a short delay, since Firestore stream updates automatically.
+    // Simulate a short delay; Firestore stream updates automatically
     await Future.delayed(const Duration(milliseconds: 800));
 
     setState(() => _isRefreshing = false);
@@ -339,7 +339,6 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
         backgroundColor: primaryColor,
         color: Colors.white,
         child: StreamBuilder<QuerySnapshot>(
-          // Simplified query - only filter by userId, no complex ordering
           stream: _firestore
               .collection('savedFlights')
               .where('userId', isEqualTo: _userId)
@@ -355,7 +354,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
 
             final docs = snapshot.data!.docs;
 
-            // Sort in memory instead of in Firestore query
+            // Sort in memory so newest appear first
             docs.sort((a, b) {
               final aData = a.data() as Map<String, dynamic>;
               final bData = b.data() as Map<String, dynamic>;
@@ -364,7 +363,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
               if (aTime == null && bTime == null) return 0;
               if (aTime == null) return 1;
               if (bTime == null) return -1;
-              return bTime.compareTo(aTime); // Descending order (newest first)
+              return bTime.compareTo(aTime); // Descending order
             });
 
             if (docs.isEmpty) {
@@ -594,7 +593,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
   Widget _buildFlightsList(List<QueryDocumentSnapshot> docs) {
     return Column(
       children: [
-        // Enhanced summary header
+        // Summary header
         Container(
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(20),
@@ -664,7 +663,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
           ),
         ),
 
-        // Flight cards
+        // Individual flight cards
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -697,9 +696,9 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
         return _buildErrorCard("No itinerary data", index);
       }
 
-      final firstItin  = itineraries[0] as Map<String, dynamic>;
-      final durationStr= firstItin['duration'] as String? ?? 'N/A';
-      final segments   = firstItin['segments'] as List<dynamic>? ?? [];
+      final firstItin   = itineraries[0] as Map<String, dynamic>;
+      final durationStr = firstItin['duration'] as String? ?? 'N/A';
+      final segments    = firstItin['segments'] as List<dynamic>? ?? [];
       if (segments.isEmpty) {
         return _buildErrorCard("No segment data", index);
       }
@@ -707,7 +706,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
       final firstSeg  = segments[0] as Map<String, dynamic>;
       final dep       = firstSeg['departure'] as Map<String, dynamic>? ?? {};
       final arr       = firstSeg['arrival'] as Map<String, dynamic>? ?? {};
-      final carrier   = firstSeg['carrierCode'] as String? ?? 'N/A';
+      final carrier   = (firstSeg['carrierCode'] as String? ?? 'N/A').toUpperCase();
       final flightNo  = firstSeg['number'] as String? ?? 'N/A';
 
       final depAtStr  = dep['at'] as String?;
@@ -723,8 +722,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
       final depDateFmt = DateFormat('MMM dd').format(depAt);
 
       // Saved date
-      final savedAt    = saved['savedAt'] as Timestamp?;
-      final savedDate  = savedAt?.toDate();
+      final savedAt   = saved['savedAt'] as Timestamp?;
+      final savedDate = savedAt?.toDate();
 
       return Dismissible(
         key: Key(doc.id),
@@ -776,7 +775,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
           ),
           child: Column(
             children: [
-              // Header with airline and saved date
+              // ── Header: Logo / Flight No / Price / Saved Date / Delete Icon ──
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -789,34 +788,49 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                   ),
                 ),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Airline logo
+                    // ── Airline logo (via pics.avs.io) ──
                     Container(
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: _getAirlineColor(carrier),
                         borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: _getAirlineColor(carrier).withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: Text(
-                          carrier,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          "https://pics.avs.io/100/100/$carrier.png",
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            // fallback: two-letter code on colored background
+                            return Container(
+                              color: _getAirlineColor(carrier),
+                              alignment: Alignment.center,
+                              child: Text(
+                                carrier,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
+
+                    // ── Airline name & flight number ──
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -841,6 +855,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                         ],
                       ),
                     ),
+
+                    // ── Price & saved date ──
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
@@ -860,37 +876,32 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                               color: darkGrey,
                             ),
                           ),
-                        if (saved['isStudentFare'] == true)
-                          Container(
-                            margin: const EdgeInsets.only(top: 4),
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: successColor,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              "STUDENT",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
                       ],
+                    ),
+
+                    // ── Delete icon button ──
+                    const SizedBox(width: 12),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      onPressed: () async {
+                        final confirmed = await _showDeleteConfirmation(context);
+                        if (confirmed == true) {
+                          await _deleteSavedFlight(doc.id);
+                        }
+                      },
                     ),
                   ],
                 ),
               ),
 
+              // ── Flight timeline: departure → arrival ──
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    // Flight timeline
                     Row(
                       children: [
-                        // Departure
+                        // Departure column
                         Expanded(
                           flex: 2,
                           child: Column(
@@ -924,7 +935,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                           ),
                         ),
 
-                        // Flight path
+                        // Flight path graphic
                         Expanded(
                           flex: 3,
                           child: Column(
@@ -1009,7 +1020,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                           ),
                         ),
 
-                        // Arrival
+                        // Arrival column
                         Expanded(
                           flex: 2,
                           child: Column(
@@ -1032,7 +1043,6 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                                   color: primaryColor,
                                 ),
                               ),
-                              // ← Here is the corrected line: use arrAt instead of arr
                               Text(
                                 DateFormat('MMM dd').format(arrAt),
                                 style: TextStyle(
@@ -1048,7 +1058,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
 
                     const SizedBox(height: 20),
 
-                    // Action buttons
+                    // Action buttons: “View Details” & “Book Now”
                     Row(
                       children: [
                         Expanded(
@@ -1076,7 +1086,22 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                         Expanded(
                           flex: 2,
                           child: ElevatedButton.icon(
-                            onPressed: () => _bookFlight(offer),
+                           onPressed: () {
+  Navigator.pushNamed(
+    context,
+    '/seat-selection',    
+    arguments: {
+      'offer': offer,
+      'originCode': saved['originCode'] as String? ?? '',
+      'destinationCode': saved['destinationCode'] as String? ?? '',
+      'departureDate': saved['departureDateStr'] as String? ?? '',
+      'adults': saved['adults'] as int? ?? 1,
+      'travelClass': saved['travelClass'] as String? ?? '',
+      'direct': saved['direct'] as bool? ?? false,
+      'isStudentFare': saved['isStudentFare'] as bool? ?? false,
+    },
+  );
+},
                             icon: const Icon(Icons.flight_takeoff, color: Colors.white, size: 18),
                             label: const Text(
                               "Book Now",
@@ -1133,28 +1158,20 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
     );
   }
 
-  // Helper methods
+  // ─────────────────────────────────
+  // Helper methods (including OD → Batik Air)
+  // ─────────────────────────────────
   Color _getAirlineColor(String carrier) {
     final colors = {
-      'MH': Color(0xFF5C2E00), // Malaysia Airlines - Brown
-      'AK': Color(0xFFDC2626), // AirAsia - Red
-      'SQ': Color(0xFF8B5000), // Singapore Airlines - Amber Brown
-      'TG': Color(0xFF7C2D92), // Thai Airways - Purple
-      'GA': Color(0xFFB28F5E), // Garuda - Muted Brown
-      'EK': Color(0xFFB91C1C), // Emirates - Dark Red
+      'MH': const Color(0xFF5C2E00), // Malaysia Airlines – Brown
+      'AK': const Color(0xFFDC2626), // AirAsia – Red
+      'SQ': const Color(0xFF8B5000), // Singapore Airlines – Amber Brown
+      'TG': const Color(0xFF7C2D92), // Thai Airways – Purple
+      'GA': const Color(0xFFB28F5E), // Garuda Indonesia – Muted Brown
+      'EK': const Color(0xFFB91C1C), // Emirates – Dark Red
+      'OD': const Color(0xFFE53935), // Batik Air – Crimson-ish
     };
     return colors[carrier] ?? primaryColor;
-  }
-
-  String _formatDuration(String isoDuration) {
-    final regex = RegExp(r'PT(\d+)H(\d+)M');
-    final match = regex.firstMatch(isoDuration);
-    if (match != null) {
-      final hours = match.group(1)!;
-      final minutes = match.group(2)!;
-      return "${hours}h ${minutes}m";
-    }
-    return isoDuration.replaceFirst("PT", "").replaceAll("H", "h ").replaceAll("M", "m");
   }
 
   String _getAirlineName(String code) {
@@ -1165,8 +1182,23 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
       'TG': 'Thai Airways',
       'GA': 'Garuda Indonesia',
       'EK': 'Emirates',
+      'OD': 'Batik Air',
     };
     return airlines[code] ?? 'Airline $code';
+  }
+
+  String _formatDuration(String isoDuration) {
+    final regex = RegExp(r'PT(\d+)H(\d+)M');
+    final match = regex.firstMatch(isoDuration);
+    if (match != null) {
+      final hours = match.group(1)!;
+      final minutes = match.group(2)!;
+      return "${hours}h ${minutes}m";
+    }
+    return isoDuration
+        .replaceFirst("PT", "")
+        .replaceAll("H", "h ")
+        .replaceAll("M", "m");
   }
 
   Future<bool?> _showDeleteConfirmation(BuildContext context) {
@@ -1234,7 +1266,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
               children: [
                 Icon(Icons.check_circle, color: Colors.white, size: 18),
                 const SizedBox(width: 8),
-                const Text('Flight removed from saved flights', style: TextStyle(fontSize: 14)),
+                const Text('Flight removed from saved flights',
+                    style: TextStyle(fontSize: 14)),
               ],
             ),
             backgroundColor: Colors.red.shade700,
@@ -1251,7 +1284,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error removing flight: $e', style: const TextStyle(fontSize: 14)),
+            content: Text('Error removing flight: $e',
+                style: const TextStyle(fontSize: 14)),
             backgroundColor: Colors.red.shade700,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(

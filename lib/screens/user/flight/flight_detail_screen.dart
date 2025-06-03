@@ -225,6 +225,8 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
         _alreadySaved = true;
       });
       _showMessage('Flight saved successfully! ✈️');
+      // → Once saved, navigate to “Saved Flights” page so the user can see / delete their previous saves
+      Navigator.pushNamed(context, '/saved-flights');
     } catch (e) {
       setState(() => _isSaving = false);
       _showMessage('Error saving flight: $e', isError: true);
@@ -297,7 +299,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
               Navigator.pop(context);
             } else {
               Navigator.pushNamedAndRemoveUntil(
-                context, '/flight-search', (route) => false);
+                  context, '/flight-search', (route) => false);
             }
           },
         ),
@@ -491,202 +493,199 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
   /// Replace the plain‐text carrier code box with a Network Image (pics.avs.io).
   /// If the logo fails to load, we fall back to showing the two‐letter code in a colored container.
   ///
-  // --------------------------------------
-// Replace your existing _buildEnhancedFlightHeader(...) with this:
-// --------------------------------------
+  Widget _buildEnhancedFlightHeader(String currency, String totalPrice) {
+    // Grab the carrier code (e.g. "OD") and map its color/name:
+    final carrierCode  = _getMainCarrierCode();                   // e.g. "OD"
+    final airlineColor = _getAirlineColor(carrierCode);           // your lookup map for colors
+    final airlineName  = _getAirlineName(carrierCode);            // now includes 'OD': 'Batik Air'
 
-Widget _buildEnhancedFlightHeader(String currency, String totalPrice) {
-  // Grab the carrier code (e.g. "OD") and map its color/name:
-  final carrierCode  = _getMainCarrierCode();                   // e.g. "OD"
-  final airlineColor = _getAirlineColor(carrierCode);           // your lookup map for colors
-  final airlineName  = _getAirlineName(carrierCode);            // now includes 'OD': 'Batik Air'
-
-  return Container(
-    margin: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.1),
-          blurRadius: 18,
-          offset: const Offset(0, 6),
-        ),
-      ],
-    ),
-    child: Column(
-      children: [
-        // ── Top gradient header ──
-        Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                airlineColor.withOpacity(0.1),
-                primaryColor.withOpacity(0.05),
-              ],
-            ),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── LEFT COLUMN: route/date + three chips ──
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 1) Route (e.g. "KUL → PEN")
-                    Row(
-                      children: [
-                        Text(
-                          _originCode ?? 'N/A',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: airlineColor,
+        ],
+      ),
+      child: Column(
+        children: [
+          // ── Top gradient header ──
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  airlineColor.withOpacity(0.1),
+                  primaryColor.withOpacity(0.05),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── LEFT COLUMN: route/date + three chips ──
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1) Route (e.g. "KUL → PEN")
+                      Row(
+                        children: [
+                          Text(
+                            _originCode ?? 'N/A',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: airlineColor,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(Icons.flight_takeoff, color: airlineColor, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          _destinationCode ?? 'N/A',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: airlineColor,
+                          const SizedBox(width: 8),
+                          Icon(Icons.flight_takeoff, color: airlineColor, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            _destinationCode ?? 'N/A',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: airlineColor,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
 
-                    const SizedBox(height: 8),
-                    // 2) Departure date line
+                      const SizedBox(height: 8),
+                      // 2) Departure date line
+                      Text(
+                        _departureDateStr != null
+                            ? DateFormat('EEEE, MMM dd, yyyy')
+                                .format(DateTime.parse(_departureDateStr!))
+                            : 'Date not available',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: darkGrey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+
+                      const SizedBox(height: 12),
+                      // 3) Three info chips (passenger, class, airline name) all on one line
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 6,
+                        children: [
+                          _buildInfoChip(
+                            Icons.people,
+                            "${_adults ?? 1} passenger${(_adults ?? 1) > 1 ? 's' : ''}",
+                            primaryColor,
+                          ),
+                          _buildInfoChip(
+                            Icons.business_center,
+                            (_travelClass ?? 'economy').toLowerCase(),
+                            secondaryColor,
+                          ),
+                          _buildInfoChip(
+                            Icons.flight,
+                            airlineName,           // Now “Batik Air” when carrierCode == "OD"
+                            airlineColor,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // ── RIGHT COLUMN: price / student badge / logo ──
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // 1) Price (e.g. “RM 164.28”)
                     Text(
-                      _departureDateStr != null
-                          ? DateFormat('EEEE, MMM dd, yyyy')
-                              .format(DateTime.parse(_departureDateStr!))
-                          : 'Date not available',
+                      "${_currencySymbols[currency] ?? currency} $totalPrice",
                       style: TextStyle(
-                        fontSize: 14,
-                        color: darkGrey,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor,
                       ),
                     ),
 
+                    const SizedBox(height: 6),
+                    // 2) “STUDENT FARE” badge (only if applicable)
+                    if (_isStudentFare == true)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: primaryColor,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          "STUDENT FARE",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
                     const SizedBox(height: 12),
-                    // 3) Three info chips (passenger, class, airline name) all on one line
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 6,
-                      children: [
-                        _buildInfoChip(
-                          Icons.people,
-                          "${_adults ?? 1} passenger${(_adults ?? 1) > 1 ? 's' : ''}",
-                          primaryColor,
+                    // 3) Airline logo (pics.avs.io). Falls back to colored box + code if it fails.
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          "https://pics.avs.io/100/100/$carrierCode.png",
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            // fallback: show two-letter code on colored background
+                            return Container(
+                              color: airlineColor,
+                              alignment: Alignment.center,
+                              child: Text(
+                                carrierCode,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                        _buildInfoChip(
-                          Icons.business_center,
-                          (_travelClass ?? 'economy').toLowerCase(),
-                          secondaryColor,
-                        ),
-                        _buildInfoChip(
-                          Icons.flight,
-                          airlineName,           // Now “Batik Air” when carrierCode == "OD"
-                          airlineColor,
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-
-              // ── RIGHT COLUMN: price / student badge / logo ──
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // 1) Price (e.g. “RM 164.28”)
-                  Text(
-                    "${_currencySymbols[currency] ?? currency} $totalPrice",
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: primaryColor,
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-                  // 2) “STUDENT FARE” badge (only if applicable)
-                  if (_isStudentFare == true)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: primaryColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Text(
-                        "STUDENT FARE",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-
-                  const SizedBox(height: 12),
-                  // 3) Airline logo (pics.avs.io). Falls back to colored box + code if it fails.
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        "https://pics.avs.io/100/100/$carrierCode.png",
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          // fallback: show two-letter code on colored background
-                          return Container(
-                            color: airlineColor,
-                            alignment: Alignment.center,
-                            child: Text(
-                              carrierCode,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
+
   Widget _buildInfoChip(IconData icon, String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -1224,156 +1223,168 @@ Widget _buildEnhancedFlightHeader(String currency, String totalPrice) {
   }
 
   Widget _buildEnhancedActionButtons() {
-  return Container(
-    margin: const EdgeInsets.all(16),
-    child: Column(
-      children: [
-        // ── Save flight button ──
-        AnimatedBuilder(
-          animation: _saveAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _saveAnimation.value,
-              child: Container(
-                // <<< THIS LINE: height: 56,
-                width: double.infinity,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: _alreadySaved
-                      ? LinearGradient(colors: [darkGrey, darkGrey.withOpacity(0.8)])
-                      : LinearGradient(colors: [primaryColor, secondaryColor]),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (_alreadySaved ? darkGrey : primaryColor).withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: (_alreadySaved || _isSaving) ? null : _saveCurrentOffer,
-                  icon: Icon(
-                    _alreadySaved ? Icons.bookmark : Icons.bookmark_border,
-                    color: Colors.white,
-                    size: 20,
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          // ── Save flight button ──
+          AnimatedBuilder(
+            animation: _saveAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _saveAnimation.value,
+                child: Container(
+                  width: double.infinity,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: _alreadySaved
+                        ? LinearGradient(colors: [darkGrey, darkGrey.withOpacity(0.8)])
+                        : LinearGradient(colors: [primaryColor, secondaryColor]),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (_alreadySaved ? darkGrey : primaryColor).withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                  label: Text(
-                    _alreadySaved
-                        ? "Flight Saved ✓"
-                        : (_isSaving ? "Saving..." : "Save Flight"),
-                    style: const TextStyle(
+                  child: ElevatedButton.icon(
+                    onPressed: (_alreadySaved || _isSaving) ? null : _saveCurrentOffer,
+                    icon: Icon(
+                      _alreadySaved ? Icons.bookmark : Icons.bookmark_border,
                       color: Colors.white,
-                      fontSize: 16,        // <<< THIS LINE: fontSize: 16
-                      fontWeight: FontWeight.bold,
+                      size: 20,
                     ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                    label: Text(
+                      _alreadySaved
+                          ? "Flight Saved ✓"
+                          : (_isSaving ? "Saving..." : "Save Flight"),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 12),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
 
-        // ── Secondary action buttons ──
-        Row(
-          children: [
-            Expanded(
-              child: Container(
-                // <<< THIS LINE: height: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: primaryColor),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: OutlinedButton.icon(
-                  onPressed: _shareFlightDetails,
-                  icon: Icon(Icons.share, color: primaryColor, size: 18),
-                  label: Text(
-                    "Share",
-                    style: TextStyle(
-                      color: primaryColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,   // <<< THIS LINE: fontSize: 14 instead of 14 or 12
-                    ),
+          // ── Secondary action buttons ──
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: primaryColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    side: BorderSide.none,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                  child: OutlinedButton.icon(
+                    onPressed: _shareFlightDetails,
+                    icon: Icon(Icons.share, color: primaryColor, size: 18),
+                    label: Text(
+                      "Share",
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 0,  // <<< reduce horizontal padding
-                      vertical: 0,    // <<< reduce vertical padding
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 2,
-              child: Container(
-                // <<< THIS LINE: height: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [successColor, accentGreen]),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: successColor.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: _proceedToBooking,
-                  icon: const Icon(Icons.flight_takeoff, color: Colors.white, size: 20),
-                  label: const Text(
-                    "Book Now",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,   // <<< THIS LINE: fontSize: 14 instead of 16
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 0,  // <<< reduce horizontal padding
-                      vertical: 0,    // <<< reduce vertical padding
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      side: BorderSide.none,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 0,
+                        vertical: 0,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: Container(
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: [successColor, accentGreen]),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: successColor.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+  Navigator.pushNamed(
+    context,
+    '/seat-selection', 
+    arguments: {
+      'offer': _offer,
+      'originCode': _originCode,
+     'destinationCode': _destinationCode,
+     'departureDate': _departureDateStr,
+     'adults': _adults,
+     'travelClass': _travelClass,
+     'direct': _direct,
+      'isStudentFare': _isStudentFare,
+    },
+   );
+},
+                    icon: const Icon(Icons.flight_takeoff, color: Colors.white, size: 20),
+                    label: const Text(
+                      "Book Now",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 0,
+                        vertical: 0,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   // Helper: Convert ISO8601 duration (e.g. "PT2H30M") to "2h 30m"
   String _formatDuration(String isoDuration) {

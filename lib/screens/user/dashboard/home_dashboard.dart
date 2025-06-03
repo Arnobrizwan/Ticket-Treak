@@ -568,7 +568,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
 
   Widget _buildStudentQuickActions(BuildContext context) {
     final actions = [
-      {'icon': Icons.search, 'title': 'Search\nFlights', 'route': AppRoutes.searchFlight},
+      {'icon': Icons.search, 'title': 'Search\nFlights', 'route': AppRoutes.flightSearch},
       {'icon': Icons.discount, 'title': 'Student\nDeals', 'route': AppRoutes.deals},
       {'icon': Icons.group, 'title': 'Group\nBooking', 'route': AppRoutes.groupBooking},
       {'icon': Icons.support_agent, 'title': 'Support\nChat', 'route': AppRoutes.support},

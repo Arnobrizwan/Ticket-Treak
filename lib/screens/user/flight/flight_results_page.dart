@@ -1368,7 +1368,22 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                     Expanded(
                       flex: 2,
                       child: ElevatedButton.icon(
-                        onPressed: () => _bookFlight(offer),
+                        onPressed: () {
+   Navigator.pushNamed(
+     context,
+     '/seat-selection', 
+    arguments: {
+       'offer': offer,
+       'originCode': originCode,
+       'destinationCode': destinationCode,
+       'departureDate': departureDateStr,
+       'adults': adults,
+       'travelClass': travelClass,
+       'direct': direct,
+       'isStudentFare': isStudentFare,
+     },
+    );
+  },
                         icon: const Icon(Icons.flight_takeoff, color: Colors.white, size: 18),
                         label: const Text(
                           "Book Flight",

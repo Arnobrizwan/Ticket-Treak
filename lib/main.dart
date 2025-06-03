@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'firebase_options.dart'; // Ensure this file exists after running `flutterfire configure`
 import 'routes/app_routes.dart';
 
@@ -19,6 +20,12 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+    
+    // Enable offline persistence for Firestore
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+    );
+    
     print('✅ Firebase initialized successfully');
   } catch (e) {
     print('❌ Firebase initialization error: $e');
@@ -36,7 +43,7 @@ class TicketTrekApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'TicketTrek',
       theme: ThemeData(
-        // Use Onboarding’s primary color as the seed
+        // Use Onboarding's primary color as the seed
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF3F3D9A),
           brightness: Brightness.light,
@@ -52,7 +59,7 @@ class TicketTrekApp extends StatelessWidget {
           systemOverlayStyle: SystemUiOverlayStyle.dark,
         ),
 
-        // ElevatedButton uses onboarding’s primaryColor
+        // ElevatedButton uses onboarding's primaryColor
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF3F3D9A),
@@ -65,7 +72,7 @@ class TicketTrekApp extends StatelessWidget {
           ),
         ),
 
-        // TextButton text uses onboarding’s primaryColor
+        // TextButton text uses onboarding's primaryColor
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             foregroundColor: const Color(0xFF3F3D9A),
@@ -75,7 +82,7 @@ class TicketTrekApp extends StatelessWidget {
           ),
         ),
 
-        // OutlinedButton uses onboarding’s primaryColor for border/text
+        // OutlinedButton uses onboarding's primaryColor for border/text
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             foregroundColor: const Color(0xFF3F3D9A),
@@ -87,7 +94,7 @@ class TicketTrekApp extends StatelessWidget {
           ),
         ),
 
-        // Input fields match onboarding’s subtleGrey and primaryColor
+        // Input fields match onboarding's subtleGrey and primaryColor
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
