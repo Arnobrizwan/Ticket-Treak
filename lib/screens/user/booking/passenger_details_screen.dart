@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-import 'package:ticket_trek/routes/app_routes.dart'; // Make sure this path matches your project
+import 'package:ticket_trek/routes/app_routes.dart'; // adjust as needed
 
-/// ─── “Violin” color palette (top-level constants) ───────────────────────────
+/// ─── “Violin” color palette (top‐level constants) ───────────────────────────
 const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
 const Color primaryColor     = Color(0xFF5C2E00); // Dark Brown
 const Color secondaryColor   = Color(0xFF8B5000); // Amber Brown
@@ -26,28 +26,27 @@ class PassengerDetailsScreen extends StatefulWidget {
 
 class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     with TickerProviderStateMixin {
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth      _auth      = FirebaseAuth.instance;
 
   // Animation controllers (slide, fade, scale)
   late AnimationController _slideController;
   late AnimationController _fadeController;
   late AnimationController _scaleController;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+  late Animation<Offset>   _slideAnimation;
+  late Animation<double>   _fadeAnimation;
+  late Animation<double>   _scaleAnimation;
 
-  // Passenger data list
+  // Passenger data
   List<PassengerData> _passengers = [];
   int _currentPassengerIndex = 0;
-  bool _isLoading        = false;
-  bool _autoSaveEnabled  = true;
-  String? _draftId;
+  bool _isLoading = false;
 
   // Optional user profile (for autofill)
   Map<String, dynamic>? _userProfile;
 
-  // Booking-related data passed from previous route (e.g. { 'adults': 2, ... })
+  // Booking‐related data passed from previous route
   Map<String, dynamic>? _bookingData;
 
   final PageController _pageController = PageController();
@@ -67,7 +66,7 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null) {
       _bookingData = args;
-      final int adultsCount = args['adults'] as int? ?? 1;
+      final int adultsCount = (args['adults'] as int?) ?? 1;
       _initializePassengers(count: adultsCount);
     }
   }
@@ -89,10 +88,9 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     _slideAnimation = Tween<Offset>(
       begin: const Offset(1.0, 0.0),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(
+      CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+    );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
@@ -128,11 +126,11 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
   void _autofillFirstPassenger() {
     if (_userProfile != null && _passengers.isNotEmpty) {
       final first = _passengers[0];
-      first.fullNameController.text      = _userProfile!['fullName']  ?? '';
-      first.emailController.text         = _userProfile!['email']     ?? '';
-      first.phoneController.text         = _userProfile!['phone']     ?? '';
+      first.fullNameController.text      = (_userProfile!['fullName']  ?? '').toString();
+      first.emailController.text         = (_userProfile!['email']     ?? '').toString();
+      first.phoneController.text         = (_userProfile!['phone']     ?? '').toString();
       if (_userProfile!['nationality'] != null) {
-        first.nationality = _userProfile!['nationality'];
+        first.nationality = _userProfile!['nationality'].toString();
       }
       setState(() {});
     }
@@ -150,32 +148,9 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     super.dispose();
   }
 
-  /// ─── Auto-save drafts (any Firestore permission error is caught) ───────────
-  Future<void> _autoSave() async {
-    if (!_autoSaveEnabled) return;
-    try {
-      final user = _auth.currentUser;
-      if (user != null) {
-        final draftData = <String, dynamic>{
-          'userId': user.uid,
-          'passengers': _passengers.map((p) => p.toMap()).toList(),
-          'lastUpdated': FieldValue.serverTimestamp(),
-        };
-        if (_draftId == null) {
-          final docRef = await _firestore.collection('passenger_drafts').add(draftData);
-          _draftId = docRef.id;
-        } else {
-          await _firestore.collection('passenger_drafts').doc(_draftId).update(draftData);
-        }
-      }
-    } catch (e) {
-      // Print permission errors but do not crash the screen
-      debugPrint('Auto-save error: $e');
-    }
-  }
-
   bool _validateCurrentPassenger() {
-    return _passengers[_currentPassengerIndex].isValid();
+    final passenger = _passengers[_currentPassengerIndex];
+    return passenger.isValid();
   }
 
   bool _validateAllPassengers() {
@@ -183,6 +158,9 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
   }
 
   void _nextPassenger() {
+    // Unfocus current field before moving
+    FocusScope.of(context).unfocus();
+
     if (_currentPassengerIndex < _passengers.length - 1) {
       if (_validateCurrentPassenger()) {
         setState(() {
@@ -192,7 +170,6 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
         );
-        _autoSave();
       } else {
         _showValidationError();
       }
@@ -203,6 +180,8 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
   }
 
   void _previousPassenger() {
+    FocusScope.of(context).unfocus();
+
     if (_currentPassengerIndex > 0) {
       setState(() {
         _currentPassengerIndex--;
@@ -233,9 +212,12 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
   }
 
   Future<void> _selectDate(BuildContext context, int passengerIndex) async {
+    // Unfocus any active text fields
+    FocusScope.of(context).unfocus();
+
     final passenger = _passengers[passengerIndex];
-    final DateTime now     = DateTime.now();
-    final DateTime initial = passenger.dateOfBirth ?? now.subtract(const Duration(days: 365 * 25));
+    final now     = DateTime.now();
+    final initial = passenger.dateOfBirth ?? now.subtract(const Duration(days: 365 * 25));
 
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -245,28 +227,35 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
       builder: (ctx, child) {
         return Theme(
           data: Theme.of(ctx).copyWith(
-            colorScheme: const ColorScheme.light(
+            colorScheme: ColorScheme.light(
               primary: primaryColor,
-              onPrimary: Colors.white,
-              surface: Colors.white,
+              onPrimary: backgroundColor,
+              surface: backgroundColor,
               onSurface: textColor,
+              secondary: accentColor,
+              onSecondary: backgroundColor,
             ),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(foregroundColor: primaryColor),
+            ),
+            dialogBackgroundColor: backgroundColor,
           ),
           child: child!,
         );
       },
     );
 
-    if (picked != null) {
+    if (picked != null && mounted) {
       setState(() {
         passenger.dateOfBirth        = picked;
         passenger.dobController.text = DateFormat('dd/MM/yyyy').format(picked);
       });
-      _autoSave();
     }
   }
 
   void _showNationalityPicker(int passengerIndex) {
+    FocusScope.of(context).unfocus();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -274,10 +263,11 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
       builder: (ctx) => NationalityPicker(
         selectedNationality: _passengers[passengerIndex].nationality,
         onSelected: (nat) {
-          setState(() {
-            _passengers[passengerIndex].nationality = nat;
-          });
-          _autoSave();
+          if (mounted) {
+            setState(() {
+              _passengers[passengerIndex].nationality = nat;
+            });
+          }
         },
       ),
     );
@@ -289,15 +279,15 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       final user = _auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      final Map<String, dynamic> bookingData = {
+      final primaryPassenger = _passengers.isNotEmpty ? _passengers[0] : null;
+
+      final bookingData = <String, dynamic>{
         'userId': user.uid,
         'bookingId': _generateBookingId(),
         'passengers': _passengers.map((p) => p.toFirestoreMap()).toList(),
@@ -305,15 +295,11 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
         'status': 'pending_payment',
         'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
+        'primaryPassengerBilling': primaryPassenger?.getBillingDetails(),
+        'passengerCount': _passengers.length,
       };
 
-      final DocumentReference<Map<String, dynamic>> bookingRef =
-          await _firestore.collection('bookings').add(bookingData);
-
-      // Delete draft if it exists
-      if (_draftId != null) {
-        await _firestore.collection('passenger_drafts').doc(_draftId).delete();
-      }
+      final docRef = await _firestore.collection('bookings').add(bookingData);
 
       _showSuccessMessage();
 
@@ -325,17 +311,28 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
         AppRoutes.payment,
         arguments: {
           ...(_bookingData ?? <String, dynamic>{}),
-          'bookingId': bookingRef.id,
+          'bookingId': docRef.id,
           'passengers': _passengers.map((p) => p.toMap()).toList(),
+          'primaryPassengerBilling': primaryPassenger?.getBillingDetails(),
+          'basePrice': _bookingData?['price'] ?? 299.0,
+          'adults': _bookingData?['adults'] ?? _passengers.length,
+          'children': _bookingData?['children'] ?? 0,
+          'departureDate': _bookingData?['departureDate'] ?? 'Today',
+          'departureTime': _bookingData?['departureTime'] ?? '10:30 AM',
+          'from': _bookingData?['from'] ?? 'KUL',
+          'to': _bookingData?['to'] ?? 'SIN',
+          'fromCity': _bookingData?['fromCity'] ?? 'Kuala Lumpur',
+          'toCity': _bookingData?['toCity'] ?? 'Singapore',
+          'flightNumber': _bookingData?['flightNumber'] ?? 'TT 101',
+          'source': 'passenger_details',
+          'timestamp': DateTime.now().toIso8601String(),
         },
       );
     } catch (e) {
       _showErrorMessage('Failed to save passenger details: $e');
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -390,22 +387,28 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: true,  // ← ensure scaffold moves up when keyboard opens
+      resizeToAvoidBottomInset: true,
       backgroundColor: backgroundColor,
       body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Column(
-              children: [
-                _buildHeader(),
-                _buildProgressIndicator(),
-                Expanded(child: _buildPassengerForm()),
-                _buildBottomNavigation(),
-              ],
+        child: Column(
+          children: [
+            // only animate the header:
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: _buildHeader(),
+              ),
             ),
-          ),
+
+            _buildProgressIndicator(),
+
+            Expanded(
+              child: _buildPassengerForm(),
+            ),
+
+            _buildBottomNavigation(),
+          ],
         ),
       ),
     );
@@ -474,76 +477,40 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
                 ),
               ),
 
-              // Auto-save indicator
-              if (_autoSaveEnabled)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
+              // “+ Add Passenger” button if this is the last page
+              if (isLastPassenger) ...[
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _passengers.add(PassengerData(_passengers.length + 1));
+                      _currentPassengerIndex = _passengers.length - 1;
+                    });
+                    _pageController.animateToPage(
+                      _passengers.length - 1,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                    );
+                  },
+                  icon: const Icon(Icons.add, color: primaryColor, size: 20),
+                  label: const Text(
+                    'Add Passenger',
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: const BoxDecoration(
-                          color: accentColor,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Auto-save',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: accentColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      side: BorderSide(color: primaryColor),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
                 ),
+              ],
             ],
           ),
-
-          // “+ Add Passenger” button if this is the last passenger page
-          if (isLastPassenger) ...[
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _passengers.add(PassengerData(_passengers.length + 1));
-                    _currentPassengerIndex = _passengers.length - 1;
-                  });
-                  _pageController.animateToPage(
-                    _passengers.length - 1,
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
-                icon: const Icon(Icons.add, color: primaryColor, size: 20),
-                label: const Text(
-                  'Add Passenger',
-                  style: TextStyle(
-                    color: primaryColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(color: primaryColor),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -590,34 +557,34 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
 
   /// ─── The PageView that shows each passenger’s form ─────────────────────────
   Widget _buildPassengerForm() {
-    // Dynamically add extra bottom padding equal to the keyboard height + 90px
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom + 90.0;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: PageView.builder(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentPassengerIndex = index;
-          });
-        },
-        itemCount: _passengers.length,
-        itemBuilder: (context, index) {
-          return ScaleTransition(
-            scale: _scaleAnimation,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: PassengerFormCard(
-                passenger: _passengers[index],
-                onDateSelect: () => _selectDate(context, index),
-                onNationalitySelect: () => _showNationalityPicker(index),
-                onFieldChanged: _autoSave,
-              ),
+    return PageView.builder(
+      controller: _pageController,
+      physics: const NeverScrollableScrollPhysics(), // Disable swipe
+      onPageChanged: (index) {
+        setState(() {
+          _currentPassengerIndex = index;
+        });
+      },
+      itemCount: _passengers.length,
+      itemBuilder: (context, index) {
+        return ScaleTransition(
+          scale: _scaleAnimation,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 12,
+              // Make room for the keyboard so that fields remain visible:
+              bottom: MediaQuery.of(context).viewInsets.bottom + 12,
             ),
-          );
-        },
-      ),
+            child: PassengerFormCard(
+              passenger: _passengers[index],
+              onDateSelect: () => _selectDate(context, index),
+              onNationalitySelect: () => _showNationalityPicker(index),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -625,85 +592,92 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
   Widget _buildBottomNavigation() {
     final bool isLast = (_currentPassengerIndex == _passengers.length - 1);
 
-    return SafeArea(
-      child: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        child: Row(
-          children: [
-            if (_currentPassengerIndex > 0)
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _isLoading ? null : _previousPassenger,
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: primaryColor),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'Previous',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: primaryColor,
-                    ),
-                  ),
-                ),
-              )
-            else
-              const Spacer(),
-
-            if (_currentPassengerIndex > 0) const SizedBox(width: 12),
+    return Container(
+      color: Colors.white,
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 12,
+        bottom: MediaQuery.of(context).padding.bottom + 12,
+      ),
+      child: Row(
+        children: [
+          if (_currentPassengerIndex > 0)
             Expanded(
-              flex: 2,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _nextPassenger,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
+              child: OutlinedButton(
+                onPressed: _isLoading ? null : _previousPassenger,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: primaryColor),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  elevation: 2,
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            isLast ? 'Continue to Payment' : 'Next Passenger',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(isLast ? Icons.payment : Icons.arrow_forward, size: 18),
-                        ],
-                      ),
+                child: const Text(
+                  'Previous',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: primaryColor,
+                  ),
+                ),
               ),
+            )
+          else
+            const Spacer(),
+
+          if (_currentPassengerIndex > 0) const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _nextPassenger,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          isLast ? 'Continue to Payment' : 'Next Passenger',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Icon(
+                          isLast ? Icons.payment : Icons.arrow_forward,
+                          size: 18,
+                        ),
+                      ],
+                    ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// ─── Passenger Data Model ─────────────────────────────────────────────────
+/// ─── Data model for each passenger ────────────────────────────────────────
 class PassengerData {
   final int passengerNumber;
+
   final TextEditingController fullNameController       = TextEditingController();
   final TextEditingController passportNumberController = TextEditingController();
   final TextEditingController dobController            = TextEditingController();
@@ -720,7 +694,7 @@ class PassengerData {
     return formKey.currentState?.validate() ?? false;
   }
 
-  /// Used for storing in “passenger_drafts” or local debugging
+  /// For “passenger_drafts” (no longer used, but kept for consistency)
   Map<String, dynamic> toMap() {
     return {
       'passengerNumber': passengerNumber,
@@ -733,7 +707,7 @@ class PassengerData {
     };
   }
 
-  /// Used when writing into the “bookings” collection
+  /// If you want to store to a “bookings” collection:
   Map<String, dynamic> toFirestoreMap() {
     return {
       'fullName': fullNameController.text.trim(),
@@ -745,6 +719,19 @@ class PassengerData {
       'age': dateOfBirth != null
           ? DateTime.now().year - dateOfBirth!.year
           : null,
+      'isPrimaryPassenger': passengerNumber == 1,
+      'createdAt': FieldValue.serverTimestamp(),
+    };
+  }
+
+  /// If you need billing details for the payment screen:
+  Map<String, dynamic> getBillingDetails() {
+    return {
+      'name': fullNameController.text.trim(),
+      'email': emailController.text.trim(),
+      'phone': phoneController.text.trim(),
+      'nationality': nationality,
+      'isPrimaryPassenger': passengerNumber == 1,
     };
   }
 
@@ -757,24 +744,23 @@ class PassengerData {
   }
 }
 
-/// ─── Passenger Form Card Widget ─────────────────────────────────────────────
+/// ─── Each passenger’s form card ────────────────────────────────────────────
 class PassengerFormCard extends StatelessWidget {
   final PassengerData passenger;
   final VoidCallback onDateSelect;
   final VoidCallback onNationalitySelect;
-  final VoidCallback onFieldChanged;
 
   const PassengerFormCard({
     Key? key,
     required this.passenger,
     required this.onDateSelect,
     required this.onNationalitySelect,
-    required this.onFieldChanged,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -793,7 +779,7 @@ class PassengerFormCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header icon + text
+              // ─── Header icon + text ─────────────────────────────────────────────
               Row(
                 children: [
                   Container(
@@ -809,37 +795,48 @@ class PassengerFormCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Passenger ${passenger.passengerNumber}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: textColor,
+
+                  // → Wrap Column in Expanded to avoid overflow:
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Passenger ${passenger.passengerNumber}',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
                         ),
-                      ),
-                      Text(
-                        passenger.passengerNumber == 1
-                            ? 'Primary passenger'
-                            : 'Additional passenger',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: darkGrey,
+                        Text(
+                          passenger.passengerNumber == 1
+                              ? 'Primary passenger • Will be used for billing'
+                              : 'Additional passenger',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: passenger.passengerNumber == 1
+                                ? accentColor
+                                : darkGrey,
+                            fontWeight: passenger.passengerNumber == 1
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 32),
 
-              // Full Name
+              // ─── Full Name ─────────────────────────────────────────────────────────
               _buildTextField(
                 controller: passenger.fullNameController,
                 label: 'Full Name (as per passport)',
                 icon: Icons.badge_outlined,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) {},
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter full name';
@@ -847,18 +844,22 @@ class PassengerFormCard extends StatelessWidget {
                   if (value.length < 2) {
                     return 'Name must be at least 2 characters';
                   }
+                  if (value.trim().split(' ').length < 2) {
+                    return 'Please enter both first and last name';
+                  }
                   return null;
                 },
-                onChanged: (_) => onFieldChanged(),
               ),
               const SizedBox(height: 20),
 
-              // Passport Number
+              // ─── Passport Number ───────────────────────────────────────────────────
               _buildTextField(
                 controller: passenger.passportNumberController,
                 label: 'Passport Number',
                 icon: Icons.credit_card,
                 textCapitalization: TextCapitalization.characters,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) {},
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter passport number';
@@ -866,39 +867,45 @@ class PassengerFormCard extends StatelessWidget {
                   if (value.length < 6) {
                     return 'Invalid passport number';
                   }
+                  final cleanPassport = value.replaceAll(' ', '').toUpperCase();
+                  if (!RegExp(r'^[A-Z0-9]+$').hasMatch(cleanPassport)) {
+                    return 'Passport should contain only letters & numbers';
+                  }
                   return null;
                 },
-                onChanged: (_) => onFieldChanged(),
               ),
               const SizedBox(height: 20),
 
-              // Date of Birth + Nationality side-by-side
+              // ─── Date of Birth + Nationality (side‐by‐side) ────────────────────────
               Row(
                 children: [
                   Expanded(
-                    flex: 3,
+                    flex: 5,
                     child: _buildDateField(
                       controller: passenger.dobController,
                       label: 'Date of Birth',
                       onTap: onDateSelect,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please select date of birth';
+                          return 'Select date';
                         }
                         if (passenger.dateOfBirth != null) {
                           final age =
                               DateTime.now().year - passenger.dateOfBirth!.year;
                           if (age < 0 || age > 120) {
-                            return 'Invalid date of birth';
+                            return 'Invalid date';
+                          }
+                          if (age < 16) {
+                            return 'Must be 16+';
                           }
                         }
                         return null;
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
-                    flex: 2,
+                    flex: 4,
                     child: _buildNationalityField(
                       nationality: passenger.nationality,
                       onTap: onNationalitySelect,
@@ -908,44 +915,86 @@ class PassengerFormCard extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Contact Email
+              // ─── Contact Email (with stronger validation) ─────────────────────────
               _buildTextField(
                 controller: passenger.emailController,
-                label: 'Contact Email',
+                label: passenger.passengerNumber == 1
+                    ? 'Contact Email (for billing & confirmation)'
+                    : 'Contact Email',
                 icon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                onFieldSubmitted: (_) {},
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter email';
                   }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                  if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
                       .hasMatch(value)) {
-                    return 'Enter a valid email';
+                    return 'Enter a valid email address';
+                  }
+                  final domain = value.split('@').last.toLowerCase();
+                  if (domain.contains(' ') || domain.contains('..')) {
+                    return 'Invalid email domain';
                   }
                   return null;
                 },
-                onChanged: (_) => onFieldChanged(),
               ),
               const SizedBox(height: 20),
 
-              // Contact Phone
+              // ─── Contact Phone (digits only, 8–15 digits) ─────────────────────────
               _buildTextField(
                 controller: passenger.phoneController,
-                label: 'Contact Phone',
+                label: passenger.passengerNumber == 1
+                    ? 'Contact Phone (for billing & updates)'
+                    : 'Contact Phone',
                 icon: Icons.phone_outlined,
                 keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.done,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter phone';
                   }
-                  if (value.length < 8) {
-                    return 'Enter a valid phone number';
+                  final cleanPhone = value.replaceAll(RegExp(r'[\s\-\(\)]'), '');
+                  if (cleanPhone.length < 8 || cleanPhone.length > 15) {
+                    return 'Enter a valid phone (8–15 digits)';
+                  }
+                  if (!RegExp(r'^\d+$').hasMatch(cleanPhone)) {
+                    return 'Phone should contain only digits';
                   }
                   return null;
                 },
-                onChanged: (_) => onFieldChanged(),
               ),
+
+              // ─── Info banner for primary passenger ──────────────────────────────
+              if (passenger.passengerNumber == 1) ...[
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: accentColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: accentColor.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: accentColor, size: 20),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'This passenger’s details will be used for payment billing '
+                          'and booking confirmation.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: textColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -953,27 +1002,31 @@ class PassengerFormCard extends StatelessWidget {
     );
   }
 
+  /// ─── Helper: Generic TextFormField builder ─────────────────────────────────
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
     required IconData icon,
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
-    TextCapitalization textCapitalization = TextCapitalization.words,
+    TextInputAction? textInputAction,
+    Function(String)? onFieldSubmitted,
     String? Function(String?)? validator,
-    Function(String)? onChanged,
+    TextCapitalization textCapitalization = TextCapitalization.words,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       textCapitalization: textCapitalization,
+      textInputAction: textInputAction,
+      onFieldSubmitted: onFieldSubmitted,
       validator: validator,
-      onChanged: onChanged,
+      style: const TextStyle(color: textColor, fontSize: 16),
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: darkGrey),
-        labelStyle: TextStyle(color: darkGrey),
+        labelStyle: const TextStyle(color: darkGrey),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -990,82 +1043,95 @@ class PassengerFormCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: errorColor),
         ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: errorColor, width: 2),
+        ),
         filled: true,
-        fillColor: subtleGrey,
+        fillColor: backgroundColor,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }
 
+  /// ─── Read‐only date field that opens a date picker ───────────────────────
   Widget _buildDateField({
     required TextEditingController controller,
     required String label,
     required VoidCallback onTap,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      readOnly: true,
+    return InkWell(
       onTap: onTap,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(Icons.calendar_today, color: darkGrey),
-        suffixIcon: Icon(Icons.arrow_drop_down, color: darkGrey),
-        labelStyle: TextStyle(color: darkGrey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
+      borderRadius: BorderRadius.circular(12),
+      child: IgnorePointer(
+        child: TextFormField(
+          controller: controller,
+          validator: validator,
+          style: const TextStyle(color: textColor, fontSize: 16),
+          decoration: InputDecoration(
+            labelText: label,
+            prefixIcon: const Icon(Icons.calendar_today, color: darkGrey),
+            suffixIcon: const Icon(Icons.arrow_drop_down, color: darkGrey),
+            labelStyle: const TextStyle(color: darkGrey),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: primaryColor, width: 2),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: errorColor),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: errorColor, width: 2),
+            ),
+            filled: true,
+            fillColor: backgroundColor,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: primaryColor, width: 2),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: errorColor),
-        ),
-        filled: true,
-        fillColor: subtleGrey,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }
 
+  /// ─── Nationality selector box ────────────────────────────────────────────
   Widget _buildNationalityField({
     required String nationality,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
-          color: subtleGrey,
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey.shade300),
         ),
         child: Row(
           children: [
             const Icon(Icons.flag, color: darkGrey, size: 20),
-            const SizedBox(width: 12),
-            // Force single-line + ellipsis if too long
-            Expanded(
+            const SizedBox(width: 8),
+            Flexible(
               child: Text(
                 nationality,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: textColor,
-                ),
+                style: const TextStyle(fontSize: 16, color: textColor),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Icon(Icons.arrow_drop_down, color: darkGrey),
+            const SizedBox(width: 2),
+            const Icon(Icons.arrow_drop_down, color: darkGrey, size: 20),
           ],
         ),
       ),
@@ -1073,7 +1139,7 @@ class PassengerFormCard extends StatelessWidget {
   }
 }
 
-/// ─── Nationality Picker ─────────────────────────────────────────────────────
+/// ─── Bottom sheet to pick nationality ─────────────────────────────────────
 class NationalityPicker extends StatefulWidget {
   final String selectedNationality;
   final Function(String) onSelected;
@@ -1098,7 +1164,28 @@ class _NationalityPickerState extends State<NationalityPicker> {
     'United States', 'United Kingdom', 'Canada', 'Australia',
     'New Zealand', 'Japan', 'South Korea', 'China', 'India',
     'Germany', 'France', 'Italy', 'Spain', 'Netherlands',
-    // (add more countries as needed)
+    'Belgium', 'Switzerland', 'Austria', 'Sweden', 'Norway',
+    'Denmark', 'Finland', 'Poland', 'Czech Republic', 'Hungary',
+    'Portugal', 'Greece', 'Ireland', 'Luxembourg', 'Croatia',
+    'Slovenia', 'Slovakia', 'Estonia', 'Latvia', 'Lithuania',
+    'Bulgaria', 'Romania', 'Cyprus', 'Malta', 'Iceland',
+    'Brazil', 'Argentina', 'Chile', 'Colombia', 'Peru',
+    'Mexico', 'Venezuela', 'Ecuador', 'Uruguay', 'Paraguay',
+    'Bolivia', 'Costa Rica', 'Panama', 'Guatemala', 'Honduras',
+    'El Salvador', 'Nicaragua', 'Cuba', 'Dominican Republic', 'Jamaica',
+    'Trinidad and Tobago', 'Barbados', 'Bahamas', 'Haiti', 'Guyana',
+    'Suriname', 'French Guiana', 'South Africa', 'Egypt', 'Nigeria',
+    'Kenya', 'Ghana', 'Ethiopia', 'Morocco', 'Tunisia',
+    'Algeria', 'Libya', 'Sudan', 'Tanzania', 'Uganda',
+    'Zimbabwe', 'Zambia', 'Botswana', 'Namibia', 'Angola',
+    'Mozambique', 'Madagascar', 'Mauritius', 'Seychelles', 'Comoros',
+    'Russia', 'Ukraine', 'Belarus', 'Moldova', 'Georgia',
+    'Armenia', 'Azerbaijan', 'Kazakhstan', 'Uzbekistan', 'Turkmenistan',
+    'Kyrgyzstan', 'Tajikistan', 'Afghanistan', 'Pakistan', 'Bangladesh',
+    'Sri Lanka', 'Nepal', 'Bhutan', 'Maldives', 'Iran',
+    'Iraq', 'Turkey', 'Syria', 'Lebanon', 'Jordan',
+    'Israel', 'Palestine', 'Saudi Arabia', 'Yemen', 'Oman',
+    'United Arab Emirates', 'Qatar', 'Bahrain', 'Kuwait', 'Mongolia',
   ];
 
   @override
@@ -1106,6 +1193,12 @@ class _NationalityPickerState extends State<NationalityPicker> {
     super.initState();
     _filteredCountries = _countries;
     _searchController.addListener(_filterCountries);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _filterCountries() {
@@ -1122,7 +1215,7 @@ class _NationalityPickerState extends State<NationalityPicker> {
     return Container(
       height: MediaQuery.of(context).size.height * 0.7,
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: backgroundColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -1130,8 +1223,9 @@ class _NationalityPickerState extends State<NationalityPicker> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
+              color: Colors.white,
               border: Border(
-                bottom: BorderSide(color: Colors.grey.shade200),
+                bottom: BorderSide(color: subtleGrey),
               ),
             ),
             child: Column(
@@ -1140,27 +1234,45 @@ class _NationalityPickerState extends State<NationalityPicker> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: darkGrey,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
                   'Select Nationality',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _searchController,
+                  style: const TextStyle(color: textColor),
                   decoration: InputDecoration(
                     hintText: 'Search countries...',
-                    prefixIcon: const Icon(Icons.search),
+                    hintStyle: TextStyle(color: darkGrey.withOpacity(0.6)),
+                    prefixIcon: const Icon(Icons.search, color: darkGrey),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.shade300),
+                      borderSide: BorderSide(color: subtleGrey),
                     ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: subtleGrey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: primaryColor, width: 2),
+                    ),
+                    filled: true,
+                    fillColor: backgroundColor,
                     contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ],
@@ -1173,12 +1285,12 @@ class _NationalityPickerState extends State<NationalityPicker> {
                 final country = _filteredCountries[index];
                 final isSelected = country == widget.selectedNationality;
                 return ListTile(
+                  tileColor: isSelected ? accentColor.withOpacity(0.1) : null,
                   title: Text(
                     country,
                     style: TextStyle(
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.normal,
-                      color: isSelected ? primaryColor : null,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      color: isSelected ? primaryColor : textColor,
                     ),
                   ),
                   trailing: isSelected

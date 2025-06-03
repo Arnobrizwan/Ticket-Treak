@@ -13,7 +13,9 @@ dependencies:
   cupertino_icons: ^1.0.2
   intl: ^0.18.0
   meta: ^1.11.0
+  flutter_stripe: ^10.1.1
   http: ^0.13.5
+  share_plus: ^7.2.2
   # Firebase packages (upgraded to Dart 3/Flutter 3+ versions)
   firebase_core: ^3.13.1           # Latest stable Firebase Core (Dart 3 compatible)  [oai_citation:12‡Dart packages](https://pub.dev/packages/firebase_core?utm_source=chatgpt.com) [oai_citation:13‡Dart packages](https://pub.dev/packages/firebase_core?utm_source=chatgpt.com)
   firebase_auth: ^5.5.4           # Uses firebase_auth_web → web ^1.x (compatible with fluttertoast)  [oai_citation:14‡Dart packages](https://pub.dev/packages/firebase_auth?utm_source=chatgpt.com) [oai_citation:15‡Dart packages](https://pub.dev/packages/firebase_analytics/versions/11.4.5/score/log.txt?utm_source=chatgpt.com)
