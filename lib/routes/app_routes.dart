@@ -1,5 +1,3 @@
-// lib/routes/app_routes.dart
-
 import 'package:flutter/material.dart';
 
 // ─── Splash & Onboarding ─────────────────────────────────────────────────────
@@ -36,7 +34,7 @@ import '../screens/user/booking/seat_selection_page.dart';
 import '../screens/user/booking/addon_selection_page.dart';
 
 // ─── Models (importing for FlightBooking type, in case you need it elsewhere) ──
-import '../models/firebase_models.dart';
+// import '../models/firebase_models.dart'; // Uncomment if FlightBooking or other models are needed here
 
 class AppRoutes {
   // ─── Route names ────────────────────────────────────────────────────────────
@@ -70,7 +68,7 @@ class AppRoutes {
   static const String seatSelection = '/seat-selection';
   static const String addonSelection = '/addon-selection';
   static const String passengerDetails = '/passenger-details';
-  
+
   // ─── Payment routes (UPDATED) ─────────────────────────────────────────────
   static const String payment = '/payment';
   static const String paymentSuccess = '/payment-success';
@@ -97,265 +95,224 @@ class AppRoutes {
       passwordReset: (context) => const PasswordResetScreen(),
 
       // Dashboard
-      homeDashboard: (context) => const HomeDashboard(userName: "John Doe"),
-      home: (context) => const HomeDashboard(userName: "John Doe"), // Alternative
+      homeDashboard: (context) => const HomeDashboard(
+          userName: "John Doe"), // Example: Pass necessary data
+      home: (context) =>
+          const HomeDashboard(userName: "John Doe"), // Alternative
 
       // Flight flow
       flightSearch: (context) => const FlightSearchPage(),
-      flightResults: (context) => const FlightResultsPage(),
+      // flightResults: (context) => const FlightResultsPage(), // Likely needs args, move to onGenerateRoute
       savedFlights: (context) => const SavedFlightsScreen(),
 
       // Booking flow (no-arg screens)
       myBookings: (context) => const MyBookingsScreen(),
       bookingHistory: (context) => const MyBookingsScreen(), // Alternative
 
-      // NEW sub‐flows (no-arg placeholders)
-      seatSelection: (context) => const SeatSelectionPage(),
-      addonSelection: (context) => const AddonSelectionPage(),
-
-      // NOTE: payment and paymentSuccess moved to onGenerateRoute since they need arguments
+      // NEW sub‐flows (no-arg placeholders, may need args)
+      // seatSelection: (context) => const SeatSelectionPage(), // Likely needs args
+      // addonSelection: (context) => const AddonSelectionPage(), // Likely needs args
 
       // Edit Profile placeholder
       editProfile: (context) => Scaffold(
-        appBar: AppBar(title: const Text('Edit Profile')),
-        body: const Center(
-          child: Text(
-            'EditProfileScreen has not been implemented yet.',
-            textAlign: TextAlign.center,
+            appBar: AppBar(title: const Text('Edit Profile')),
+            body: const Center(
+              child: Text(
+                'EditProfileScreen has not been implemented yet.',
+                textAlign: TextAlign.center,
+              ),
+            ),
           ),
-        ),
-      ),
 
       // Enterprise / extra placeholders
       notifications: (context) => Scaffold(
-        appBar: AppBar(title: const Text('Notifications')),
-        body: const Center(child: Text('Notifications Screen Placeholder')),
-      ),
+            appBar: AppBar(title: const Text('Notifications')),
+            body: const Center(child: Text('Notifications Screen Placeholder')),
+          ),
       explore: (context) => Scaffold(
-        appBar: AppBar(title: const Text('Explore')),
-        body: const Center(child: Text('Explore Screen Placeholder')),
-      ),
+            appBar: AppBar(title: const Text('Explore')),
+            body: const Center(child: Text('Explore Screen Placeholder')),
+          ),
       deals: (context) => Scaffold(
-        appBar: AppBar(title: const Text('Deals')),
-        body: const Center(child: Text('Deals Screen Placeholder')),
-      ),
+            appBar: AppBar(title: const Text('Deals')),
+            body: const Center(child: Text('Deals Screen Placeholder')),
+          ),
       groupBooking: (context) => Scaffold(
-        appBar: AppBar(title: const Text('Group Booking')),
-        body: const Center(child: Text('Group Booking Screen Placeholder')),
-      ),
+            appBar: AppBar(title: const Text('Group Booking')),
+            body: const Center(child: Text('Group Booking Screen Placeholder')),
+          ),
       support: (context) => Scaffold(
-        appBar: AppBar(title: const Text('Support Chat')),
-        body: const Center(child: Text('Support Chat Screen Placeholder')),
-      ),
+            appBar: AppBar(title: const Text('Support Chat')),
+            body: const Center(child: Text('Support Chat Screen Placeholder')),
+          ),
     };
   }
 
   // ─── onGenerateRoute ────────────────────────────────────────────────────────
   // Use this for screens that do require constructor arguments.
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
+    final args = settings.arguments; // Get arguments once
+
     switch (settings.name) {
+      case flightResults:
+        // Example: Assuming FlightResultsPage takes arguments
+        if (args is Map<String, dynamic>) {
+          return MaterialPageRoute(
+            builder: (context) =>
+                const FlightResultsPage(), // Pass args to constructor if needed
+            settings: settings, // Pass settings to preserve arguments
+          );
+        }
+        break;
       // ─── Flight Detail (reads args via ModalRoute.of(context)) ─────────────
-      case flightDetail: {
-        final args = settings.arguments as Map<String, dynamic>?;
-        if (args != null) {
+      case flightDetail:
+        {
+          // FlightDetailScreen might read arguments itself using ModalRoute.of(context).settings.arguments
+          // So, just ensure it's routed correctly.
           return MaterialPageRoute(
             builder: (context) => const FlightDetailScreen(),
-            settings: settings,
+            settings:
+                settings, // Pass settings to allow ModalRoute.of(context) to access args
           );
         }
-        break;
-      }
 
-      // ─── Booking Detail (expects a String bookingId) ────────────────────────
-      case bookingDetail: {
-        final bookingId = settings.arguments as String?;
-        if (bookingId != null) {
-          return MaterialPageRoute(
-            builder: (context) => BookingDetailScreen(bookingId: bookingId),
-            settings: settings,
-          );
+      // ─── Booking Detail (expects a Map with 'bookingId') ───────────────────
+      case bookingDetail:
+        {
+          if (args is Map<String, dynamic> && args.containsKey('bookingId')) {
+            final bookingId = args['bookingId'] as String?;
+            if (bookingId != null) {
+              return MaterialPageRoute(
+                builder: (context) => BookingDetailScreen(bookingId: bookingId),
+                settings: settings,
+              );
+            }
+          }
+          // Optional: Add an error route or default behavior if args are incorrect
+          debugPrint(
+              'Error: Incorrect arguments for bookingDetail route. Expected Map with "bookingId".');
+          break;
         }
-        break;
-      }
 
-      // ─── Booking Confirmation (expects a String bookingId) ──────────────────
-      case bookingConfirmation: {
-        final bookingId = settings.arguments as String?;
-        if (bookingId != null) {
-          // Uncomment once you create BookingConfirmationScreen:
-          // return MaterialPageRoute(
-          //   builder: (context) => BookingConfirmationScreen(bookingId: bookingId),
-          //   settings: settings,
-          // );
-          
-          // For now, redirect to payment success as alternative
-          return MaterialPageRoute(
-            builder: (context) => const PaymentSuccessScreen(),
-            settings: settings,
-          );
+      // ─── Booking Confirmation (expects a Map with 'bookingId') ───────────────
+      case bookingConfirmation:
+        {
+          if (args is Map<String, dynamic> && args.containsKey('bookingId')) {
+            // final bookingId = args['bookingId'] as String;
+            // Uncomment once you create BookingConfirmationScreen:
+            // return MaterialPageRoute(
+            //   builder: (context) => BookingConfirmationScreen(bookingId: bookingId),
+            //   settings: settings,
+            // );
+
+            // For now, redirect to payment success as alternative, passing args along
+            return MaterialPageRoute(
+              builder: (context) =>
+                  const PaymentSuccessScreen(), // PaymentSuccessScreen reads args itself
+              settings: settings, // Pass settings along
+            );
+          }
+          break;
         }
-        break;
-      }
 
-      // ─── Cancel Booking (expects a String bookingId) ────────────────────────
-      case cancelBooking: {
-        final bookingId = settings.arguments as String?;
-        if (bookingId != null) {
-          return MaterialPageRoute(
-            builder: (context) => CancelBookingScreen(bookingId: bookingId),
-            settings: settings,
-          );
+      // ─── Cancel Booking (expects a Map with 'bookingId') ────────────────────
+      case cancelBooking:
+        {
+          if (args is Map<String, dynamic> && args.containsKey('bookingId')) {
+            final bookingId = args['bookingId'] as String?;
+            if (bookingId != null) {
+              return MaterialPageRoute(
+                builder: (context) => CancelBookingScreen(bookingId: bookingId),
+                settings: settings,
+              );
+            }
+          }
+          break;
         }
-        break;
-      }
 
-      // ─── Refund Status (expects a String bookingId) ─────────────────────────
-      case refundStatus: {
-        final bookingId = settings.arguments as String?;
-        if (bookingId != null) {
-          return MaterialPageRoute(
-            builder: (context) => RefundStatusScreen(bookingId: bookingId),
-            settings: settings,
-          );
+      // ─── Refund Status (expects a Map with 'bookingId') ─────────────────────
+      case refundStatus:
+        {
+          if (args is Map<String, dynamic> && args.containsKey('bookingId')) {
+            final bookingId = args['bookingId'] as String?;
+            if (bookingId != null) {
+              return MaterialPageRoute(
+                builder: (context) => RefundStatusScreen(bookingId: bookingId),
+                settings: settings,
+              );
+            }
+          }
+          break;
         }
-        break;
-      }
 
-      // ─── Seat Selection (expects a Map<String, dynamic>) ────────────────────
-      case seatSelection: {
-        final args = settings.arguments as Map<String, dynamic>?;
-        if (args != null) {
+      // ─── Seat Selection (expects Map<String, dynamic> arguments) ────────────
+      case seatSelection:
+        {
+          // SeatSelectionPage might read arguments itself using ModalRoute.of(context).settings.arguments
           return MaterialPageRoute(
             builder: (context) => const SeatSelectionPage(),
             settings: settings,
           );
         }
-        break;
-      }
 
-      // ─── Add-On Selection (expects a Map<String, dynamic>) ──────────────────
-      case addonSelection: {
-        final args = settings.arguments as Map<String, dynamic>?;
-        if (args != null) {
+      // ─── Add-On Selection (expects Map<String, dynamic> arguments) ──────────
+      case addonSelection:
+        {
+          // AddonSelectionPage might read arguments itself using ModalRoute.of(context).settings.arguments
           return MaterialPageRoute(
             builder: (context) => const AddonSelectionPage(),
             settings: settings,
           );
         }
-        break;
-      }
 
-      // ─── Passenger Details (no arguments needed in constructor) ─────────────
-      case passengerDetails: {
-        // Even if you passed a "bookingId"/"booking" in arguments,
-        // PassengerDetailsScreen's constructor currently doesn't accept parameters.
-        return MaterialPageRoute(
-          builder: (context) => const PassengerDetailsScreen(),
-          settings: settings,
-        );
-      }
+      // ─── Passenger Details (reads arguments itself) ─────────────────────────
+      case passengerDetails:
+        {
+          return MaterialPageRoute(
+            builder: (context) => const PassengerDetailsScreen(),
+            settings:
+                settings, // Pass settings to allow ModalRoute.of(context) to access args
+          );
+        }
 
-      // ─── Payment Screen (expects Map<String, dynamic> arguments) ────────────
-      case payment: {
-        final args = settings.arguments as Map<String, dynamic>?;
-        if (args != null) {
+      // ─── Payment Screen (reads arguments itself) ────────────────────────────
+      case payment:
+        {
           return MaterialPageRoute(
             builder: (context) => const PaymentScreen(),
-            settings: settings,
-          );
-        } else {
-          // Handle case where no arguments provided
-          return MaterialPageRoute(
-            builder: (context) => Scaffold(
-              appBar: AppBar(
-                title: const Text('Payment Error'),
-                backgroundColor: const Color(0xFFEF4444),
-                foregroundColor: Colors.white,
-              ),
-              body: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: Color(0xFFEF4444),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Payment Error',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'No booking data found.\nPlease restart the booking process.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            settings: settings,
+            settings:
+                settings, // Pass settings to allow ModalRoute.of(context) to access args
           );
         }
-      }
 
-      // ─── Payment Success Screen (expects Map<String, dynamic> arguments) ────
-      case paymentSuccess: {
-        final args = settings.arguments as Map<String, dynamic>?;
-        if (args != null) {
+      // ─── Payment Success Screen (reads arguments itself) ────────────────────
+      case paymentSuccess:
+        {
           return MaterialPageRoute(
             builder: (context) => const PaymentSuccessScreen(),
-            settings: settings,
-          );
-        } else {
-          // Handle case where no arguments provided
-          return MaterialPageRoute(
-            builder: (context) => Scaffold(
-              appBar: AppBar(
-                title: const Text('Success'),
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
-              ),
-              body: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.check_circle_outline,
-                      size: 64,
-                      color: Color(0xFF10B981),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Payment Successful!',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Your booking has been confirmed.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            settings: settings,
+            settings:
+                settings, // Pass settings to allow ModalRoute.of(context) to access args
           );
         }
-      }
 
       default:
-        return null;
+        // If the route is not found in onGenerateRoute, it will fall back to the 'routes' map.
+        // If not found there either, Flutter shows an error.
+        // You can add a generic error page here if desired.
+        debugPrint('Unhandled route: ${settings.name}');
+        return MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: const Text('Error')),
+            body: Center(child: Text('Route not found: ${settings.name}')),
+          ),
+        );
     }
-    return null;
+    // Fallback if a case breaks without returning a route (should be avoided)
+    return MaterialPageRoute(
+      builder: (context) => Scaffold(
+        appBar: AppBar(title: const Text('Navigation Error')),
+        body: Center(child: Text('Could not navigate to ${settings.name}')),
+      ),
+    );
   }
 }
