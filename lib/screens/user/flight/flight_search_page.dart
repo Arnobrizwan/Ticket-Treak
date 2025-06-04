@@ -1,3 +1,5 @@
+// lib/screens/user/booking/flight_search_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,113 +12,123 @@ class FlightSearchPage extends StatefulWidget {
   State<FlightSearchPage> createState() => _FlightSearchPageState();
 }
 
-class _FlightSearchPageState extends State<FlightSearchPage> with TickerProviderStateMixin {
+class _FlightSearchPageState extends State<FlightSearchPage>
+    with TickerProviderStateMixin {
   // Violin color palette (matching OnboardingScreen) - STRICTLY FOLLOWING
-  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
-  static const Color primaryColor    = Color(0xFF5C2E00);  // Dark Brown
-  static const Color secondaryColor  = Color(0xFF8B5000);  // Amber Brown
-  static const Color textColor       = Color(0xFF35281E);  // Deep Wood
-  static const Color subtleGrey      = Color(0xFFDAC1A7);  // Light Tan
-  static const Color darkGrey        = Color(0xFF7E5E3C);  // Medium Brown
-  static const Color accentOrange    = Color(0xFFD4A373);  // Warm Highlight
-  static const Color accentGreen     = Color(0xFFB28F5E);  // Muted Brown
-  static const Color successColor    = Color(0xFF8B5000);  // Success (using secondary)
-  static const Color warningColor    = Color(0xFFD4A373);  // Warning (using accent)
+  static const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
+  static const Color primaryColor = Color(0xFF5C2E00); // Dark Brown
+  static const Color secondaryColor = Color(0xFF8B5000); // Amber Brown
+  static const Color textColor = Color(0xFF35281E); // Deep Wood
+  static const Color subtleGrey = Color(0xFFDAC1A7); // Light Tan
+  static const Color darkGrey = Color(0xFF7E5E3C); // Medium Brown
+  static const Color accentOrange = Color(0xFFD4A373); // Warm Highlight
+  static const Color accentGreen = Color(0xFFB28F5E); // Muted Brown
+  static const Color successColor =
+      Color(0xFF8B5000); // Success (using secondary)
+  static const Color warningColor = Color(0xFFD4A373); // Warning (using accent)
 
+  bool _showFlashBanner = true;
   // Form data
   final _formKey = GlobalKey<FormState>();
-  String?   _departureCity;
-  String?   _arrivalCity;
+  String? _departureCity;
+  String? _arrivalCity;
   DateTime? _departureDate;
   DateTime? _returnDate;
-  int       _passengers     = 1;
-  String    _selectedClass  = 'Economy';
-  String    _selectedSeatType = 'Standard';
-  bool      _isRoundTrip    = false;
-  bool      _isStudentFare  = true;
-  bool      _isFlexibleDates = false;
-  bool      _needsHotel     = false;
-  bool      _needsTransport = false;
+  int _passengers = 1;
+  String _selectedClass = 'Economy';
+  bool _isRoundTrip = false;
+  bool _isStudentFare = true;
+  bool _isFlexibleDates = false;
+  bool _needsHotel = false;
+  bool _needsTransport = false;
 
   // Firebase
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth      _auth      = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Animation
   late AnimationController _animationController;
-  late Animation<double>   _fadeAnimation;
+  late Animation<double> _fadeAnimation;
   late AnimationController _searchButtonController;
-  late Animation<double>   _searchButtonScale;
+  late Animation<double> _searchButtonScale;
   late AnimationController _cardController;
-  late Animation<double>   _cardAnimation;
+  late Animation<double> _cardAnimation;
 
   // Enhanced popular routes with high-quality Unsplash travel images
   final List<Map<String, dynamic>> _popularRoutes = [
     {
-      'from':      'Kuala Lumpur (KUL)',
-      'to':        'Singapore (SIN)',
-      'fromCode':  'KUL',
-      'toCode':    'SIN',
-      'duration':  '1h 20m',
-      'airlines':  ['Malaysia Airlines', 'AirAsia'],
-      'price':     189,
-      'discount':  30,
-      'imageUrl':  'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80'
+      'from': 'Kuala Lumpur (KUL)',
+      'to': 'Singapore (SIN)',
+      'fromCode': 'KUL',
+      'toCode': 'SIN',
+      'duration': '1h 20m',
+      'airlines': ['Malaysia Airlines'],
+      'price': 189,
+      'discount': 30,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80'
     },
     {
-      'from':      'Kuala Lumpur (KUL)',
-      'to':        'Bangkok (BKK)',
-      'fromCode':  'KUL',
-      'toCode':    'BKK',
-      'duration':  '2h 5m',
-      'airlines':  ['Thai Airways', 'AirAsia'],
-      'price':     299,
-      'discount':  25,
-      'imageUrl':  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
+      'from': 'Kuala Lumpur (KUL)',
+      'to': 'Bangkok (BKK)',
+      'fromCode': 'KUL',
+      'toCode': 'BKK',
+      'duration': '2h 5m',
+      'airlines': ['Thai Airways'],
+      'price': 299,
+      'discount': 25,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
     },
     {
-      'from':      'Kuala Lumpur (KUL)',
-      'to':        'Bali (DPS)',
-      'fromCode':  'KUL',
-      'toCode':    'DPS',
-      'duration':  '3h 15m',
-      'airlines':  ['Malaysia Airlines', 'Garuda'],
-      'price':     459,
-      'discount':  35,
-      'imageUrl':  'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80',
+      'from': 'Kuala Lumpur (KUL)',
+      'to': 'Bali (DPS)',
+      'fromCode': 'KUL',
+      'toCode': 'DPS',
+      'duration': '3h 15m',
+      'airlines': ['Garuda'],
+      'price': 459,
+      'discount': 35,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80',
     },
     {
-      'from':      'Johor Bahru (JHB)',
-      'to':        'Kuala Lumpur (KUL)',
-      'fromCode':  'JHB',
-      'toCode':    'KUL',
-      'duration':  '1h 15m',
-      'airlines':  ['Malaysia Airlines', 'AirAsia'],
-      'price':     129,
-      'discount':  20,
-      'imageUrl':  'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&q=80',
+      'from': 'Johor Bahru (JHB)',
+      'to': 'Kuala Lumpur (KUL)',
+      'fromCode': 'JHB',
+      'toCode': 'KUL',
+      'duration': '1h 15m',
+      'airlines': ['Malaysia Airlines'],
+      'price': 129,
+      'discount': 20,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&q=80',
     },
     {
-      'from':      'Kuala Lumpur (KUL)',
-      'to':        'Penang (PEN)',
-      'fromCode':  'KUL',
-      'toCode':    'PEN',
-      'duration':  '1h 30m',
-      'airlines':  ['Malaysia Airlines', 'AirAsia'],
-      'price':     159,
-      'discount':  25,
-      'imageUrl':  'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80',
+      'from': 'Kuala Lumpur (KUL)',
+      'to': 'Penang (PEN)',
+      'fromCode': 'KUL',
+      'toCode': 'PEN',
+      'duration': '1h 30m',
+      'airlines': [
+        'Malaysia Airlines',
+      ],
+      'price': 159,
+      'discount': 25,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80',
     },
     {
-      'from':      'Kuala Lumpur (KUL)',
-      'to':        'Langkawi (LGK)',
-      'fromCode':  'KUL',
-      'toCode':    'LGK',
-      'duration':  '1h 45m',
-      'airlines':  ['Malaysia Airlines', 'AirAsia'],
-      'price':     199,
-      'discount':  30,
-      'imageUrl':  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+      'from': 'Kuala Lumpur (KUL)',
+      'to': 'Langkawi (LGK)',
+      'fromCode': 'KUL',
+      'toCode': 'LGK',
+      'duration': '1h 45m',
+      'airlines': ['AirAsia'],
+      'price': 199,
+      'discount': 30,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
     },
   ];
 
@@ -172,7 +184,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
           // Modern background pattern
           Positioned.fill(
             child: CustomPaint(
-              painter: ModernPatternPainter(color: primaryColor.withOpacity(0.03)),
+              painter:
+                  ModernPatternPainter(color: primaryColor.withOpacity(0.03)),
             ),
           ),
 
@@ -185,7 +198,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                   builder: (context, _) {
                     return FadeTransition(
                       opacity: _fadeAnimation,
-                      child: _buildContent(),
+                      child: _buildContentWithBanner(),
                     );
                   },
                 ),
@@ -269,18 +282,24 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
+
+      // ─── UPDATED "Student Rates" PILL ─────────────────────────────────────
       actions: [
         if (_isStudentFare)
           Container(
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: accentOrange,
+              color: Colors.white, // solid white background
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: accentOrange, // orange outline
+                width: 1.5,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: accentOrange.withOpacity(0.3),
-                  blurRadius: 8,
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -288,19 +307,90 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.school, size: 16, color: Colors.white),
+                Icon(
+                  Icons.school,
+                  size: 16,
+                  color: primaryColor, // dark‐wood icon
+                ),
                 const SizedBox(width: 6),
                 const Text(
-                  "30% OFF",
+                  "Student Rates",
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Color(0xFF35281E), // deep‐wood text
                   ),
                 ),
               ],
             ),
           ),
+      ],
+    );
+  }
+
+  /// ─── FLASH‐SALE BANNER WIDGET ─────────────────────────────────────────────
+  Widget _buildFlashSaleBanner() {
+    return Padding(
+      // Matches the 16px horizontal padding used by the form,
+      // so it lines up under the “30% OFF” badge in the AppBar.
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF5C2E00),
+              Color(0xFF8B5000)
+            ], // primary → secondary
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.local_offer, size: 24, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                "Flash Sale: 50% OFF select student routes!",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _showFlashBanner = false;
+                });
+              },
+              child: const Icon(Icons.close, size: 20, color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// ─── This method wraps the original _buildContent() plus a new banner at the top ─────────────────────────
+  Widget _buildContentWithBanner() {
+    return Column(
+      children: [
+        // ─── SHOW FLASH SALE BANNER ONLY IF FLAG IS TRUE ───────────────────────
+        if (_showFlashBanner) _buildFlashSaleBanner(),
+
+        // ─── ORIGINAL FORM CONTENT FOLLOWS ───────────────────────────────────
+        _buildContent(),
       ],
     );
   }
@@ -355,7 +445,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: (_isStudentFare ? successColor : subtleGrey).withOpacity(0.3),
+            color:
+                (_isStudentFare ? successColor : subtleGrey).withOpacity(0.3),
             blurRadius: 16, // slightly smaller blur
             offset: const Offset(0, 6),
           ),
@@ -381,7 +472,9 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isStudentFare ? "Student Fare Activated" : "Enable Student Discount",
+                  _isStudentFare
+                      ? "Student Fare Activated"
+                      : "Enable Student Discount",
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18, // trimmed 20→18
@@ -457,7 +550,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
     );
   }
 
-  Widget _buildTripTypeButton(String text, bool isSelected, IconData icon, VoidCallback onTap) {
+  Widget _buildTripTypeButton(
+      String text, bool isSelected, IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -482,7 +576,9 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: isSelected ? Colors.white : darkGrey), // from 22→20
+            Icon(icon,
+                size: 20,
+                color: isSelected ? Colors.white : darkGrey), // from 22→20
             const SizedBox(width: 8), // from 12→8
             Text(
               text,
@@ -526,13 +622,15 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
               children: [
                 const Expanded(child: Divider(color: subtleGrey, thickness: 1)),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12), // from 16→12
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12), // from 16→12
                   child: GestureDetector(
                     onTap: _swapLocations,
                     child: Container(
                       padding: const EdgeInsets.all(10), // from 12→10
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [primaryColor, secondaryColor]),
+                        gradient: const LinearGradient(
+                            colors: [primaryColor, secondaryColor]),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
@@ -542,7 +640,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.swap_vert, color: Colors.white, size: 18), // from 20→18
+                      child: const Icon(Icons.swap_vert,
+                          color: Colors.white, size: 18), // from 20→18
                     ),
                   ),
                 ),
@@ -580,7 +679,10 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
               padding: const EdgeInsets.all(12), // from 14→12
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [primaryColor.withOpacity(0.1), secondaryColor.withOpacity(0.1)],
+                  colors: [
+                    primaryColor.withOpacity(0.1),
+                    secondaryColor.withOpacity(0.1)
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -605,14 +707,16 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                     value ?? hint,
                     style: TextStyle(
                       fontSize: 15, // from 17→15
-                      fontWeight: value != null ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight:
+                          value != null ? FontWeight.w600 : FontWeight.normal,
                       color: value != null ? textColor : darkGrey,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 14, color: darkGrey), // from 16→14
+            Icon(Icons.arrow_forward_ios,
+                size: 14, color: darkGrey), // from 16→14
           ],
         ),
       ),
@@ -682,7 +786,10 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
               padding: const EdgeInsets.all(12), // from 14→12
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [primaryColor.withOpacity(0.1), secondaryColor.withOpacity(0.1)],
+                  colors: [
+                    primaryColor.withOpacity(0.1),
+                    secondaryColor.withOpacity(0.1)
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -707,7 +814,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                     displayText,
                     style: TextStyle(
                       fontSize: 15, // from 17→15
-                      fontWeight: value != null ? FontWeight.w600 : FontWeight.normal,
+                      fontWeight:
+                          value != null ? FontWeight.w600 : FontWeight.normal,
                       color: value != null ? textColor : darkGrey,
                     ),
                   ),
@@ -754,11 +862,15 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                 padding: const EdgeInsets.all(12), // from 14→12
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [primaryColor.withOpacity(0.1), secondaryColor.withOpacity(0.1)],
+                    colors: [
+                      primaryColor.withOpacity(0.1),
+                      secondaryColor.withOpacity(0.1)
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(Icons.people, size: 24, color: primaryColor), // from 26→24
+                child: Icon(Icons.people,
+                    size: 24, color: primaryColor), // from 26→24
               ),
               const SizedBox(width: 16), // from 20→16
               Expanded(
@@ -806,7 +918,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                 color: primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.add_business, size: 18, color: primaryColor), // from 20→18
+              child: Icon(Icons.add_business,
+                  size: 18, color: primaryColor), // from 20→18
             ),
             const SizedBox(width: 8), // from 12→8
             const Text(
@@ -843,11 +956,15 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                   padding: const EdgeInsets.all(10), // from 12→10
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [accentOrange.withOpacity(0.1), accentOrange.withOpacity(0.2)],
+                      colors: [
+                        accentOrange.withOpacity(0.1),
+                        accentOrange.withOpacity(0.2)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.hotel, color: accentOrange, size: 22), // from 24→22
+                  child: Icon(Icons.hotel,
+                      color: accentOrange, size: 22), // from 24→22
                 ),
                 const SizedBox(width: 12), // from 16→12
                 Expanded(
@@ -909,11 +1026,15 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                   padding: const EdgeInsets.all(10), // from 12→10
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [accentGreen.withOpacity(0.1), accentGreen.withOpacity(0.2)],
+                      colors: [
+                        accentGreen.withOpacity(0.1),
+                        accentGreen.withOpacity(0.2)
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.directions_car, color: accentGreen, size: 22), // from 24→22
+                  child: Icon(Icons.directions_car,
+                      color: accentGreen, size: 22), // from 24→22
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -977,9 +1098,11 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                   SnackBar(
                     content: Row(
                       children: [
-                        const Icon(Icons.airline_seat_recline_extra, color: Colors.white),
+                        const Icon(Icons.airline_seat_recline_extra,
+                            color: Colors.white),
                         const SizedBox(width: 12),
-                        Text('Navigating to seat selection for $_selectedClass'),
+                        Text(
+                            'Navigating to seat selection for $_selectedClass'),
                       ],
                     ),
                     backgroundColor: accentOrange,
@@ -1000,11 +1123,15 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                       padding: const EdgeInsets.all(10), // from 12→10
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [accentOrange.withOpacity(0.1), accentOrange.withOpacity(0.2)],
+                          colors: [
+                            accentOrange.withOpacity(0.1),
+                            accentOrange.withOpacity(0.2)
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.airline_seat_recline_extra, color: accentOrange, size: 22),
+                      child: Icon(Icons.airline_seat_recline_extra,
+                          color: accentOrange, size: 22),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -1031,9 +1158,11 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [accentOrange, warningColor]),
+                        gradient: const LinearGradient(
+                            colors: [accentOrange, warningColor]),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Text(
@@ -1076,11 +1205,15 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
               padding: const EdgeInsets.all(10), // from 12→10
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [primaryColor.withOpacity(0.1), secondaryColor.withOpacity(0.1)],
+                  colors: [
+                    primaryColor.withOpacity(0.1),
+                    secondaryColor.withOpacity(0.1)
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.date_range, color: primaryColor, size: 22), // from 24→22
+              child: Icon(Icons.date_range,
+                  color: primaryColor, size: 22), // from 24→22
             ),
             const SizedBox(width: 16), // from 20→16
             Expanded(
@@ -1163,7 +1296,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.search, size: 24, color: Colors.white), // from 26→24
+                  const Icon(Icons.search,
+                      size: 24, color: Colors.white), // from 26→24
                   const SizedBox(width: 12), // from 16→12
                   const Text(
                     "Search Flights",
@@ -1176,7 +1310,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                   if (_isStudentFare) ...[
                     const SizedBox(width: 12),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(16),
@@ -1251,7 +1386,9 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                       child: Container(
                         width: cardWidth, // now relative instead of fixed 280
                         margin: EdgeInsets.only(
-                          right: index < _popularRoutes.length - 1 ? 16 : 0, // from 20→16
+                          right: index < _popularRoutes.length - 1
+                              ? 16
+                              : 0, // from 20→16
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -1268,7 +1405,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                           onTap: () {
                             setState(() {
                               _departureCity = route['from'];
-                              _arrivalCity   = route['to'];
+                              _arrivalCity = route['to'];
                             });
                           },
                           borderRadius: BorderRadius.circular(24),
@@ -1288,7 +1425,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                     ],
                                   ),
                                   image: DecorationImage(
-                                    image: NetworkImage(route['imageUrl'] as String),
+                                    image: NetworkImage(
+                                        route['imageUrl'] as String),
                                     fit: BoxFit.cover,
                                     colorFilter: ColorFilter.mode(
                                       Colors.black.withOpacity(0.3),
@@ -1305,13 +1443,17 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 6, // from 8→6
-                                          vertical: 3,  // from 4→3
+                                          vertical: 3, // from 4→3
                                         ),
                                         decoration: BoxDecoration(
                                           gradient: const LinearGradient(
-                                            colors: [accentOrange, warningColor],
+                                            colors: [
+                                              accentOrange,
+                                              warningColor
+                                            ],
                                           ),
-                                          borderRadius: BorderRadius.circular(14), // slightly smaller
+                                          borderRadius: BorderRadius.circular(
+                                              14), // slightly smaller
                                         ),
                                         child: Text(
                                           "${route['discount']}% OFF",
@@ -1327,7 +1469,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                     // Centered route codes + duration
                                     Center(
                                       child: Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Text(
                                             "${route['fromCode']} → ${route['toCode']}",
@@ -1341,17 +1484,20 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                           Container(
                                             padding: const EdgeInsets.symmetric(
                                               horizontal: 8, // from 10→8
-                                              vertical: 3,    // from 4→3
+                                              vertical: 3, // from 4→3
                                             ),
                                             decoration: BoxDecoration(
-                                              color: Colors.white.withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(12),
+                                              color:
+                                                  Colors.white.withOpacity(0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                             child: Text(
                                               route['duration'] as String,
                                               style: TextStyle(
                                                 fontSize: 12, // from 14→12
-                                                color: Colors.white.withOpacity(0.9),
+                                                color: Colors.white
+                                                    .withOpacity(0.9),
                                                 fontWeight: FontWeight.w600,
                                               ),
                                             ),
@@ -1366,17 +1512,22 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                               // ── CONTENT SECTION (remaining 120px) ──
                               Expanded(
                                 child: Padding(
-                                  padding: const EdgeInsets.all(12), // from 20→12
+                                  padding:
+                                      const EdgeInsets.all(12), // from 20→12
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       // a) Price row
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               const Text(
                                                 "From",
@@ -1402,10 +1553,12 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                               gradient: LinearGradient(
                                                 colors: [
                                                   primaryColor.withOpacity(0.1),
-                                                  secondaryColor.withOpacity(0.1),
+                                                  secondaryColor
+                                                      .withOpacity(0.1),
                                                 ],
                                               ),
-                                              borderRadius: BorderRadius.circular(12),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                             child: Icon(
                                               Icons.flight_takeoff,
@@ -1418,7 +1571,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
 
                                       // b) Airlines text
                                       Text(
-                                        (route['airlines'] as List<String>).join(" • "),
+                                        (route['airlines'] as List<String>)
+                                            .join(" • "),
                                         style: TextStyle(
                                           fontSize: 12, // from 13→12
                                           color: darkGrey,
@@ -1447,13 +1601,13 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
   }
 
   /// ──────────────────────────────────────────────────────
-  /// FIXED PASSENGER & CLASS SELECTOR
+  /// PASSENGER & CLASS SELECTOR
   /// ──────────────────────────────────────────────────────
   void _showPassengerSelector() {
     final classes = ['Economy', 'Premium Economy', 'Business', 'First Class'];
 
     // Local copies for the modal
-    int    tempPassengers    = _passengers;
+    int tempPassengers = _passengers;
     String tempSelectedClass = _selectedClass;
 
     showModalBottomSheet(
@@ -1470,10 +1624,12 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
             return Container(
               decoration: BoxDecoration(
                 color: backgroundColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // from 20→16
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 12), // from 20→16
                 child: StatefulBuilder(
                   builder: (context, setLocalState) {
                     return Column(
@@ -1531,12 +1687,15 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                     child: Icon(
                                       Icons.remove,
                                       size: 18,
-                                      color: tempPassengers > 1 ? primaryColor : darkGrey,
+                                      color: tempPassengers > 1
+                                          ? primaryColor
+                                          : darkGrey,
                                     ),
                                   ),
                                 ),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12), // from 16→12
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12), // from 16→12
                                   child: Text(
                                     tempPassengers.toString(),
                                     style: const TextStyle(
@@ -1563,7 +1722,9 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                     child: Icon(
                                       Icons.add,
                                       size: 18,
-                                      color: tempPassengers < 9 ? primaryColor : darkGrey,
+                                      color: tempPassengers < 9
+                                          ? primaryColor
+                                          : darkGrey,
                                     ),
                                   ),
                                 ),
@@ -1599,7 +1760,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                 },
                                 child: Container(
                                   margin: const EdgeInsets.only(bottom: 12),
-                                  padding: const EdgeInsets.all(12), // from 16→12
+                                  padding:
+                                      const EdgeInsets.all(12), // from 16→12
                                   decoration: BoxDecoration(
                                     color: isSelected
                                         ? (className == 'Economy'
@@ -1608,7 +1770,9 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                         : Colors.white,
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color: isSelected ? primaryColor : subtleGrey,
+                                      color: isSelected
+                                          ? primaryColor
+                                          : subtleGrey,
                                       width: isSelected ? 2 : 1,
                                     ),
                                   ),
@@ -1618,7 +1782,9 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                         isSelected
                                             ? Icons.radio_button_checked
                                             : Icons.radio_button_unchecked,
-                                        color: isSelected ? primaryColor : darkGrey,
+                                        color: isSelected
+                                            ? primaryColor
+                                            : darkGrey,
                                         size: 20,
                                       ),
                                       const SizedBox(width: 12),
@@ -1626,19 +1792,25 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                                         className,
                                         style: TextStyle(
                                           fontSize: 14, // from 16→14
-                                          fontWeight:
-                                              isSelected ? FontWeight.w600 : FontWeight.normal,
-                                          color: isSelected ? primaryColor : textColor,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                          color: isSelected
+                                              ? primaryColor
+                                              : textColor,
                                         ),
                                       ),
-                                      if (_isStudentFare && className == 'Economy') ...[
+                                      if (_isStudentFare &&
+                                          className == 'Economy') ...[
                                         const Spacer(),
                                         Container(
                                           padding: const EdgeInsets.symmetric(
                                               horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: accentOrange.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(8),
+                                            color:
+                                                accentOrange.withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                           child: Text(
                                             "30% OFF",
@@ -1665,15 +1837,16 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                           child: ElevatedButton(
                             onPressed: () {
                               setState(() {
-                                _passengers     = tempPassengers;
-                                _selectedClass  = tempSelectedClass;
+                                _passengers = tempPassengers;
+                                _selectedClass = tempSelectedClass;
                               });
                               Navigator.pop(context);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryColor,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14), // from 16→14
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14), // from 16→14
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -1771,11 +1944,16 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                     child: ListView(
                       controller: scrollController,
                       children: [
-                        _buildAirportTile("Kuala Lumpur (KUL)", "Kuala Lumpur International", isDeparture),
-                        _buildAirportTile("Penang (PEN)", "Penang International", isDeparture),
-                        _buildAirportTile("Langkawi (LGK)", "Langkawi International", isDeparture),
-                        _buildAirportTile("Kota Kinabalu (BKI)", "Kota Kinabalu International", isDeparture),
-                        _buildAirportTile("Johor Bahru (JHB)", "Senai International", isDeparture),
+                        _buildAirportTile("Kuala Lumpur (KUL)",
+                            "Kuala Lumpur International", isDeparture),
+                        _buildAirportTile("Penang (PEN)",
+                            "Penang International", isDeparture),
+                        _buildAirportTile("Langkawi (LGK)",
+                            "Langkawi International", isDeparture),
+                        _buildAirportTile("Kota Kinabalu (BKI)",
+                            "Kota Kinabalu International", isDeparture),
+                        _buildAirportTile("Johor Bahru (JHB)",
+                            "Senai International", isDeparture),
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 12),
                           child: Divider(),
@@ -1795,11 +1973,16 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                           ],
                         ),
                         const SizedBox(height: 12),
-                        _buildAirportTile("Singapore (SIN)", "Changi Airport", isDeparture),
-                        _buildAirportTile("Bangkok (BKK)", "Suvarnabhumi Airport", isDeparture),
-                        _buildAirportTile("Bali (DPS)", "Ngurah Rai International", isDeparture),
-                        _buildAirportTile("Hong Kong (HKG)", "Hong Kong International", isDeparture),
-                        _buildAirportTile("Tokyo (NRT)", "Narita International", isDeparture),
+                        _buildAirportTile(
+                            "Singapore (SIN)", "Changi Airport", isDeparture),
+                        _buildAirportTile("Bangkok (BKK)",
+                            "Suvarnabhumi Airport", isDeparture),
+                        _buildAirportTile("Bali (DPS)",
+                            "Ngurah Rai International", isDeparture),
+                        _buildAirportTile("Hong Kong (HKG)",
+                            "Hong Kong International", isDeparture),
+                        _buildAirportTile(
+                            "Tokyo (NRT)", "Narita International", isDeparture),
                       ],
                     ),
                   ),
@@ -1898,7 +2081,9 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
       setState(() {
         if (isDeparture) {
           _departureDate = picked;
-          if (_isRoundTrip && _returnDate != null && _returnDate!.isBefore(picked)) {
+          if (_isRoundTrip &&
+              _returnDate != null &&
+              _returnDate!.isBefore(picked)) {
             _returnDate = picked.add(const Duration(days: 7));
           }
         } else {
@@ -1924,7 +2109,9 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
   }
 
   void _searchFlights() {
-    if (_departureCity == null || _arrivalCity == null || _departureDate == null) {
+    if (_departureCity == null ||
+        _arrivalCity == null ||
+        _departureDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -1968,7 +2155,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
 
     _saveRecentSearch();
 
-    final originCode      = _extractIata(_departureCity!);
+    final originCode = _extractIata(_departureCity!);
     final destinationCode = _extractIata(_arrivalCity!);
     final departureDateStr = DateFormat('yyyy-MM-dd').format(_departureDate!);
 
@@ -1976,15 +2163,15 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
       context,
       '/flight-results',
       arguments: {
-        'originCode':      originCode,
+        'originCode': originCode,
         'destinationCode': destinationCode,
-        'departureDate':   departureDateStr,
-        'adults':          _passengers,
-        'travelClass':     _mapTravelClass(_selectedClass),
-        'direct':          false,
-        'isStudentFare':   _isStudentFare,
-        'needsHotel':      _needsHotel,
-        'needsTransport':  _needsTransport,
+        'departureDate': departureDateStr,
+        'adults': _passengers,
+        'travelClass': _mapTravelClass(_selectedClass),
+        'direct': false,
+        'isStudentFare': _isStudentFare,
+        'needsHotel': _needsHotel,
+        'needsTransport': _needsTransport,
         'isFlexibleDates': _isFlexibleDates,
       },
     );
@@ -2001,12 +2188,13 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
   Future<void> _saveRecentSearch() async {
     try {
       await _firestore.collection('recentSearches').add({
-        'userId':     _auth.currentUser?.uid,
-        'departure':  _departureCity,
-        'arrival':    _arrivalCity,
-        'date':       _departureDate,
-        'passengers': '$_passengers ${_passengers == 1 ? 'Passenger' : 'Passengers'}',
-        'timestamp':  FieldValue.serverTimestamp(),
+        'userId': _auth.currentUser?.uid,
+        'departure': _departureCity,
+        'arrival': _arrivalCity,
+        'date': _departureDate,
+        'passengers':
+            '$_passengers ${_passengers == 1 ? 'Passenger' : 'Passengers'}',
+        'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
       debugPrint('Error saving recent search: $e');
@@ -2071,8 +2259,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
               final search = doc.data() as Map<String, dynamic>;
               return _buildRecentSearchItem(
                 departure: search['departure'] ?? '',
-                arrival:   search['arrival'] ?? '',
-                date:      DateFormat('MMM dd, yyyy').format(
+                arrival: search['arrival'] ?? '',
+                date: DateFormat('MMM dd, yyyy').format(
                   (search['date'] as Timestamp).toDate(),
                 ),
                 passengers: search['passengers'] ?? '1 Passenger',
@@ -2107,7 +2295,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
         onTap: () {
           setState(() {
             _departureCity = departure;
-            _arrivalCity   = arrival;
+            _arrivalCity = arrival;
           });
         },
         borderRadius: BorderRadius.circular(16),
@@ -2121,7 +2309,8 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                   color: subtleGrey.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.history, color: darkGrey, size: 18), // from 20→18
+                child: Icon(Icons.history,
+                    color: darkGrey, size: 18), // from 20→18
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -2172,7 +2361,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                 onPressed: () {
                   setState(() {
                     _departureCity = departure;
-                    _arrivalCity   = arrival;
+                    _arrivalCity = arrival;
                   });
                 },
               ),
@@ -2185,7 +2374,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
 
   Future<void> _clearRecentSearches() async {
     try {
-      final batch    = _firestore.batch();
+      final batch = _firestore.batch();
       final searches = await _firestore
           .collection('recentSearches')
           .where('userId', isEqualTo: _auth.currentUser?.uid)
@@ -2228,7 +2417,9 @@ class ModernPatternPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..style = PaintingStyle.fill;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
 
     // Create a modern geometric pattern
     for (double x = 0; x < size.width; x += 40) {
