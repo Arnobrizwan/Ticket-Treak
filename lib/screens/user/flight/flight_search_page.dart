@@ -1,4 +1,4 @@
-// lib/screens/user/flight/flight_search_page.dart
+// lib/screens/user/booking/flight_search_page.dart
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -12,73 +12,123 @@ class FlightSearchPage extends StatefulWidget {
   State<FlightSearchPage> createState() => _FlightSearchPageState();
 }
 
-class _FlightSearchPageState extends State<FlightSearchPage> with TickerProviderStateMixin {
-  // Violin color palette (matching OnboardingScreen)
-  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
-  static const Color primaryColor      = Color(0xFF5C2E00);  // Dark Brown
-  static const Color secondaryColor    = Color(0xFF8B5000);  // Amber Brown
-  static const Color textColor         = Color(0xFF35281E);  // Deep Wood
-  static const Color subtleGrey        = Color(0xFFDAC1A7);  // Light Tan
-  static const Color darkGrey          = Color(0xFF7E5E3C);  // Medium Brown
-  static const Color accentOrange      = Color(0xFFD4A373);  // Warm Highlight
-  static const Color accentGreen       = Color(0xFFB28F5E);  // Muted Brown
+class _FlightSearchPageState extends State<FlightSearchPage>
+    with TickerProviderStateMixin {
+  // Violin color palette (matching OnboardingScreen) - STRICTLY FOLLOWING
+  static const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
+  static const Color primaryColor = Color(0xFF5C2E00); // Dark Brown
+  static const Color secondaryColor = Color(0xFF8B5000); // Amber Brown
+  static const Color textColor = Color(0xFF35281E); // Deep Wood
+  static const Color subtleGrey = Color(0xFFDAC1A7); // Light Tan
+  static const Color darkGrey = Color(0xFF7E5E3C); // Medium Brown
+  static const Color accentOrange = Color(0xFFD4A373); // Warm Highlight
+  static const Color accentGreen = Color(0xFFB28F5E); // Muted Brown
+  static const Color successColor =
+      Color(0xFF8B5000); // Success (using secondary)
+  static const Color warningColor = Color(0xFFD4A373); // Warning (using accent)
 
+  bool _showFlashBanner = true;
   // Form data
   final _formKey = GlobalKey<FormState>();
-  String?    _departureCity;
-  String?    _arrivalCity;
-  DateTime?  _departureDate;
-  DateTime?  _returnDate;
-  int        _passengers     = 1;
-  String     _selectedClass  = 'Economy';
-  bool       _isRoundTrip    = false;
-  bool       _isStudentFare  = true;
+  String? _departureCity;
+  String? _arrivalCity;
+  DateTime? _departureDate;
+  DateTime? _returnDate;
+  int _passengers = 1;
+  String _selectedClass = 'Economy';
+  bool _isRoundTrip = false;
+  bool _isStudentFare = true;
+  bool _isFlexibleDates = false;
+  bool _needsHotel = false;
+  bool _needsTransport = false;
 
-  // Firebase (for recent searches, etc.)
+  // Firebase
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth      _auth      = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   // Animation
   late AnimationController _animationController;
-  late Animation<double>   _fadeAnimation;
+  late Animation<double> _fadeAnimation;
+  late AnimationController _searchButtonController;
+  late Animation<double> _searchButtonScale;
+  late AnimationController _cardController;
+  late Animation<double> _cardAnimation;
 
-  // “Popular Student Routes”
-  final List<Map<String,String>> _popularRoutes = [
+  // Enhanced popular routes with high-quality Unsplash travel images
+  final List<Map<String, dynamic>> _popularRoutes = [
     {
-      'from'    : 'Kuala Lumpur (KUL)',
-      'to'      : 'Singapore (SIN)',
+      'from': 'Kuala Lumpur (KUL)',
+      'to': 'Singapore (SIN)',
       'fromCode': 'KUL',
-      'toCode'  : 'SIN'
+      'toCode': 'SIN',
+      'duration': '1h 20m',
+      'airlines': ['Malaysia Airlines'],
+      'price': 189,
+      'discount': 30,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=800&q=80'
     },
     {
-      'from'    : 'Kuala Lumpur (KUL)',
-      'to'      : 'Bangkok (BKK)',
+      'from': 'Kuala Lumpur (KUL)',
+      'to': 'Bangkok (BKK)',
       'fromCode': 'KUL',
-      'toCode'  : 'BKK'
+      'toCode': 'BKK',
+      'duration': '2h 5m',
+      'airlines': ['Thai Airways'],
+      'price': 299,
+      'discount': 25,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
     },
     {
-      'from'    : 'Kuala Lumpur (KUL)',
-      'to'      : 'Penang (PEN)',
+      'from': 'Kuala Lumpur (KUL)',
+      'to': 'Bali (DPS)',
       'fromCode': 'KUL',
-      'toCode'  : 'PEN'
+      'toCode': 'DPS',
+      'duration': '3h 15m',
+      'airlines': ['Garuda'],
+      'price': 459,
+      'discount': 35,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&q=80',
     },
     {
-      'from'    : 'Johor Bahru (JHB)',
-      'to'      : 'Kuala Lumpur (KUL)',
+      'from': 'Johor Bahru (JHB)',
+      'to': 'Kuala Lumpur (KUL)',
       'fromCode': 'JHB',
-      'toCode'  : 'KUL'
+      'toCode': 'KUL',
+      'duration': '1h 15m',
+      'airlines': ['Malaysia Airlines'],
+      'price': 129,
+      'discount': 20,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&q=80',
     },
     {
-      'from'    : 'Kuala Lumpur (KUL)',
-      'to'      : 'Langkawi (LGK)',
+      'from': 'Kuala Lumpur (KUL)',
+      'to': 'Penang (PEN)',
       'fromCode': 'KUL',
-      'toCode'  : 'LGK'
+      'toCode': 'PEN',
+      'duration': '1h 30m',
+      'airlines': [
+        'Malaysia Airlines',
+      ],
+      'price': 159,
+      'discount': 25,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80',
     },
     {
-      'from'    : 'Kuala Lumpur (KUL)',
-      'to'      : 'Bali (DPS)',
+      'from': 'Kuala Lumpur (KUL)',
+      'to': 'Langkawi (LGK)',
       'fromCode': 'KUL',
-      'toCode'  : 'DPS'
+      'toCode': 'LGK',
+      'duration': '1h 45m',
+      'airlines': ['AirAsia'],
+      'price': 199,
+      'discount': 30,
+      'imageUrl':
+          'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
     },
   ];
 
@@ -90,21 +140,38 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
 
   void _setupAnimations() {
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+
+    _searchButtonController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+    _searchButtonScale = Tween<double>(begin: 1.0, end: 0.96).animate(
+      CurvedAnimation(parent: _searchButtonController, curve: Curves.easeInOut),
+    );
+
+    _cardController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _cardAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _cardController, curve: Curves.elasticOut),
+    );
+
     _animationController.forward();
+    _cardController.forward();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _searchButtonController.dispose();
+    _cardController.dispose();
     super.dispose();
   }
 
@@ -114,211 +181,314 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
       backgroundColor: backgroundColor,
       body: Stack(
         children: [
-          // Background dotted pattern
+          // Modern background pattern
           Positioned.fill(
             child: CustomPaint(
-              painter: DottedPatternPainter(color: primaryColor.withOpacity(0.02)),
+              painter:
+                  ModernPatternPainter(color: primaryColor.withOpacity(0.03)),
             ),
           ),
 
-          SafeArea(
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: AnimatedBuilder(
-                    animation: _animationController,
-                    builder: (context, _) {
-                      return FadeTransition(
-                        opacity: _fadeAnimation,
-                        child: _buildContent(),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// ────────────────────────────────────────────────────────────────
-  /// HEADER
-  /// ────────────────────────────────────────────────────────────────
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            icon: Icon(Icons.arrow_back, color: textColor),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [primaryColor, secondaryColor]),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(Icons.flight_takeoff, color: Colors.white, size: 20),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Search Flights",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              Text(
-                "Student Exclusive Rates",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: accentOrange,
-                  fontWeight: FontWeight.w600,
+          CustomScrollView(
+            slivers: [
+              _buildModernAppBar(),
+              SliverToBoxAdapter(
+                child: AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, _) {
+                    return FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: _buildContentWithBanner(),
+                    );
+                  },
                 ),
               ),
             ],
           ),
-          const Spacer(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernAppBar() {
+    return SliverAppBar(
+      expandedHeight: 140.0,
+      floating: false,
+      pinned: true,
+      backgroundColor: primaryColor,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.flight_takeoff, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            const Text(
+              "Search Flights",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        background: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [primaryColor, secondaryColor],
+            ),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -60,
+                top: -60,
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.1),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: -30,
+                bottom: -30,
+                child: Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.05),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 18),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+
+      // ─── UPDATED "Student Rates" PILL ─────────────────────────────────────
+      actions: [
+        if (_isStudentFare)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: accentOrange.withOpacity(0.1),
+              color: Colors.white, // solid white background
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: accentOrange, // orange outline
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.school, size: 16, color: accentOrange),
-                const SizedBox(width: 4),
-                Text(
-                  "30% OFF",
+                Icon(
+                  Icons.school,
+                  size: 16,
+                  color: primaryColor, // dark‐wood icon
+                ),
+                const SizedBox(width: 6),
+                const Text(
+                  "Student Rates",
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: accentOrange,
+                    color: Color(0xFF35281E), // deep‐wood text
                   ),
                 ),
               ],
             ),
           ),
-        ],
+      ],
+    );
+  }
+
+  /// ─── FLASH‐SALE BANNER WIDGET ─────────────────────────────────────────────
+  Widget _buildFlashSaleBanner() {
+    return Padding(
+      // Matches the 16px horizontal padding used by the form,
+      // so it lines up under the “30% OFF” badge in the AppBar.
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 12.0),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF5C2E00),
+              Color(0xFF8B5000)
+            ], // primary → secondary
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.local_offer, size: 24, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                "Flash Sale: 50% OFF select student routes!",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _showFlashBanner = false;
+                });
+              },
+              child: const Icon(Icons.close, size: 20, color: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  /// ────────────────────────────────────────────────────────────────
-  /// CONTENT (ListView)
-  /// ────────────────────────────────────────────────────────────────
+  /// ─── This method wraps the original _buildContent() plus a new banner at the top ─────────────────────────
+  Widget _buildContentWithBanner() {
+    return Column(
+      children: [
+        // ─── SHOW FLASH SALE BANNER ONLY IF FLAG IS TRUE ───────────────────────
+        if (_showFlashBanner) _buildFlashSaleBanner(),
+
+        // ─── ORIGINAL FORM CONTENT FOLLOWS ───────────────────────────────────
+        _buildContent(),
+      ],
+    );
+  }
+
   Widget _buildContent() {
     return Form(
       key: _formKey,
-      child: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-        children: [
-          // Student fare toggle
-          _buildStudentFareCard(),
-          const SizedBox(height: 20),
-
-          // Trip type selector
-          _buildTripTypeSelector(),
-          const SizedBox(height: 20),
-
-          // Location fields (“From” & “To”)
-          _buildLocationCard(),
-          const SizedBox(height: 20),
-
-          // Date selector
-          _buildDateCard(),
-          const SizedBox(height: 20),
-
-          // Passengers & Travel Class
-          _buildPassengersCard(),
-          const SizedBox(height: 24),
-
-          // Search button
-          _buildSearchButton(),
-          const SizedBox(height: 32),
-
-          // Popular Routes
-          _buildPopularRoutes(),
-          const SizedBox(height: 32),
-
-          // Recent searches
-          _buildRecentSearches(),
-        ],
+      child: Padding(
+        // Trimmed outer padding from 20→16
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStudentFareCard(),
+            const SizedBox(height: 16),
+            _buildTripTypeSelector(),
+            const SizedBox(height: 16),
+            _buildLocationCard(),
+            const SizedBox(height: 16),
+            _buildDateCard(),
+            const SizedBox(height: 16),
+            _buildPassengersAndClassCard(),
+            const SizedBox(height: 16),
+            _buildAdditionalServicesCard(),
+            const SizedBox(height: 16),
+            _buildFlexibleDatesOption(),
+            const SizedBox(height: 24),
+            _buildEnhancedSearchButton(),
+            const SizedBox(height: 24),
+            _buildPopularRoutes(),
+            const SizedBox(height: 24),
+            _buildRecentSearches(),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
 
-  /// ────────────────────────────────────────────────────────────────
-  /// STUDENT FARE CARD
-  /// ────────────────────────────────────────────────────────────────
   Widget _buildStudentFareCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.all(16), // trimmed from 24→16
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            accentOrange.withOpacity(0.8),
-            accentOrange,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
+        gradient: _isStudentFare
+            ? const LinearGradient(
+                colors: [successColor, accentGreen],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : const LinearGradient(colors: [subtleGrey, subtleGrey]),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: accentOrange.withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color:
+                (_isStudentFare ? successColor : subtleGrey).withOpacity(0.3),
+            blurRadius: 16, // slightly smaller blur
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12), // from 16→12
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(Icons.school, color: Colors.white, size: 24),
+            child: Icon(
+              _isStudentFare ? Icons.school : Icons.school_outlined,
+              color: Colors.white,
+              size: 28, // trimmed from 32→28
+            ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 16), // was 20→16
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Student Fare Activated",
-                  style: TextStyle(
+                Text(
+                  _isStudentFare
+                      ? "Student Fare Activated"
+                      : "Enable Student Discount",
+                  style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 18, // trimmed 20→18
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(height: 4), // trimmed 6→4
                 Text(
-                  "Save up to 30% with your student ID",
+                  _isStudentFare
+                      ? "Save up to 30% with your student ID"
+                      : "Verify student status to save money",
                   style: TextStyle(
                     color: Colors.white.withOpacity(0.9),
-                    fontSize: 13,
+                    fontSize: 14, // trimmed 15→14
                   ),
                 ),
               ],
@@ -332,31 +502,30 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
               });
             },
             activeColor: Colors.white,
-            activeTrackColor: Colors.white.withOpacity(0.5),
+            activeTrackColor: Colors.white.withOpacity(0.3),
+            inactiveThumbColor: Colors.grey[300],
+            inactiveTrackColor: Colors.grey[400],
           ),
         ],
       ),
     );
   }
 
-  /// ────────────────────────────────────────────────────────────────
-  /// TRIP TYPE (One Way / Round Trip)
-  /// ────────────────────────────────────────────────────────────────
   Widget _buildTripTypeSelector() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20, // trimmed from 25→20
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(8),
         child: Row(
           children: [
             Expanded(
@@ -381,24 +550,41 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
     );
   }
 
-  Widget _buildTripTypeButton(String text, bool isSelected, IconData icon, VoidCallback onTap) {
+  Widget _buildTripTypeButton(
+      String text, bool isSelected, IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 16), // from 18→16
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          gradient: isSelected
+              ? const LinearGradient(colors: [primaryColor, secondaryColor])
+              : null,
+          color: isSelected ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: primaryColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: isSelected ? Colors.white : darkGrey),
-            const SizedBox(width: 8),
+            Icon(icon,
+                size: 20,
+                color: isSelected ? Colors.white : darkGrey), // from 22→20
+            const SizedBox(width: 8), // from 12→8
             Text(
               text,
               style: TextStyle(
                 fontWeight: FontWeight.w600,
+                fontSize: 14, // from 16→14
                 color: isSelected ? Colors.white : darkGrey,
               ),
             ),
@@ -408,19 +594,16 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
     );
   }
 
-  /// ────────────────────────────────────────────────────────────────
-  /// LOCATION CARD (“From” & “To” fields)
-  /// ────────────────────────────────────────────────────────────────
   Widget _buildLocationCard() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -434,25 +617,35 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
             onTap: () => _showAirportSelector(true),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16), // from 24→16
             child: Row(
               children: [
-                Expanded(child: Divider(color: subtleGrey)),
+                const Expanded(child: Divider(color: subtleGrey, thickness: 1)),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: IconButton(
-                    onPressed: _swapLocations,
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12), // from 16→12
+                  child: GestureDetector(
+                    onTap: _swapLocations,
+                    child: Container(
+                      padding: const EdgeInsets.all(10), // from 12→10
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.1),
+                        gradient: const LinearGradient(
+                            colors: [primaryColor, secondaryColor]),
                         shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryColor.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: Icon(Icons.swap_vert, color: primaryColor, size: 20),
+                      child: const Icon(Icons.swap_vert,
+                          color: Colors.white, size: 18), // from 20→18
                     ),
                   ),
                 ),
-                Expanded(child: Divider(color: subtleGrey)),
+                const Expanded(child: Divider(color: subtleGrey, thickness: 1)),
               ],
             ),
           ),
@@ -477,20 +670,25 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(24),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16), // from 24→16
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12), // from 14→12
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                gradient: LinearGradient(
+                  colors: [
+                    primaryColor.withOpacity(0.1),
+                    secondaryColor.withOpacity(0.1)
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(icon, size: 22, color: primaryColor),
+              child: Icon(icon, size: 24, color: primaryColor), // from 26→24
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 16), // from 20→16
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -498,61 +696,61 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                   Text(
                     label,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12, // from 13→12
                       color: darkGrey,
                       fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 4), // trimmed from 8→4
                   Text(
                     value ?? hint,
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: value != null ? FontWeight.w600 : FontWeight.normal,
+                      fontSize: 15, // from 17→15
+                      fontWeight:
+                          value != null ? FontWeight.w600 : FontWeight.normal,
                       color: value != null ? textColor : darkGrey,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: darkGrey),
+            Icon(Icons.arrow_forward_ios,
+                size: 14, color: darkGrey), // from 16→14
           ],
         ),
       ),
     );
   }
 
-  /// ────────────────────────────────────────────────────────────────
-  /// DATE CARD (“Departure” & optional “Return”)
-  /// ────────────────────────────────────────────────────────────────
   Widget _buildDateCard() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         children: [
           _buildDateField(
-            label: "Departure",
+            label: "Departure Date",
             value: _departureDate,
             onTap: () => _selectDate(true),
             icon: Icons.calendar_today,
           ),
           if (_isRoundTrip) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Divider(color: subtleGrey),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Divider(color: subtleGrey, thickness: 1),
             ),
             _buildDateField(
-              label: "Return",
+              label: "Return Date",
               value: _returnDate,
               onTap: () => _selectDate(false),
               icon: Icons.event_repeat,
@@ -573,26 +771,31 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
     String? dayInfo;
 
     if (value != null) {
-      displayText = DateFormat('MMM dd, yyyy').format(value);
-      dayInfo = DateFormat('EEEE').format(value);
+      displayText = DateFormat('EEE, MMM dd').format(value);
+      dayInfo = DateFormat('yyyy').format(value);
     }
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(24),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16), // from 24→16
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(12), // from 14→12
               decoration: BoxDecoration(
-                color: primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(10),
+                gradient: LinearGradient(
+                  colors: [
+                    primaryColor.withOpacity(0.1),
+                    secondaryColor.withOpacity(0.1)
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(icon, size: 22, color: primaryColor),
+              child: Icon(icon, size: 24, color: primaryColor), // from 26→24
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 16), // from 20→16
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -600,17 +803,19 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                   Text(
                     label,
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 12, // from 13→12
                       color: darkGrey,
                       fontWeight: FontWeight.w600,
+                      letterSpacing: 0.5,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     displayText,
                     style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: value != null ? FontWeight.w600 : FontWeight.normal,
+                      fontSize: 15, // from 17→15
+                      fontWeight:
+                          value != null ? FontWeight.w600 : FontWeight.normal,
                       color: value != null ? textColor : darkGrey,
                     ),
                   ),
@@ -618,7 +823,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                     Text(
                       dayInfo,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12, // from 13→12
                         color: accentOrange,
                         fontWeight: FontWeight.w500,
                       ),
@@ -626,45 +831,48 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: darkGrey),
+            Icon(Icons.arrow_forward_ios, size: 14, color: darkGrey),
           ],
         ),
       ),
     );
   }
 
-  /// ────────────────────────────────────────────────────────────────
-  /// PASSENGERS & CLASS CARD
-  /// ────────────────────────────────────────────────────────────────
-  Widget _buildPassengersCard() {
+  Widget _buildPassengersAndClassCard() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: InkWell(
         onTap: _showPassengerSelector,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16), // from 24→16
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(12), // from 14→12
                 decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: [
+                      primaryColor.withOpacity(0.1),
+                      secondaryColor.withOpacity(0.1)
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(Icons.people, size: 22, color: primaryColor),
+                child: Icon(Icons.people,
+                    size: 24, color: primaryColor), // from 26→24
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 16), // from 20→16
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -672,16 +880,17 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                     Text(
                       "Passengers & Class",
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 12, // from 13→12
                         color: darkGrey,
                         fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       "$_passengers ${_passengers == 1 ? 'Passenger' : 'Passengers'} • $_selectedClass",
                       style: const TextStyle(
-                        fontSize: 16,
+                        fontSize: 15, // from 17→15
                         fontWeight: FontWeight.w600,
                         color: textColor,
                       ),
@@ -689,7 +898,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, size: 16, color: darkGrey),
+              Icon(Icons.arrow_forward_ios, size: 14, color: darkGrey),
             ],
           ),
         ),
@@ -697,244 +906,963 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
     );
   }
 
-  /// ────────────────────────────────────────────────────────────────
-  /// SHOW PASSENGER & CLASS BOTTOM SHEET
-  /// ────────────────────────────────────────────────────────────────
+  Widget _buildAdditionalServicesCard() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.add_business,
+                  size: 18, color: primaryColor), // from 20→18
+            ),
+            const SizedBox(width: 8), // from 12→8
+            const Text(
+              "Additional Services",
+              style: TextStyle(
+                fontSize: 18, // from 20→18
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12), // from 20→12
+
+        // Hotel booking option
+        Container(
+          margin: const EdgeInsets.only(bottom: 12), // from bottom 16→12
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 12, // from 15→12
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16), // from 20→16
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10), // from 12→10
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        accentOrange.withOpacity(0.1),
+                        accentOrange.withOpacity(0.2)
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.hotel,
+                      color: accentOrange, size: 22), // from 24→22
+                ),
+                const SizedBox(width: 12), // from 16→12
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Add Hotel Booking",
+                        style: TextStyle(
+                          fontSize: 15, // from 16→15
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 2), // from 4→2
+                      Text(
+                        "Save up to 25% on hotel stays",
+                        style: TextStyle(
+                          fontSize: 12, // from 13→12
+                          color: darkGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: _needsHotel,
+                  onChanged: (value) {
+                    setState(() {
+                      _needsHotel = value;
+                    });
+                  },
+                  activeColor: accentOrange,
+                  activeTrackColor: accentOrange.withOpacity(0.3),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Transport booking option
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16), // from 20→16
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10), // from 12→10
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        accentGreen.withOpacity(0.1),
+                        accentGreen.withOpacity(0.2)
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(Icons.directions_car,
+                      color: accentGreen, size: 22), // from 24→22
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Add Ground Transport",
+                        style: TextStyle(
+                          fontSize: 15, // from 16→15
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        "Airport transfers & car rentals",
+                        style: TextStyle(
+                          fontSize: 12, // from 13→12
+                          color: darkGrey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: _needsTransport,
+                  onChanged: (value) {
+                    setState(() {
+                      _needsTransport = value;
+                    });
+                  },
+                  activeColor: accentGreen,
+                  activeTrackColor: accentGreen.withOpacity(0.3),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Seat preference info (non-economy clickable)
+        if (_selectedClass != 'Economy') ...[
+          const SizedBox(height: 12), // trimmed from 16→12
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: accentOrange.withOpacity(0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: InkWell(
+              onTap: () {
+                // Navigate to seat selection page
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.airline_seat_recline_extra,
+                            color: Colors.white),
+                        const SizedBox(width: 12),
+                        Text(
+                            'Navigating to seat selection for $_selectedClass'),
+                      ],
+                    ),
+                    backgroundColor: accentOrange,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: const EdgeInsets.all(16),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Padding(
+                padding: const EdgeInsets.all(16), // from 20→16
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10), // from 12→10
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            accentOrange.withOpacity(0.1),
+                            accentOrange.withOpacity(0.2)
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.airline_seat_recline_extra,
+                          color: accentOrange, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Select Your $_selectedClass Seat",
+                            style: const TextStyle(
+                              fontSize: 15, // from 16→15
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "Choose your preferred seat location",
+                            style: TextStyle(
+                              fontSize: 12, // from 13→12
+                              color: darkGrey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                            colors: [accentOrange, warningColor]),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        "Select",
+                        style: TextStyle(
+                          fontSize: 12, // trimmed from 13→12
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildFlexibleDatesOption() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20, // from 25→20
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16), // from 24→16
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10), // from 12→10
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    primaryColor.withOpacity(0.1),
+                    secondaryColor.withOpacity(0.1)
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.date_range,
+                  color: primaryColor, size: 22), // from 24→22
+            ),
+            const SizedBox(width: 16), // from 20→16
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Flexible Dates",
+                    style: TextStyle(
+                      fontSize: 15, // from 17→15
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    "Find cheaper flights ±3 days",
+                    style: TextStyle(
+                      fontSize: 12, // from 13→12
+                      color: darkGrey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: _isFlexibleDates,
+              onChanged: (value) {
+                setState(() {
+                  _isFlexibleDates = value;
+                });
+              },
+              activeColor: primaryColor,
+              activeTrackColor: primaryColor.withOpacity(0.3),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEnhancedSearchButton() {
+    return AnimatedBuilder(
+      animation: _searchButtonScale,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _searchButtonScale.value,
+          child: Container(
+            width: double.infinity,
+            height: 56, // trimmed height from 64→56
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [primaryColor, secondaryColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: primaryColor.withOpacity(0.4),
+                  blurRadius: 16, // from 20→16
+                  offset: const Offset(0, 8), // from 0,10→0,8
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                _searchButtonController.forward().then((_) {
+                  _searchButtonController.reverse();
+                });
+                _searchFlights();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.search,
+                      size: 24, color: Colors.white), // from 26→24
+                  const SizedBox(width: 12), // from 16→12
+                  const Text(
+                    "Search Flights",
+                    style: TextStyle(
+                      fontSize: 17, // from 19→17
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  if (_isStudentFare) ...[
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Text(
+                        "Student Rates",
+                        style: TextStyle(
+                          fontSize: 12, // from 13→12
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPopularRoutes() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    // Make each card around 75% of screen width, up to a max of 300
+    final cardWidth = (screenWidth * 0.75).clamp(240.0, 300.0);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title Row
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.trending_up, size: 20, color: primaryColor),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              "Popular Student Routes",
+              style: TextStyle(
+                fontSize: 18, // trimmed from 20→18
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16), // trimmed from 20→16
+
+        // ⬇️ Parent height = 220px (unchanged) ⬇️
+        SizedBox(
+          height: 220,
+          child: AnimatedBuilder(
+            animation: _cardAnimation,
+            builder: (context, child) {
+              return ListView.builder(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: _popularRoutes.length,
+                itemBuilder: (context, index) {
+                  final route = _popularRoutes[index];
+                  return Transform.translate(
+                    offset: Offset(20 * (1 - _cardAnimation.value), 0),
+                    child: Opacity(
+                      opacity: _cardAnimation.value,
+                      child: Container(
+                        width: cardWidth, // now relative instead of fixed 280
+                        margin: EdgeInsets.only(
+                          right: index < _popularRoutes.length - 1
+                              ? 16
+                              : 0, // from 20→16
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20, // from 25→20
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _departureCity = route['from'];
+                              _arrivalCity = route['to'];
+                            });
+                          },
+                          borderRadius: BorderRadius.circular(24),
+                          child: Column(
+                            children: [
+                              // ── HEADER IMAGE (100px tall) ──
+                              Container(
+                                height: 100,
+                                decoration: BoxDecoration(
+                                  borderRadius: const BorderRadius.vertical(
+                                    top: Radius.circular(24),
+                                  ),
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      primaryColor.withOpacity(0.8),
+                                      secondaryColor.withOpacity(0.6),
+                                    ],
+                                  ),
+                                  image: DecorationImage(
+                                    image: NetworkImage(
+                                        route['imageUrl'] as String),
+                                    fit: BoxFit.cover,
+                                    colorFilter: ColorFilter.mode(
+                                      Colors.black.withOpacity(0.3),
+                                      BlendMode.darken,
+                                    ),
+                                  ),
+                                ),
+                                child: Stack(
+                                  children: [
+                                    // Discount badge (top-right)
+                                    Positioned(
+                                      top: 8, // trimmed from 12→8
+                                      right: 8, // trimmed from 12→8
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, // from 8→6
+                                          vertical: 3, // from 4→3
+                                        ),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              accentOrange,
+                                              warningColor
+                                            ],
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                              14), // slightly smaller
+                                        ),
+                                        child: Text(
+                                          "${route['discount']}% OFF",
+                                          style: const TextStyle(
+                                            fontSize: 10, // from 12→10
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                    // Centered route codes + duration
+                                    Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "${route['fromCode']} → ${route['toCode']}",
+                                            style: const TextStyle(
+                                              fontSize: 16, // from 18→16
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, // from 10→8
+                                              vertical: 3, // from 4→3
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  Colors.white.withOpacity(0.2),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              route['duration'] as String,
+                                              style: TextStyle(
+                                                fontSize: 12, // from 14→12
+                                                color: Colors.white
+                                                    .withOpacity(0.9),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // ── CONTENT SECTION (remaining 120px) ──
+                              Expanded(
+                                child: Padding(
+                                  padding:
+                                      const EdgeInsets.all(12), // from 20→12
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // a) Price row
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                "From",
+                                                style: TextStyle(
+                                                  fontSize: 12, // stays 12
+                                                  color: darkGrey,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                "RM${route['price']}",
+                                                style: TextStyle(
+                                                  fontSize: 18, // from 20→18
+                                                  fontWeight: FontWeight.bold,
+                                                  color: successColor,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.all(8),
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: [
+                                                  primaryColor.withOpacity(0.1),
+                                                  secondaryColor
+                                                      .withOpacity(0.1),
+                                                ],
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Icon(
+                                              Icons.flight_takeoff,
+                                              color: primaryColor,
+                                              size: 20,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      // b) Airlines text
+                                      Text(
+                                        (route['airlines'] as List<String>)
+                                            .join(" • "),
+                                        style: TextStyle(
+                                          fontSize: 12, // from 13→12
+                                          color: darkGrey,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// ──────────────────────────────────────────────────────
+  /// PASSENGER & CLASS SELECTOR
+  /// ──────────────────────────────────────────────────────
   void _showPassengerSelector() {
     final classes = ['Economy', 'Premium Economy', 'Business', 'First Class'];
+
+    // Local copies for the modal
+    int tempPassengers = _passengers;
+    String tempSelectedClass = _selectedClass;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent, // so we can round the top corners
+      backgroundColor: Colors.transparent,
       builder: (context) {
         return DraggableScrollableSheet(
-          initialChildSize: 0.5,
+          initialChildSize: 0.6,
           minChildSize: 0.4,
-          maxChildSize: 0.85,
+          maxChildSize: 0.9,
           expand: false,
           builder: (context, scrollController) {
             return Container(
               decoration: BoxDecoration(
                 color: backgroundColor,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Drag handle
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: subtleGrey,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // Title
-                    const Text(
-                      "Passengers & Class",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Passengers counter
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 12), // from 20→16
+                child: StatefulBuilder(
+                  builder: (context, setLocalState) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Center(
+                          child: Container(
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: subtleGrey,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         const Text(
-                          "Passengers",
+                          "Passengers & Class",
+                          style: TextStyle(
+                            fontSize: 18, // from 20→18
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        const SizedBox(height: 12), // from 16→12
+
+                        // Passenger count row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Passengers",
+                              style: TextStyle(
+                                fontSize: 14, // from 16→14
+                                fontWeight: FontWeight.w600,
+                                color: textColor,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                IconButton(
+                                  onPressed: tempPassengers > 1
+                                      ? () {
+                                          setLocalState(() => tempPassengers--);
+                                        }
+                                      : null,
+                                  icon: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: tempPassengers > 1
+                                          ? primaryColor.withOpacity(0.1)
+                                          : subtleGrey.withOpacity(0.5),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      Icons.remove,
+                                      size: 18,
+                                      color: tempPassengers > 1
+                                          ? primaryColor
+                                          : darkGrey,
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12), // from 16→12
+                                  child: Text(
+                                    tempPassengers.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: tempPassengers < 9
+                                      ? () {
+                                          setLocalState(() => tempPassengers++);
+                                        }
+                                      : null,
+                                  icon: Container(
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      color: tempPassengers < 9
+                                          ? primaryColor.withOpacity(0.1)
+                                          : subtleGrey.withOpacity(0.5),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      size: 18,
+                                      color: tempPassengers < 9
+                                          ? primaryColor
+                                          : darkGrey,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12), // from 16→12
+
+                        // Travel class selection list
+                        const Text(
+                          "Travel Class",
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: textColor,
                           ),
                         ),
-                        Row(
-                          children: [
-                            IconButton(
-                              onPressed: _passengers > 1
-                                  ? () => setState(() => _passengers--)
-                                  : null,
-                              icon: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: _passengers > 1
-                                      ? primaryColor.withOpacity(0.1)
-                                      : subtleGrey.withOpacity(0.5),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.remove,
-                                  size: 18,
-                                  color: _passengers > 1 ? primaryColor : darkGrey,
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Text(
-                                _passengers.toString(),
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: textColor,
-                                ),
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: _passengers < 9
-                                  ? () => setState(() => _passengers++)
-                                  : null,
-                              icon: Container(
-                                padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
-                                  color: _passengers < 9
-                                      ? primaryColor.withOpacity(0.1)
-                                      : subtleGrey.withOpacity(0.5),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  Icons.add,
-                                  size: 18,
-                                  color: _passengers < 9 ? primaryColor : darkGrey,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
+                        const SizedBox(height: 12),
 
-                    // Travel class label
-                    const Text(
-                      "Travel Class",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
-                    // ────────────────────────────
-                    // Use an Expanded ListView for class options so it can scroll if needed
-                    // ────────────────────────────
-                    Expanded(
-                      child: ListView.builder(
-                        controller: scrollController,
-                        itemCount: classes.length,
-                        itemBuilder: (context, index) {
-                          final className = classes[index];
-                          final isSelected = _selectedClass == className;
-                          return GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _selectedClass = className;
-                              });
-                            },
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                // If “Economy” is selected, give it a light accentOrange highlight.
-                                color: isSelected
-                                    ? (className == 'Economy'
-                                        ? accentOrange.withOpacity(0.15)
-                                        : primaryColor.withOpacity(0.1))
-                                    : Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: isSelected ? primaryColor : subtleGrey,
-                                  width: isSelected ? 2 : 1,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    isSelected
-                                        ? Icons.radio_button_checked
-                                        : Icons.radio_button_unchecked,
-                                    color: isSelected ? primaryColor : darkGrey,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    className,
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight:
-                                          isSelected ? FontWeight.w600 : FontWeight.normal,
-                                      color: isSelected ? primaryColor : textColor,
+                        Expanded(
+                          child: ListView.builder(
+                            controller: scrollController,
+                            itemCount: classes.length,
+                            itemBuilder: (context, index) {
+                              final className = classes[index];
+                              final isSelected = tempSelectedClass == className;
+                              return GestureDetector(
+                                onTap: () {
+                                  setLocalState(() {
+                                    tempSelectedClass = className;
+                                  });
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 12),
+                                  padding:
+                                      const EdgeInsets.all(12), // from 16→12
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? (className == 'Economy'
+                                            ? accentOrange.withOpacity(0.15)
+                                            : primaryColor.withOpacity(0.1))
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? primaryColor
+                                          : subtleGrey,
+                                      width: isSelected ? 2 : 1,
                                     ),
                                   ),
-                                  // If it’s Economy + student fare, show “30% OFF” badge
-                                  if (_isStudentFare && className == 'Economy') ...[
-                                    const Spacer(),
-                                    Container(
-                                      padding:
-                                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: accentOrange.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        isSelected
+                                            ? Icons.radio_button_checked
+                                            : Icons.radio_button_unchecked,
+                                        color: isSelected
+                                            ? primaryColor
+                                            : darkGrey,
+                                        size: 20,
                                       ),
-                                      child: Text(
-                                        "30% OFF",
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        className,
                                         style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: accentOrange,
+                                          fontSize: 14, // from 16→14
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                          color: isSelected
+                                              ? primaryColor
+                                              : textColor,
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ],
+                                      if (_isStudentFare &&
+                                          className == 'Economy') ...[
+                                        const Spacer(),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                accentOrange.withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            "30% OFF",
+                                            style: TextStyle(
+                                              fontSize: 11, // from 12→11
+                                              fontWeight: FontWeight.bold,
+                                              color: accentOrange,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+                        // Apply button commits local changes to outer state
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                _passengers = tempPassengers;
+                                _selectedClass = tempSelectedClass;
+                              });
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 14), // from 16→14
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    // Apply button
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16, top: 8),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            "Apply",
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                            child: const Text(
+                              "Apply",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
+                      ],
+                    );
+                  },
                 ),
               ),
             );
@@ -944,343 +1872,6 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
     );
   }
 
-  /// ────────────────────────────────────────────────────────────────
-  /// SEARCH BUTTON
-  /// ────────────────────────────────────────────────────────────────
-  Widget _buildSearchButton() {
-    return ElevatedButton(
-      onPressed: _searchFlights,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        elevation: 4,
-        shadowColor: primaryColor.withOpacity(0.3),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.search, size: 22),
-          const SizedBox(width: 12),
-          const Text(
-            "Search Flights",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (_isStudentFare) ...[
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text(
-                "Student Rates",
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  /// ────────────────────────────────────────────────────────────────
-  /// POPULAR STUDENT ROUTES
-  /// ────────────────────────────────────────────────────────────────
-  Widget _buildPopularRoutes() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.trending_up, size: 20, color: primaryColor),
-            const SizedBox(width: 8),
-            const Text(
-              "Popular Student Routes",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: textColor,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          height: 140,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: _popularRoutes.length,
-            itemBuilder: (context, index) {
-              final route = _popularRoutes[index];
-              return Container(
-                width: 160,
-                margin: EdgeInsets.only(right: index < _popularRoutes.length - 1 ? 12 : 0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: InkWell(
-                  onTap: () {
-                    setState(() {
-                      _departureCity = route['from'];
-                      _arrivalCity = route['to'];
-                    });
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Top: “KUL → SIN” badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: accentOrange.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            "${route['fromCode']} → ${route['toCode']}",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: accentOrange,
-                            ),
-                          ),
-                        ),
-
-                        // Middle: origin / icon / destination
-                        Column(
-                          children: [
-                            Text(
-                              route['fromCode']!,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: textColor,
-                              ),
-                            ),
-                            Icon(Icons.flight_takeoff, size: 16, color: primaryColor),
-                            Text(
-                              route['toCode']!,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: textColor,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        // Bottom: “From RM99”
-                        Text(
-                          "From RM99",
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: accentGreen,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// ────────────────────────────────────────────────────────────────
-  /// RECENT SEARCHES (Firebase)
-  /// ────────────────────────────────────────────────────────────────
-  Widget _buildRecentSearches() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _firestore
-          .collection('recentSearches')
-          .where('userId', isEqualTo: _auth.currentUser?.uid)
-          .orderBy('timestamp', descending: true)
-          .limit(3)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.history, size: 20, color: primaryColor),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "Recent Searches",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                      ),
-                    ),
-                  ],
-                ),
-                TextButton(
-                  onPressed: _clearRecentSearches,
-                  child: Text(
-                    "Clear All",
-                    style: TextStyle(
-                      color: primaryColor,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            ...snapshot.data!.docs.map((doc) {
-              final search = doc.data() as Map<String, dynamic>;
-              return _buildRecentSearchItem(
-                departure : search['departure'] ?? '',
-                arrival   : search['arrival'] ?? '',
-                date      : DateFormat('MMM dd, yyyy').format(
-                  (search['date'] as Timestamp).toDate(),
-                ),
-                passengers: search['passengers'] ?? '1 Passenger',
-              );
-            }).toList(),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildRecentSearchItem({
-    required String departure,
-    required String arrival,
-    required String date,
-    required String passengers,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            _departureCity = departure;
-            _arrivalCity   = arrival;
-          });
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: subtleGrey.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(Icons.history, color: darkGrey, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          departure.split(' ')[0], // show IATA code only
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: textColor,
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Icon(
-                            Icons.arrow_forward,
-                            size: 14,
-                            color: Colors.black54,
-                          ),
-                        ),
-                        Text(
-                          arrival.split(' ')[0],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: textColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "$date • $passengers",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: darkGrey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.north_east, color: primaryColor, size: 20),
-                onPressed: () {
-                  setState(() {
-                    _departureCity = departure;
-                    _arrivalCity   = arrival;
-                  });
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  /// ────────────────────────────────────────────────────────────────
-  /// HELPERS, DATE PICKER, PASSENGER SELECTOR, ETC.
-  /// ────────────────────────────────────────────────────────────────
   void _showAirportSelector(bool isDeparture) {
     showModalBottomSheet(
       context: context,
@@ -1297,7 +1888,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
           expand: false,
           builder: (context, scrollController) {
             return Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16), // from 20→16
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -1311,16 +1902,16 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16), // from 20→16
                   Text(
                     isDeparture ? "Select Departure" : "Select Destination",
                     style: const TextStyle(
-                      fontSize: 20,
+                      fontSize: 18, // from 20→18
                       fontWeight: FontWeight.bold,
                       color: textColor,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12), // from 16→12
                   TextField(
                     decoration: InputDecoration(
                       hintText: "Search airports",
@@ -1333,7 +1924,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12), // from 20→12
                   Row(
                     children: [
                       Icon(Icons.location_on, size: 20, color: primaryColor),
@@ -1353,13 +1944,18 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                     child: ListView(
                       controller: scrollController,
                       children: [
-                        _buildAirportTile("Kuala Lumpur (KUL)", "Kuala Lumpur International", isDeparture),
-                        _buildAirportTile("Penang (PEN)", "Penang International", isDeparture),
-                        _buildAirportTile("Langkawi (LGK)", "Langkawi International", isDeparture),
-                        _buildAirportTile("Kota Kinabalu (BKI)", "Kota Kinabalu International", isDeparture),
-                        _buildAirportTile("Johor Bahru (JHB)", "Senai International", isDeparture),
+                        _buildAirportTile("Kuala Lumpur (KUL)",
+                            "Kuala Lumpur International", isDeparture),
+                        _buildAirportTile("Penang (PEN)",
+                            "Penang International", isDeparture),
+                        _buildAirportTile("Langkawi (LGK)",
+                            "Langkawi International", isDeparture),
+                        _buildAirportTile("Kota Kinabalu (BKI)",
+                            "Kota Kinabalu International", isDeparture),
+                        _buildAirportTile("Johor Bahru (JHB)",
+                            "Senai International", isDeparture),
                         const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
+                          padding: EdgeInsets.symmetric(vertical: 12),
                           child: Divider(),
                         ),
                         Row(
@@ -1377,11 +1973,16 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
                           ],
                         ),
                         const SizedBox(height: 12),
-                        _buildAirportTile("Singapore (SIN)", "Changi Airport", isDeparture),
-                        _buildAirportTile("Bangkok (BKK)", "Suvarnabhumi Airport", isDeparture),
-                        _buildAirportTile("Bali (DPS)", "Ngurah Rai International", isDeparture),
-                        _buildAirportTile("Hong Kong (HKG)", "Hong Kong International", isDeparture),
-                        _buildAirportTile("Tokyo (NRT)", "Narita International", isDeparture),
+                        _buildAirportTile(
+                            "Singapore (SIN)", "Changi Airport", isDeparture),
+                        _buildAirportTile("Bangkok (BKK)",
+                            "Suvarnabhumi Airport", isDeparture),
+                        _buildAirportTile("Bali (DPS)",
+                            "Ngurah Rai International", isDeparture),
+                        _buildAirportTile("Hong Kong (HKG)",
+                            "Hong Kong International", isDeparture),
+                        _buildAirportTile(
+                            "Tokyo (NRT)", "Narita International", isDeparture),
                       ],
                     ),
                   ),
@@ -1419,7 +2020,7 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
       ),
       subtitle: Text(
         name,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 14,
           color: darkGrey,
         ),
@@ -1439,9 +2040,9 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
 
   void _swapLocations() {
     setState(() {
-      final temp     = _departureCity;
+      final temp = _departureCity;
       _departureCity = _arrivalCity;
-      _arrivalCity   = temp;
+      _arrivalCity = temp;
     });
   }
 
@@ -1480,7 +2081,9 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
       setState(() {
         if (isDeparture) {
           _departureDate = picked;
-          if (_isRoundTrip && _returnDate != null && _returnDate!.isBefore(picked)) {
+          if (_isRoundTrip &&
+              _returnDate != null &&
+              _returnDate!.isBefore(picked)) {
             _returnDate = picked.add(const Duration(days: 7));
           }
         } else {
@@ -1490,20 +2093,40 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
     }
   }
 
-  /// ────────────────────────────────────────────────────────────────
-  /// ON “SEARCH FLIGHTS” PRESSED
-  /// ────────────────────────────────────────────────────────────────
+  String _mapTravelClass(String selectedClass) {
+    switch (selectedClass.toUpperCase()) {
+      case 'ECONOMY':
+        return 'ECONOMY';
+      case 'PREMIUM ECONOMY':
+        return 'PREMIUM_ECONOMY';
+      case 'BUSINESS':
+        return 'BUSINESS';
+      case 'FIRST CLASS':
+        return 'FIRST';
+      default:
+        return 'ECONOMY';
+    }
+  }
+
   void _searchFlights() {
-    // 1) Validate that required fields are filled:
-    if (_departureCity == null || _arrivalCity == null || _departureDate == null) {
+    if (_departureCity == null ||
+        _arrivalCity == null ||
+        _departureDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please fill in all required fields'),
+          content: Row(
+            children: [
+              const Icon(Icons.warning, color: Colors.white),
+              const SizedBox(width: 12),
+              const Text('Please fill in all required fields'),
+            ],
+          ),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
+          margin: const EdgeInsets.all(16),
         ),
       );
       return;
@@ -1512,63 +2135,241 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
     if (_isRoundTrip && _returnDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Please select a return date'),
+          content: Row(
+            children: [
+              const Icon(Icons.warning, color: Colors.white),
+              const SizedBox(width: 12),
+              const Text('Please select a return date'),
+            ],
+          ),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
+          margin: const EdgeInsets.all(16),
         ),
       );
       return;
     }
 
-    // 2) Save this search (to “recentSearches” in Firestore):
     _saveRecentSearch();
 
-    // 3) Extract IATA codes from strings like "Kuala Lumpur (KUL)" → "KUL"
-    final originCode       = _extractIata(_departureCity!);
-    final destinationCode  = _extractIata(_arrivalCity!);
+    final originCode = _extractIata(_departureCity!);
+    final destinationCode = _extractIata(_arrivalCity!);
     final departureDateStr = DateFormat('yyyy-MM-dd').format(_departureDate!);
 
-    // 4) Call navigator to FlightResultsPage, passing all parameters:
     Navigator.pushNamed(
       context,
       '/flight-results',
       arguments: {
-        'originCode'     : originCode,
+        'originCode': originCode,
         'destinationCode': destinationCode,
-        'departureDate'  : departureDateStr,
-        'adults'         : _passengers,
-        'travelClass'    : _selectedClass.toUpperCase(),
-        'direct'         : false,
-        'isStudentFare'  : _isStudentFare,
+        'departureDate': departureDateStr,
+        'adults': _passengers,
+        'travelClass': _mapTravelClass(_selectedClass),
+        'direct': false,
+        'isStudentFare': _isStudentFare,
+        'needsHotel': _needsHotel,
+        'needsTransport': _needsTransport,
+        'isFlexibleDates': _isFlexibleDates,
       },
     );
   }
 
-  /// Helper to parse “Kuala Lumpur (KUL)” → "KUL"
   String _extractIata(String fullString) {
     final match = RegExp(r'\((\w{3})\)').firstMatch(fullString);
     if (match != null && match.groupCount >= 1) {
       return match.group(1)!;
     }
-    return fullString; // fallback if no parentheses
+    return fullString;
   }
 
   Future<void> _saveRecentSearch() async {
     try {
       await _firestore.collection('recentSearches').add({
-        'userId'    : _auth.currentUser?.uid,
-        'departure' : _departureCity,
-        'arrival'   : _arrivalCity,
-        'date'      : _departureDate,
-        'passengers': '$_passengers ${_passengers == 1 ? 'Passenger' : 'Passengers'}',
-        'timestamp' : FieldValue.serverTimestamp(),
+        'userId': _auth.currentUser?.uid,
+        'departure': _departureCity,
+        'arrival': _arrivalCity,
+        'date': _departureDate,
+        'passengers':
+            '$_passengers ${_passengers == 1 ? 'Passenger' : 'Passengers'}',
+        'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error saving recent search: $e');
+      debugPrint('Error saving recent search: $e');
     }
+  }
+
+  Widget _buildRecentSearches() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _firestore
+          .collection('recentSearches')
+          .where('userId', isEqualTo: _auth.currentUser?.uid)
+          .orderBy('timestamp', descending: true)
+          .limit(3)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.history, size: 20, color: primaryColor),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      "Recent Searches",
+                      style: TextStyle(
+                        fontSize: 18, // trimmed from 20→18
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
+                      ),
+                    ),
+                  ],
+                ),
+                TextButton(
+                  onPressed: _clearRecentSearches,
+                  child: Text(
+                    "Clear All",
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12), // trimmed from 16→12
+            ...snapshot.data!.docs.map((doc) {
+              final search = doc.data() as Map<String, dynamic>;
+              return _buildRecentSearchItem(
+                departure: search['departure'] ?? '',
+                arrival: search['arrival'] ?? '',
+                date: DateFormat('MMM dd, yyyy').format(
+                  (search['date'] as Timestamp).toDate(),
+                ),
+                passengers: search['passengers'] ?? '1 Passenger',
+              );
+            }).toList(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildRecentSearchItem({
+    required String departure,
+    required String arrival,
+    required String date,
+    required String passengers,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12, // from 15→12
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _departureCity = departure;
+            _arrivalCity = arrival;
+          });
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(12), // from 16→12
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: subtleGrey.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.history,
+                    color: darkGrey, size: 18), // from 20→18
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          departure.split(' ')[0],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: textColor,
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Icon(
+                            Icons.arrow_forward,
+                            size: 14,
+                            color: Colors.black54,
+                          ),
+                        ),
+                        Text(
+                          arrival.split(' ')[0],
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: textColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      "$date • $passengers",
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: darkGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.north_east, color: primaryColor, size: 20),
+                onPressed: () {
+                  setState(() {
+                    _departureCity = departure;
+                    _arrivalCity = arrival;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _clearRecentSearches() async {
@@ -1586,34 +2387,56 @@ class _FlightSearchPageState extends State<FlightSearchPage> with TickerProvider
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Recent searches cleared'),
+          content: Row(
+            children: const [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Recent searches cleared'),
+            ],
+          ),
           backgroundColor: primaryColor,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
+          margin: const EdgeInsets.all(16),
         ),
       );
     } catch (e) {
-      print('Error clearing recent searches: $e');
+      debugPrint('Error clearing recent searches: $e');
     }
   }
 }
 
 /// ────────────────────────────────────────────────────────────────
-/// Dotted Pattern Painter (unchanged)
+/// Modern Pattern Painter
 /// ────────────────────────────────────────────────────────────────
-class DottedPatternPainter extends CustomPainter {
+class ModernPatternPainter extends CustomPainter {
   final Color color;
-  DottedPatternPainter({required this.color});
+  ModernPatternPainter({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..style = PaintingStyle.fill;
-    for (double x = 0; x < size.width; x += 30) {
-      for (double y = 0; y < size.height; y += 30) {
-        if ((x + y) % 60 == 0) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    // Create a modern geometric pattern
+    for (double x = 0; x < size.width; x += 40) {
+      for (double y = 0; y < size.height; y += 40) {
+        if ((x + y) % 80 == 0) {
+          // Draw small circles
           canvas.drawCircle(Offset(x, y), 2, paint);
+        }
+        if ((x - y) % 120 == 0) {
+          // Draw diamond shapes
+          final path = Path();
+          path.moveTo(x, y - 3);
+          path.lineTo(x + 3, y);
+          path.lineTo(x, y + 3);
+          path.lineTo(x - 3, y);
+          path.close();
+          canvas.drawPath(path, paint);
         }
       }
     }

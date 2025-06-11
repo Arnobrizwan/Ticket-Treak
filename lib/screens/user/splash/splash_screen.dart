@@ -1,4 +1,5 @@
 // lib/screens/user/splash/splash_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ticket_trek/routes/app_routes.dart';
@@ -15,15 +16,15 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  // Youthful color palette for students
-  static const Color backgroundColor = Color(0xFFF5F7FA);
-  static const Color primaryColor = Color(0xFF3F3D9A);
-  static const Color secondaryColor = Color(0xFF6C63FF);
-  static const Color textColor = Color(0xFF2D3142);
-  static const Color darkGrey = Color(0xFF8F96A3);
-  static const Color accentOrange = Color(0xFFFF6B6B);
-  static const Color accentGreen = Color(0xFF4ECDC4);
-  static const Color lightGrey = Color(0xFFE8EBEF);
+  // Violin color palette (consistent with other screens)
+  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
+  static const Color primaryColor = Color(0xFF5C2E00);     // Dark Brown
+  static const Color secondaryColor = Color(0xFF8B5000);   // Amber Brown
+  static const Color textColor = Color(0xFF35281E);        // Deep Wood
+  static const Color subtleGrey = Color(0xFFDAC1A7);       // Light Tan
+  static const Color darkGrey = Color(0xFF7E5E3C);         // Medium Brown
+  static const Color accentOrange = Color(0xFFD4A373);     // Warm Highlight
+  static const Color accentGreen = Color(0xFFB28F5E);      // Muted Brown
 
   late AnimationController _mainController;
   late AnimationController _loadingController;
@@ -34,16 +35,11 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _slideAnimation;
   late Animation<double> _rotateAnimation;
   late Animation<double> _bounceAnimation;
+  late Animation<double> _pulseAnimation;
 
   bool _isInitialized = false;
-  String _loadingMessage = 'Starting your adventure...';
-
-  // Unsplash images for student travel theme
-  final List<String> _backgroundImages = [
-    'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1600&q=80', // Travel planning
-    'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1600&q=80', // Airplane wing
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&q=80', // Student travelers
-  ];
+  String _loadingMessage = 'Starting your journey...';
+  double _loadingProgress = 0.0;
 
   @override
   void initState() {
@@ -70,13 +66,13 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Loading animation controller
     _loadingController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 2000),
       vsync: this,
     )..repeat();
 
     // Floating elements controller
     _floatingController = AnimationController(
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 6),
       vsync: this,
     )..repeat(reverse: true);
 
@@ -86,7 +82,7 @@ class _SplashScreenState extends State<SplashScreen>
       end: 1.0,
     ).animate(CurvedAnimation(
       parent: _mainController,
-      curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
     ));
 
     // Scale animation
@@ -104,7 +100,7 @@ class _SplashScreenState extends State<SplashScreen>
       end: 0.0,
     ).animate(CurvedAnimation(
       parent: _mainController,
-      curve: const Interval(0.3, 0.8, curve: Curves.easeOutCubic),
+      curve: const Interval(0.3, 0.9, curve: Curves.easeOutCubic),
     ));
 
     // Rotation animation for loading
@@ -119,9 +115,18 @@ class _SplashScreenState extends State<SplashScreen>
     // Bounce animation
     _bounceAnimation = Tween<double>(
       begin: 0.0,
-      end: 10.0,
+      end: 15.0,
     ).animate(CurvedAnimation(
       parent: _floatingController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Pulse animation
+    _pulseAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.2,
+    ).animate(CurvedAnimation(
+      parent: _loadingController,
       curve: Curves.easeInOut,
     ));
 
@@ -131,40 +136,53 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _initializeApp() async {
     try {
+      // Step 1: Initialize Firebase
       setState(() {
         _loadingMessage = 'Initializing Firebase...';
+        _loadingProgress = 0.2;
       });
       
-      // Initialize Firebase
       await Firebase.initializeApp();
       await FirebaseAnalytics.instance.logAppOpen();
-      
-      setState(() {
-        _loadingMessage = 'Loading travel data...';
-      });
-      
-      // Simulate loading user preferences and data
       await Future.delayed(const Duration(milliseconds: 800));
       
+      // Step 2: Load app configuration
       setState(() {
-        _loadingMessage = 'Checking student discounts...';
+        _loadingMessage = 'Loading configurations...';
+        _loadingProgress = 0.4;
       });
       
       await Future.delayed(const Duration(milliseconds: 600));
       
+      // Step 3: Check student verification
       setState(() {
-        _loadingMessage = 'Ready to explore!';
+        _loadingMessage = 'Checking student benefits...';
+        _loadingProgress = 0.6;
+      });
+      
+      await Future.delayed(const Duration(milliseconds: 700));
+      
+      // Step 4: Loading travel data
+      setState(() {
+        _loadingMessage = 'Loading travel destinations...';
+        _loadingProgress = 0.8;
+      });
+      
+      await Future.delayed(const Duration(milliseconds: 600));
+      
+      // Step 5: Finalizing
+      setState(() {
+        _loadingMessage = 'Ready for takeoff!';
+        _loadingProgress = 1.0;
         _isInitialized = true;
       });
       
-      // Wait for a smooth transition
       await Future.delayed(const Duration(milliseconds: 1000));
       
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
       }
     } catch (e) {
-      // Handle initialization errors
       debugPrint('Initialization error: $e');
       if (mounted) {
         _showErrorDialog();
@@ -177,19 +195,26 @@ class _SplashScreenState extends State<SplashScreen>
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
+        backgroundColor: backgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
         title: Row(
           children: [
-            Icon(Icons.error_outline, color: accentOrange),
+            Icon(Icons.error_outline, color: Colors.red.shade700),
             const SizedBox(width: 8),
-            const Text('Oops!'),
+            Text(
+              'Connection Issue',
+              style: TextStyle(color: textColor),
+            ),
           ],
         ),
-        content: const Text(
+        content: Text(
           'We couldn\'t start the app. Please check your internet connection and try again.',
-          style: TextStyle(height: 1.5),
+          style: TextStyle(
+            color: darkGrey,
+            height: 1.5,
+          ),
         ),
         actions: [
           TextButton(
@@ -197,10 +222,14 @@ class _SplashScreenState extends State<SplashScreen>
               Navigator.of(context).pop();
               setState(() {
                 _loadingMessage = 'Retrying...';
+                _loadingProgress = 0.0;
               });
               _initializeApp();
             },
-            child: const Text('Retry'),
+            child: Text(
+              'Retry',
+              style: TextStyle(color: primaryColor),
+            ),
           ),
         ],
       ),
@@ -221,20 +250,26 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: backgroundColor,
       body: Stack(
         children: [
-          // Background image with overlay
-          _buildBackgroundImage(),
-          
-          // Dark overlay
+          // Background gradient
           Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+              gradient: RadialGradient(
+                center: Alignment.topLeft,
+                radius: 1.5,
                 colors: [
-                  Colors.black.withOpacity(0.7),
-                  Colors.black.withOpacity(0.5),
-                  primaryColor.withOpacity(0.8),
+                  backgroundColor,
+                  subtleGrey.withOpacity(0.3),
+                  primaryColor.withOpacity(0.1),
                 ],
+              ),
+            ),
+          ),
+          
+          // Dotted pattern background
+          Positioned.fill(
+            child: CustomPaint(
+              painter: DottedPatternPainter(
+                color: primaryColor.withOpacity(0.05),
               ),
             ),
           ),
@@ -250,7 +285,7 @@ class _SplashScreenState extends State<SplashScreen>
                 children: [
                   const Spacer(flex: 2),
                   
-                  // Animated logo
+                  // Animated logo (single, merged design)
                   AnimatedBuilder(
                     animation: _mainController,
                     builder: (context, child) {
@@ -258,13 +293,13 @@ class _SplashScreenState extends State<SplashScreen>
                         opacity: _fadeAnimation,
                         child: ScaleTransition(
                           scale: _scaleAnimation,
-                          child: _buildLogo(),
+                          child: _buildEnhancedLogo(),
                         ),
                       );
                     },
                   ),
                   
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 32),
                   
                   // App name and tagline
                   AnimatedBuilder(
@@ -291,8 +326,10 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Column(
                           children: [
                             _buildLoadingIndicator(),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 24),
                             _buildStatusText(),
+                            const SizedBox(height: 16),
+                            _buildProgressBar(),
                           ],
                         ),
                       );
@@ -312,73 +349,56 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildBackgroundImage() {
-    return CachedNetworkImage(
-      imageUrl: _backgroundImages[1], // Using airplane wing image
-      fit: BoxFit.cover,
-      width: double.infinity,
-      height: double.infinity,
-      placeholder: (context, url) => Container(
-        color: backgroundColor,
-      ),
-      errorWidget: (context, url, error) => Container(
-        color: backgroundColor,
-        child: const Icon(
-          Icons.flight,
-          size: 100,
-          color: Colors.white10,
-        ),
-      ),
-    );
-  }
-
   Widget _buildFloatingElements() {
     return AnimatedBuilder(
       animation: _floatingController,
       builder: (context, child) {
         return Stack(
           children: [
-            // Floating clouds
+            // Floating paper plane
             Positioned(
-              top: 100 + _bounceAnimation.value,
-              left: 50,
-              child: Opacity(
-                opacity: 0.3,
-                child: Icon(
-                  Icons.cloud,
-                  size: 60,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            
-            Positioned(
-              top: 200 - _bounceAnimation.value,
-              right: 30,
-              child: Opacity(
-                opacity: 0.2,
-                child: Icon(
-                  Icons.cloud,
-                  size: 80,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            
-            // Floating plane
-            Positioned(
-              bottom: 300 + _bounceAnimation.value * 2,
-              right: 50,
+              top: 120 + _bounceAnimation.value,
+              right: 60,
               child: Transform.rotate(
-                angle: 0.1,
-                child: Opacity(
-                  opacity: 0.4,
-                  child: Icon(
-                    Icons.flight,
-                    size: 40,
-                    color: Colors.white,
-                  ),
+                angle: 0.2,
+                child: Icon(
+                  Icons.send,
+                  size: 24,
+                  color: accentOrange.withOpacity(0.3),
                 ),
+              ),
+            ),
+            
+            // Floating graduation cap
+            Positioned(
+              top: 200 - _bounceAnimation.value * 0.8,
+              left: 40,
+              child: Icon(
+                Icons.school,
+                size: 28,
+                color: accentGreen.withOpacity(0.4),
+              ),
+            ),
+            
+            // Floating map pin
+            Positioned(
+              bottom: 250 + _bounceAnimation.value * 1.2,
+              left: 80,
+              child: Icon(
+                Icons.location_on,
+                size: 20,
+                color: secondaryColor.withOpacity(0.3),
+              ),
+            ),
+            
+            // Floating luggage
+            Positioned(
+              bottom: 180 - _bounceAnimation.value * 0.6,
+              right: 40,
+              child: Icon(
+                Icons.luggage,
+                size: 22,
+                color: primaryColor.withOpacity(0.2),
               ),
             ),
           ],
@@ -387,98 +407,106 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildEnhancedLogo() {
     return Hero(
       tag: 'app_logo',
       child: Container(
-        width: 150,
-        height: 150,
+        width: 140,
+        height: 140,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(35),
+          borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: secondaryColor.withOpacity(0.3),
-              blurRadius: 30,
-              offset: const Offset(0, 20),
+              color: primaryColor.withOpacity(0.2),
+              blurRadius: 25,
+              offset: const Offset(0, 15),
             ),
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: accentOrange.withOpacity(0.1),
+              blurRadius: 40,
+              offset: const Offset(0, 25),
             ),
           ],
         ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Gradient background
-            Container(
-              margin: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(25),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    primaryColor.withOpacity(0.1),
-                    secondaryColor.withOpacity(0.1),
-                  ],
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Background circle with gradient
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      backgroundColor.withOpacity(0.8),
+                      subtleGrey.withOpacity(0.6),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            
-            // Icon composition
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                // Background circle
-                Container(
-                  width: 90,
-                  height: 90,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        secondaryColor.withOpacity(0.2),
-                        primaryColor.withOpacity(0.2),
-                      ],
-                    ),
+              
+              // Main content - integrated design without positioned elements
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Top row with graduation cap
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [accentOrange, secondaryColor],
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.school,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: accentGreen,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          "30%",
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                
-                // Main plane icon
-                Transform.rotate(
-                  angle: -0.2,
-                  child: Icon(
-                    Icons.flight_takeoff,
-                    size: 50,
-                    color: primaryColor,
-                  ),
-                ),
-                
-                // Student cap overlay
-                Positioned(
-                  top: 20,
-                  right: 25,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: accentOrange,
-                      shape: BoxShape.circle,
-                    ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Main airplane icon
+                  Transform.rotate(
+                    angle: -0.1,
                     child: Icon(
-                      Icons.school,
-                      size: 20,
-                      color: Colors.white,
+                      Icons.flight_takeoff,
+                      size: 40,
+                      color: primaryColor,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -487,19 +515,25 @@ class _SplashScreenState extends State<SplashScreen>
   Widget _buildBranding() {
     return Column(
       children: [
-        // App name
+        // App name with gradient
         ShaderMask(
           shaderCallback: (bounds) => LinearGradient(
-            colors: [Colors.white, Colors.white.withOpacity(0.9)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              primaryColor,
+              secondaryColor,
+              accentOrange,
+            ],
           ).createShader(bounds),
           child: const Text(
             'TicketTrek',
             style: TextStyle(
-              fontSize: 48,
+              fontSize: 42,
               fontWeight: FontWeight.bold,
               color: Colors.white,
-              letterSpacing: -1.5,
-              height: 1.2,
+              letterSpacing: -1.0,
+              height: 1.1,
             ),
           ),
         ),
@@ -508,20 +542,20 @@ class _SplashScreenState extends State<SplashScreen>
         
         // Tagline
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                accentOrange.withOpacity(0.8),
-                accentGreen.withOpacity(0.8),
+                accentOrange.withOpacity(0.9),
+                accentGreen.withOpacity(0.9),
               ],
             ),
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
                 color: accentOrange.withOpacity(0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 5),
+                blurRadius: 15,
+                offset: const Offset(0, 6),
               ),
             ],
           ),
@@ -530,46 +564,46 @@ class _SplashScreenState extends State<SplashScreen>
             children: [
               const Icon(
                 Icons.school,
-                size: 18,
+                size: 16,
                 color: Colors.white,
               ),
               const SizedBox(width: 8),
               const Text(
                 'Student Flight Booking',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,
-                  letterSpacing: 0.5,
+                  letterSpacing: 0.3,
                 ),
               ),
             ],
           ),
         ),
         
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
         
         // Features text
-        const Text(
+        Text(
           'Exclusive discounts • Budget-friendly • Easy booking',
           style: TextStyle(
-            fontSize: 14,
-            color: Colors.white70,
-            letterSpacing: 0.3,
+            fontSize: 13,
+            color: darkGrey,
+            letterSpacing: 0.2,
           ),
         ),
         
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         
         // Trust badges
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildTrustBadge('500K+', 'Students'),
-            const SizedBox(width: 20),
+            const SizedBox(width: 16),
             _buildTrustBadge('30%', 'Savings'),
-            const SizedBox(width: 20),
-            _buildTrustBadge('4.8', 'Rating'),
+            const SizedBox(width: 16),
+            _buildTrustBadge('4.8★', 'Rating'),
           ],
         ),
       ],
@@ -578,31 +612,39 @@ class _SplashScreenState extends State<SplashScreen>
 
   Widget _buildTrustBadge(String value, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
+          color: primaryColor.withOpacity(0.2),
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 18,
+            style: TextStyle(
+              fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: primaryColor,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
-              color: Colors.white.withOpacity(0.8),
+              fontSize: 10,
+              color: darkGrey,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -615,15 +657,18 @@ class _SplashScreenState extends State<SplashScreen>
       animation: _loadingController,
       builder: (context, child) {
         return Container(
-          width: 70,
-          height: 70,
+          width: 65,
+          height: 65,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
+            color: Colors.white.withOpacity(0.9),
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withOpacity(0.3),
-              width: 2,
-            ),
+            boxShadow: [
+              BoxShadow(
+                color: primaryColor.withOpacity(0.2),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Stack(
             alignment: Alignment.center,
@@ -632,14 +677,14 @@ class _SplashScreenState extends State<SplashScreen>
               Transform.rotate(
                 angle: _rotateAnimation.value,
                 child: Container(
-                  width: 60,
-                  height: 60,
+                  width: 55,
+                  height: 55,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: SweepGradient(
                       colors: [
                         Colors.transparent,
-                        accentOrange.withOpacity(0.3),
+                        primaryColor.withOpacity(0.3),
                         accentOrange,
                         accentGreen,
                         Colors.transparent,
@@ -649,18 +694,23 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
               
-              // Center icon
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.flight,
-                  size: 24,
-                  color: primaryColor,
+              // Center icon with pulse
+              Transform.scale(
+                scale: _pulseAnimation.value,
+                child: Container(
+                  width: 35,
+                  height: 35,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [primaryColor, secondaryColor],
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.flight,
+                    size: 20,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
@@ -674,44 +724,43 @@ class _SplashScreenState extends State<SplashScreen>
     return Column(
       children: [
         AnimatedSwitcher(
-          duration: const Duration(milliseconds: 500),
+          duration: const Duration(milliseconds: 400),
           child: Text(
             _loadingMessage,
             key: ValueKey(_loadingMessage),
-            style: const TextStyle(
-              fontSize: 16,
+            style: TextStyle(
+              fontSize: 15,
               fontWeight: FontWeight.w500,
-              color: Colors.white,
-            ),
-          ),
-        ),
-        
-        const SizedBox(height: 12),
-        
-        // Progress bar
-        Container(
-          width: 200,
-          height: 4,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(2),
-          ),
-          child: AnimatedAlign(
-            duration: const Duration(milliseconds: 300),
-            alignment: Alignment.centerLeft,
-            child: Container(
-              width: _isInitialized ? 200 : 100,
-              height: 4,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [accentOrange, accentGreen],
-                ),
-                borderRadius: BorderRadius.circular(2),
-              ),
+              color: textColor,
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildProgressBar() {
+    return Container(
+      width: 220,
+      height: 6,
+      decoration: BoxDecoration(
+        color: subtleGrey.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(3),
+      ),
+      child: AnimatedAlign(
+        duration: const Duration(milliseconds: 500),
+        alignment: Alignment.centerLeft,
+        child: Container(
+          width: 220 * _loadingProgress,
+          height: 6,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [primaryColor, accentOrange, accentGreen],
+            ),
+            borderRadius: BorderRadius.circular(3),
+          ),
+        ),
+      ),
     );
   }
 
@@ -722,12 +771,12 @@ class _SplashScreenState extends State<SplashScreen>
         children: [
           // Social proof
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withOpacity(0.8),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.white.withOpacity(0.2),
+                color: primaryColor.withOpacity(0.2),
               ),
             ),
             child: Row(
@@ -735,15 +784,15 @@ class _SplashScreenState extends State<SplashScreen>
               children: [
                 Icon(
                   Icons.verified_user,
-                  size: 16,
+                  size: 14,
                   color: accentGreen,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Text(
                   'Trusted by universities worldwide',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 11,
+                    color: darkGrey,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -751,18 +800,39 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
           
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           
           // Version info
           Text(
             'Version 1.2.0 • Made with ❤️ for students',
             style: TextStyle(
-              fontSize: 12,
-              color: Colors.white.withOpacity(0.5),
+              fontSize: 10,
+              color: darkGrey.withOpacity(0.7),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+// Dotted pattern painter for background
+class DottedPatternPainter extends CustomPainter {
+  final Color color;
+  DottedPatternPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color..style = PaintingStyle.fill;
+    for (double x = 0; x < size.width; x += 40) {
+      for (double y = 0; y < size.height; y += 40) {
+        if ((x + y) % 80 == 0) {
+          canvas.drawCircle(Offset(x, y), 1.5, paint);
+        }
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

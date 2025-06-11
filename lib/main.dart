@@ -1,8 +1,13 @@
+// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // Ensure this file exists after running `flutterfire configure`
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+import 'firebase_options.dart';
 import 'routes/app_routes.dart';
+import 'services/stripe_service.dart';
 
 void main() async {
   // Ensure that plugin services are initialized before app startup
@@ -19,9 +24,24 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
+
+    // Enable offline persistence for Firestore
+    FirebaseFirestore.instance.settings = const Settings(
+      persistenceEnabled: true,
+    );
+
     print('✅ Firebase initialized successfully');
   } catch (e) {
     print('❌ Firebase initialization error: $e');
+  }
+
+  try {
+    // Initialize Stripe SDK
+    await StripeService.initialize();
+    print('✅ Stripe initialized successfully');
+  } catch (e) {
+    print('❌ Stripe initialization error: $e');
+    // We catch and print here so that a Stripe failure won't crash the app.
   }
 
   runApp(const TicketTrekApp());
@@ -36,7 +56,7 @@ class TicketTrekApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'TicketTrek',
       theme: ThemeData(
-        // Use Onboarding’s primary color as the seed
+        // Use Onboarding's primary color as the seed
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF3F3D9A),
           brightness: Brightness.light,
@@ -52,7 +72,7 @@ class TicketTrekApp extends StatelessWidget {
           systemOverlayStyle: SystemUiOverlayStyle.dark,
         ),
 
-        // ElevatedButton uses onboarding’s primaryColor
+        // ElevatedButton uses onboarding's primaryColor
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF3F3D9A),
@@ -65,7 +85,7 @@ class TicketTrekApp extends StatelessWidget {
           ),
         ),
 
-        // TextButton text uses onboarding’s primaryColor
+        // TextButton text uses onboarding's primaryColor
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
             foregroundColor: const Color(0xFF3F3D9A),
@@ -75,7 +95,7 @@ class TicketTrekApp extends StatelessWidget {
           ),
         ),
 
-        // OutlinedButton uses onboarding’s primaryColor for border/text
+        // OutlinedButton uses onboarding's primaryColor for border/text
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
             foregroundColor: const Color(0xFF3F3D9A),
@@ -87,7 +107,7 @@ class TicketTrekApp extends StatelessWidget {
           ),
         ),
 
-        // Input fields match onboarding’s subtleGrey and primaryColor
+        // Input fields match onboarding's subtleGrey and primaryColor
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -110,7 +130,8 @@ class TicketTrekApp extends StatelessWidget {
           ),
           filled: true,
           fillColor: const Color(0xFFF5F7FA),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
 
         // Cards in the app use the same corner radius as onboarding
@@ -144,6 +165,7 @@ class TicketTrekApp extends StatelessWidget {
 
       initialRoute: AppRoutes.splash,
       routes: AppRoutes.routes,
+      onGenerateRoute: AppRoutes.onGenerateRoute,
 
       builder: (context, child) {
         // Custom error widget using onboarding palette
@@ -155,7 +177,8 @@ class TicketTrekApp extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, color: Color(0xFF3F3D9A), size: 48),
+                    Icon(Icons.error_outline,
+                        color: Color(0xFF3F3D9A), size: 48),
                     SizedBox(height: 16),
                     Text(
                       'Something went wrong',
