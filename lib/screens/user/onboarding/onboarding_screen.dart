@@ -192,7 +192,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             opacity: _fadeAnimation.value,
                             child: Transform.translate(
                               offset: Offset(0, _slideAnimation.value),
-                              child: _buildOnboardingPage(onboardingData[index]),
+                              child:
+                                  _buildOnboardingPage(onboardingData[index]),
                             ),
                           );
                         },
@@ -225,7 +226,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [primaryColor, secondaryColor]),
+                  gradient: const LinearGradient(
+                      colors: [primaryColor, secondaryColor]),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
@@ -238,10 +240,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 child: const Icon(Icons.flight, color: Colors.white, size: 22),
               ),
               const SizedBox(width: 12),
-              Column(
+              const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "TicketTrek",
                     style: TextStyle(
                       fontSize: 20,
@@ -271,8 +273,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
             ),
-            child: Row(
-              children: const [
+            child: const Row(
+              children: [
                 Text(
                   'Skip',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
@@ -300,15 +302,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           // “Popular Routes” container only on page index 1
           if (_currentPage == 1)
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
                 color: subtleGrey,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
                 children: [
-                  Text(
+                  const Text(
                     "Popular Student Routes",
                     style: TextStyle(
                       fontSize: 14,
@@ -409,8 +410,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 height: 280,
                 placeholder: (context, url) => Container(
                   color: subtleGrey,
-                  child:
-                      const Center(child: CircularProgressIndicator()),
+                  child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: (context, url, error) => Container(
                   color: subtleGrey,
@@ -442,8 +442,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           // Subtitle with light tinted background
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: (data['color'] as Color).withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
@@ -464,7 +463,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           // Description
           Text(
             data['desc'] as String,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               color: darkGrey,
               height: 1.6,
@@ -488,7 +487,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       ),
       child: Text(
         route,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w500,
           color: primaryColor,
@@ -559,14 +558,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 height: 4,
-                width:
-                    200 * ((_currentPage + 1) / onboardingData.length),
+                width: 200 * ((_currentPage + 1) / onboardingData.length),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
                       onboardingData[_currentPage]['color'] as Color,
-                      (onboardingData[_currentPage]['color']
-                              as Color)
+                      (onboardingData[_currentPage]['color'] as Color)
                           .withOpacity(0.6),
                     ],
                   ),
@@ -592,15 +589,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     },
                     style: TextButton.styleFrom(
                       foregroundColor: darkGrey,
-                      padding:
-                          const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
+                      children: [
                         Icon(Icons.arrow_back, size: 18),
                         SizedBox(width: 8),
                         Text(
@@ -622,11 +618,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   onPressed: _nextPage,
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        onboardingData[_currentPage]['color']
-                            as Color,
+                        onboardingData[_currentPage]['color'] as Color,
                     foregroundColor: Colors.white,
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -662,7 +656,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
           // “Trusted by…” text only on last page
           if (_currentPage == onboardingData.length - 1)
-            Text(
+            const Text(
               '🇲🇾 Trusted by 200,000+ Malaysian students',
               style: TextStyle(
                 fontSize: 13,

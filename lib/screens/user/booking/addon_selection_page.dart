@@ -119,7 +119,12 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
     // Get booking ID and other data
-    _bookingId = args['bookingId'] as String;
+    final bookingIdArg = args['bookingId'] as String?;
+    if (bookingIdArg == null || bookingIdArg.isEmpty) {
+      throw FlutterError(
+          'Invalid or missing bookingId argument: $bookingIdArg');
+    }
+    _bookingId = bookingIdArg;
     _flightOffer = args['offer'] as Map<String, dynamic>;
     _selectedSeats = Map<String, String>.from(args['selectedSeats'] as Map);
     _seatCost = args['seatCost'] as double;
@@ -139,6 +144,13 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
   }
 
   Future<void> _loadBookingData() async {
+    if (_bookingId.isEmpty) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Invalid booking ID. Cannot load booking data.';
+      });
+      return;
+    }
     try {
       final booking = await _bookingService.getBookingById(_bookingId);
       if (booking != null) {
@@ -159,7 +171,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
 
     try {
       // Extract flight details
-      final segments = _flightOffer['itineraries'][0]['segments'] as List<dynamic>;
+      final segments =
+          _flightOffer['itineraries'][0]['segments'] as List<dynamic>;
       final firstSegment = segments[0] as Map<String, dynamic>;
       final flightNumber =
           '${firstSegment['carrierCode']}${firstSegment['number']}';
@@ -183,9 +196,9 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
         ),
       ]);
 
-      final allAddons = results[0] as List<FlightAddon>;
-      final popularAddons = results[1] as List<FlightAddon>;
-      final recommendedAddons = results[2] as List<FlightAddon>;
+      final allAddons = results[0];
+      final popularAddons = results[1];
+      final recommendedAddons = results[2];
 
       setState(() {
         _allAddons = allAddons;
@@ -234,19 +247,18 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Dialog(
+      builder: (context) => const Dialog(
         backgroundColor: backgroundColor,
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               CircularProgressIndicator(color: primaryColor),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Text(
                 'Validating and saving selections...',
-                style:
-                    TextStyle(color: textColor, fontWeight: FontWeight.w600),
+                style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -310,22 +322,22 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
       // Navigate to booking summary/confirmation
       Navigator.pushNamed(
         context,
-       AppRoutes.passengerDetails,
+        AppRoutes.passengerDetails,
         arguments: {
-    'adults': _adults,                   // <— number of passengers (required)
-    'bookingId': _bookingId,             // optional—you can still pass this if needed
-    'flightOffer': _flightOffer,         // pass your entire flightOffer Map
-    'selectedSeats': _selectedSeats,     // pass the seat selection map
-    'seatCost': _seatCost,               // pass seat cost
-    'originCode': _originCode,
-    'destinationCode': _destinationCode,
-    'departureDate': _departureDate,
-    'travelClass': _travelClass,
-    'isStudentFare': _isStudentFare,
-    'addOns': _addonSelection.selectedAddons.keys.toList(), 
-    //'booking': updatedBooking,          
-  },
-);
+          'adults': _adults, // <— number of passengers (required)
+          'bookingId': _bookingId, // optional—you can still pass this if needed
+          'flightOffer': _flightOffer, // pass your entire flightOffer Map
+          'selectedSeats': _selectedSeats, // pass the seat selection map
+          'seatCost': _seatCost, // pass seat cost
+          'originCode': _originCode,
+          'destinationCode': _destinationCode,
+          'departureDate': _departureDate,
+          'travelClass': _travelClass,
+          'isStudentFare': _isStudentFare,
+          'addOns': _addonSelection.selectedAddons.keys.toList(),
+          //'booking': updatedBooking,
+        },
+      );
     } catch (e) {
       setState(() {
         _isSaving = false;
@@ -339,7 +351,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: backgroundColor,
-        title: Text(
+        title: const Text(
           'Selection Issues',
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
@@ -349,7 +361,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (errors.isNotEmpty) ...[
-                Text(
+                const Text(
                   'Errors:',
                   style:
                       TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
@@ -359,19 +371,19 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.error_outline,
+                          const Icon(Icons.error_outline,
                               color: Colors.red, size: 16),
                           const SizedBox(width: 8),
                           Expanded(
                               child: Text(error,
-                                  style: TextStyle(color: textColor))),
+                                  style: const TextStyle(color: textColor))),
                         ],
                       ),
                     )),
                 const SizedBox(height: 12),
               ],
               if (warnings.isNotEmpty) ...[
-                Text(
+                const Text(
                   'Warnings:',
                   style: TextStyle(
                       color: warningColor, fontWeight: FontWeight.bold),
@@ -381,12 +393,12 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.warning_amber,
+                          const Icon(Icons.warning_amber,
                               color: warningColor, size: 16),
                           const SizedBox(width: 8),
                           Expanded(
                               child: Text(warning,
-                                  style: TextStyle(color: textColor))),
+                                  style: const TextStyle(color: textColor))),
                         ],
                       ),
                     )),
@@ -397,7 +409,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: primaryColor)),
+            child: const Text('OK', style: TextStyle(color: primaryColor)),
           ),
         ],
       ),
@@ -409,7 +421,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: backgroundColor,
-        title: Text(
+        title: const Text(
           'Please Confirm',
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
@@ -423,12 +435,12 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.info_outline,
+                          const Icon(Icons.info_outline,
                               color: accentOrange, size: 16),
                           const SizedBox(width: 8),
                           Expanded(
                               child: Text(warning,
-                                  style: TextStyle(color: textColor))),
+                                  style: const TextStyle(color: textColor))),
                         ],
                       ),
                     ))
@@ -438,7 +450,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Back', style: TextStyle(color: darkGrey)),
+            child: const Text('Back', style: TextStyle(color: darkGrey)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -451,8 +463,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
               await _saveAddonSelection(validation);
             },
             style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-            child: const Text('Continue',
-                style: TextStyle(color: Colors.white)),
+            child:
+                const Text('Continue', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -464,15 +476,15 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: backgroundColor,
-        title: Text(
+        title: const Text(
           'Error',
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
-        content: Text(message, style: TextStyle(color: textColor)),
+        content: Text(message, style: const TextStyle(color: textColor)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: primaryColor)),
+            child: const Text('OK', style: TextStyle(color: primaryColor)),
           ),
         ],
       ),
@@ -484,7 +496,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.white),
+            const Icon(Icons.check_circle, color: Colors.white),
             const SizedBox(width: 8),
             Expanded(child: Text(message)),
           ],
@@ -500,7 +512,9 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
   }
 
   List<FlightAddon> _getAddonsByCategory(AddonCategory category) {
-    return _allAddons.where((addon) => addon.type.category == category).toList();
+    return _allAddons
+        .where((addon) => addon.type.category == category)
+        .toList();
   }
 
   @override
@@ -520,7 +534,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
             _buildBookingSummary(),
             if (_showRecommendations && _recommendedAddons.isNotEmpty)
               _buildRecommendedSection(),
-            if (_showPopular && _popularAddons.isNotEmpty) _buildPopularSection(),
+            if (_showPopular && _popularAddons.isNotEmpty)
+              _buildPopularSection(),
             _buildCategoryFilters(),
             _buildAddonCategories(),
             _buildSelectedAddonsSection(),
@@ -540,16 +555,16 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
       backgroundColor: primaryColor,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
-        title: Text(
+        title: const Text(
           'Add-ons & Services',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         background: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -589,7 +604,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
 
   /// ─── Booking Status Card ─────────────────────────────────────────────────
   Widget _buildBookingStatus() {
-    if (_currentBooking == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (_currentBooking == null)
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     return SliverToBoxAdapter(
       child: Container(
@@ -597,14 +613,17 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [successColor.withOpacity(0.1), accentGreen.withOpacity(0.1)],
+            colors: [
+              successColor.withOpacity(0.1),
+              accentGreen.withOpacity(0.1)
+            ],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: successColor.withOpacity(0.3)),
         ),
         child: Row(
           children: [
-            Icon(Icons.flight_takeoff, color: successColor, size: 20),
+            const Icon(Icons.flight_takeoff, color: successColor, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
@@ -612,7 +631,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                 children: [
                   Text(
                     'Booking: ${_currentBooking!.bookingReference}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: textColor,
@@ -620,7 +639,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                   ),
                   Text(
                     'Status: ${_currentBooking!.status.displayName}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       color: darkGrey,
                     ),
@@ -634,9 +653,9 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                 color: successColor,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(
+              child: const Text(
                 'SAVED',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -653,8 +672,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
   Widget _buildBookingSummary() {
     final flightPrice = _currentBooking?.flightPrice ??
         (double.tryParse(_flightOffer['price']['total'] as String) ?? 0.0);
-    final seatCost =
-        _currentBooking?.seatBooking?.totalSeatCost ?? _seatCost;
+    final seatCost = _currentBooking?.seatBooking?.totalSeatCost ?? _seatCost;
     final totalBase = flightPrice + seatCost;
 
     return SliverToBoxAdapter(
@@ -683,7 +701,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                     color: primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.receipt_long,
+                  child: const Icon(Icons.receipt_long,
                       color: primaryColor, size: 24),
                 ),
                 const SizedBox(width: 12),
@@ -701,7 +719,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                       ),
                       Text(
                         '$_originCode → $_destinationCode • ${_selectedSeats.length} seat${_selectedSeats.length > 1 ? 's' : ''}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
                           color: darkGrey,
                         ),
@@ -715,9 +733,9 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Flight Cost', style: TextStyle(color: darkGrey)),
+                const Text('Flight Cost', style: TextStyle(color: darkGrey)),
                 Text('RM ${flightPrice.toStringAsFixed(2)}',
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: textColor, fontWeight: FontWeight.w600)),
               ],
             ),
@@ -725,9 +743,9 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Seat Selection', style: TextStyle(color: darkGrey)),
+                const Text('Seat Selection', style: TextStyle(color: darkGrey)),
                 Text('RM ${seatCost.toStringAsFixed(2)}',
-                    style: TextStyle(
+                    style: const TextStyle(
                         color: textColor, fontWeight: FontWeight.w600)),
               ],
             ),
@@ -736,9 +754,9 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Add-ons', style: TextStyle(color: darkGrey)),
+                  const Text('Add-ons', style: TextStyle(color: darkGrey)),
                   Text('RM ${_addonSelection.totalPrice.toStringAsFixed(2)}',
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: successColor, fontWeight: FontWeight.w600)),
                 ],
               ),
@@ -747,7 +765,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Total',
                   style: TextStyle(
                     fontSize: 16,
@@ -757,7 +775,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                 ),
                 Text(
                   'RM ${(totalBase + _addonSelection.totalPrice).toStringAsFixed(2)}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: successColor,
@@ -782,10 +800,10 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
+                const Row(
                   children: [
                     Icon(Icons.stars, color: accentOrange, size: 20),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Text(
                       'Recommended for You',
                       style: TextStyle(
@@ -800,17 +818,19 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                   children: [
                     TextButton(
                       onPressed: _addRecommendedAddons,
-                      child: Text(
+                      child: const Text(
                         'Add All',
                         style: TextStyle(
                             color: primaryColor, fontWeight: FontWeight.w600),
                       ),
                     ),
                     IconButton(
-                      onPressed: () =>
-                          setState(() => _showRecommendations = !_showRecommendations),
+                      onPressed: () => setState(
+                          () => _showRecommendations = !_showRecommendations),
                       icon: Icon(
-                        _showRecommendations ? Icons.expand_less : Icons.expand_more,
+                        _showRecommendations
+                            ? Icons.expand_less
+                            : Icons.expand_more,
                         color: darkGrey,
                       ),
                     ),
@@ -818,7 +838,6 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                 ),
               ],
             ),
-
             if (_showRecommendations) ...[
               const SizedBox(height: 8),
               SizedBox(
@@ -828,8 +847,9 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   itemCount: _recommendedAddons.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) =>
-                      _buildAddonCard(_recommendedAddons[index], isRecommended: true),
+                  itemBuilder: (context, index) => _buildAddonCard(
+                      _recommendedAddons[index],
+                      isRecommended: true),
                 ),
               ),
             ],
@@ -850,10 +870,10 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
+                const Row(
                   children: [
                     Icon(Icons.trending_up, color: successColor, size: 20),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Text(
                       'Popular Choices',
                       style: TextStyle(
@@ -873,7 +893,6 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                 ),
               ],
             ),
-
             if (_showPopular) ...[
               const SizedBox(height: 8),
               SizedBox(
@@ -902,7 +921,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Browse by Category',
               style: TextStyle(
                 fontSize: 16,
@@ -936,7 +955,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
     );
   }
 
-  Widget _buildCategoryChip(AddonCategory? category, String label, IconData icon) {
+  Widget _buildCategoryChip(
+      AddonCategory? category, String label, IconData icon) {
     final isSelected = _selectedCategory == category;
 
     return GestureDetector(
@@ -946,8 +966,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           gradient: isSelected
-              ? LinearGradient(colors: [primaryColor, secondaryColor])
-              : LinearGradient(colors: [Colors.white, Colors.white]),
+              ? const LinearGradient(colors: [primaryColor, secondaryColor])
+              : const LinearGradient(colors: [Colors.white, Colors.white]),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? primaryColor : subtleGrey,
@@ -1007,7 +1027,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                     const SizedBox(width: 8),
                     Text(
                       _getCategoryDisplayName(category),
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: textColor,
@@ -1026,7 +1046,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                     childAspectRatio: 0.75, // Adjusted ratio
                   ),
                   itemCount: addons.length,
-                  itemBuilder: (context, index) => _buildAddonCard(addons[index]),
+                  itemBuilder: (context, index) =>
+                      _buildAddonCard(addons[index]),
                 ),
                 const SizedBox(height: 8),
               ],
@@ -1082,7 +1103,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                           width: 36,
                           height: 36,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
@@ -1100,7 +1122,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                       const Spacer(),
                       if (isRecommended)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: accentOrange,
                             borderRadius: BorderRadius.circular(10),
@@ -1116,7 +1139,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                         ),
                       if (isPopular)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: successColor,
                             borderRadius: BorderRadius.circular(10),
@@ -1157,7 +1181,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                     height: isHorizontal ? 32 : 28, // Adjust for layout
                     child: Text(
                       addon.type.description,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 10,
                         color: darkGrey,
                       ),
@@ -1173,10 +1197,10 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                     SizedBox(
                       height: isHorizontal ? 16 : 24,
                       child: Text(
-                        isHorizontal 
-                          ? '• ${addon.features.first}'
-                          : '• ${addon.features.take(2).join('\n• ')}',
-                        style: TextStyle(
+                        isHorizontal
+                            ? '• ${addon.features.first}'
+                            : '• ${addon.features.take(2).join('\n• ')}',
+                        style: const TextStyle(
                           fontSize: 9,
                           color: accentGreen,
                         ),
@@ -1196,7 +1220,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                       Expanded(
                         child: Text(
                           'RM ${addon.price.toStringAsFixed(0)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: successColor,
@@ -1207,7 +1231,9 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
-                          color: isSelected ? primaryColor : subtleGrey.withOpacity(0.3),
+                          color: isSelected
+                              ? primaryColor
+                              : subtleGrey.withOpacity(0.3),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -1264,11 +1290,11 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
           children: [
             Row(
               children: [
-                Icon(Icons.shopping_cart, color: successColor, size: 20),
+                const Icon(Icons.shopping_cart, color: successColor, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   'Selected Add-ons (${_addonSelection.count})',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: textColor,
@@ -1277,97 +1303,98 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
               ],
             ),
             const SizedBox(height: 12),
-
-            ..._addonSelection.addons.map((addon) => Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: primaryColor.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: primaryColor.withOpacity(0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: Image.network(
-                          addon.type.imageUrl,
-                          width: 32,
-                          height: 32,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            width: 32,
-                            height: 32,
-                            decoration: BoxDecoration(
-                              color: primaryColor.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Icon(
-                              _getCategoryIcon(addon.type.category),
-                              color: primaryColor,
-                              size: 16,
-                            ),
-                          ),
-                        ),
+            ..._addonSelection.addons
+                .map((addon) => Container(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border:
+                            Border.all(color: primaryColor.withOpacity(0.2)),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              addon.type.displayName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: textColor,
-                                fontSize: 14,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              _getCategoryDisplayName(addon.type.category),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: darkGrey,
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.network(
+                              addon.type.imageUrl,
+                              width: 32,
+                              height: 32,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: primaryColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Icon(
+                                  _getCategoryIcon(addon.type.category),
+                                  color: primaryColor,
+                                  size: 16,
+                                ),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        'RM ${addon.price.toStringAsFixed(0)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: successColor,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: () => _toggleAddon(addon),
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
-                            shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.close,
-                            color: Colors.red,
-                            size: 16,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  addon.type.displayName,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: textColor,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  _getCategoryDisplayName(addon.type.category),
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: darkGrey,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
+                          Text(
+                            'RM ${addon.price.toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: successColor,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => _toggleAddon(addon),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.red,
+                                size: 16,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ))
-            .toList(),
-
+                    ))
+                .toList(),
             const Divider(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Add-ons Total',
                   style: TextStyle(
                     fontSize: 16,
@@ -1377,7 +1404,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                 ),
                 Text(
                   'RM ${_addonSelection.totalPrice.toStringAsFixed(2)}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: successColor,
@@ -1425,8 +1452,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
   Widget _buildBottomNavigation() {
     final flightPrice = _currentBooking?.flightPrice ??
         (double.tryParse(_flightOffer['price']['total'] as String) ?? 0.0);
-    final seatCost =
-        _currentBooking?.seatBooking?.totalSeatCost ?? _seatCost;
+    final seatCost = _currentBooking?.seatBooking?.totalSeatCost ?? _seatCost;
     final totalCost = flightPrice + seatCost + _addonSelection.totalPrice;
 
     return Container(
@@ -1449,7 +1475,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Total Cost',
                     style: TextStyle(
                       fontSize: 12,
@@ -1459,7 +1485,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                   const SizedBox(height: 4),
                   Text(
                     'RM ${totalCost.toStringAsFixed(2)}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: successColor,
@@ -1468,7 +1494,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                   if (_addonSelection.isNotEmpty)
                     Text(
                       '+${_addonSelection.count} add-on${_addonSelection.count > 1 ? 's' : ''}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 10,
                         color: darkGrey,
                       ),
@@ -1498,18 +1524,18 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                         strokeWidth: 2,
                       ),
                     )
-                  : Row(
+                  : const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
+                        Text(
                           'Save & Continue',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.save, size: 18),
+                        SizedBox(width: 8),
+                        Icon(Icons.save, size: 18),
                       ],
                     ),
             ),
@@ -1535,7 +1561,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                   height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [primaryColor, secondaryColor],
                     ),
                     boxShadow: [
@@ -1546,8 +1572,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                       ),
                     ],
                   ),
-                  child:
-                      const Icon(Icons.add_shopping_cart, color: Colors.white, size: 32),
+                  child: const Icon(Icons.add_shopping_cart,
+                      color: Colors.white, size: 32),
                 ),
               );
             },
@@ -1562,7 +1588,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          const Text(
             'Finding the best services for your journey',
             style: TextStyle(
               fontSize: 12,
@@ -1588,10 +1614,11 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
                 color: Colors.red.shade50,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.error_outline, size: 56, color: Colors.red.shade700),
+              child: Icon(Icons.error_outline,
+                  size: 56, color: Colors.red.shade700),
             ),
             const SizedBox(height: 20),
-            Text(
+            const Text(
               'Unable to load add-ons',
               style: TextStyle(
                 fontSize: 20,
@@ -1603,7 +1630,7 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
             Text(
               _errorMessage ?? 'Please try again',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: darkGrey,
               ),
@@ -1616,7 +1643,8 @@ class _AddonSelectionPageState extends State<AddonSelectionPage>
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

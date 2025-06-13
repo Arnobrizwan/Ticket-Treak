@@ -15,16 +15,16 @@ class FlightResultsPage extends StatefulWidget {
 class _FlightResultsPageState extends State<FlightResultsPage>
     with TickerProviderStateMixin {
   // Violin color palette (matching OnboardingScreen)
-  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
-  static const Color primaryColor    = Color(0xFF5C2E00);  // Dark Brown
-  static const Color secondaryColor  = Color(0xFF8B5000);  // Amber Brown
-  static const Color textColor       = Color(0xFF35281E);  // Deep Wood
-  static const Color subtleGrey      = Color(0xFFDAC1A7);  // Light Tan
-  static const Color darkGrey        = Color(0xFF7E5E3C);  // Medium Brown
-  static const Color accentOrange    = Color(0xFFD4A373);  // Warm Highlight
-  static const Color accentGreen     = Color(0xFFB28F5E);  // Muted Brown
-  static const Color successColor    = Color(0xFF8B5000);  // Success
-  static const Color warningColor    = Color(0xFFD4A373);  // Warning
+  static const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
+  static const Color primaryColor = Color(0xFF5C2E00); // Dark Brown
+  static const Color secondaryColor = Color(0xFF8B5000); // Amber Brown
+  static const Color textColor = Color(0xFF35281E); // Deep Wood
+  static const Color subtleGrey = Color(0xFFDAC1A7); // Light Tan
+  static const Color darkGrey = Color(0xFF7E5E3C); // Medium Brown
+  static const Color accentOrange = Color(0xFFD4A373); // Warm Highlight
+  static const Color accentGreen = Color(0xFFB28F5E); // Muted Brown
+  static const Color successColor = Color(0xFF8B5000); // Success
+  static const Color warningColor = Color(0xFFD4A373); // Warning
 
   // State fields
   bool _isLoading = true;
@@ -35,16 +35,16 @@ class _FlightResultsPageState extends State<FlightResultsPage>
   Map<String, dynamic> _carrierDictionary = {};
 
   // Hotel & Transfer data with loading states
-  final Map<int, List<dynamic>> _hotelOffersMap     = {};
+  final Map<int, List<dynamic>> _hotelOffersMap = {};
   final Map<int, List<dynamic>> _transferOptionsMap = {};
-  final Map<int, bool> _hotelLoadingMap     = {};
-  final Map<int, bool> _transferLoadingMap  = {};
+  final Map<int, bool> _hotelLoadingMap = {};
+  final Map<int, bool> _transferLoadingMap = {};
 
   // Price filter state
-  double _minPriceFilter   = 0.0;
-  double _maxPriceFilter   = 0.0;
-  double _currentMinPrice  = 0.0;
-  double _currentMaxPrice  = 0.0;
+  double _minPriceFilter = 0.0;
+  double _maxPriceFilter = 0.0;
+  double _currentMinPrice = 0.0;
+  double _currentMaxPrice = 0.0;
 
   // Currency & sorting
   String _selectedCurrency = 'MYR';
@@ -136,10 +136,11 @@ class _FlightResultsPageState extends State<FlightResultsPage>
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_didFetchArgs) {
-      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-      originCode = args['originCode']       as String;
+      final args =
+          ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      originCode = args['originCode'] as String;
       destinationCode = args['destinationCode'] as String;
-      departureDateStr = args['departureDate']  as String;
+      departureDateStr = args['departureDate'] as String;
       adults = args['adults'] as int;
       travelClass = args['travelClass'] as String;
       direct = args['direct'] as bool;
@@ -182,19 +183,20 @@ class _FlightResultsPageState extends State<FlightResultsPage>
       // The v2 response returns:
       //   { "data": [ <offer1>, <offer2>, … ], "dictionaries": { "carriers": { "AA": "American Airlines", … } } }
       final List<dynamic> offers = flightResponse['data'] as List<dynamic>;
-      final Map<String, dynamic> dicts = flightResponse['dictionaries'] as Map<String, dynamic>;
+      final Map<String, dynamic> dicts =
+          flightResponse['dictionaries'] as Map<String, dynamic>;
 
       // Extract the 'carriers' dictionary so that we can look up full airline names.
       _carrierDictionary = (dicts['carriers'] as Map<String, dynamic>? ?? {});
 
       // Figure out min/max price for filters:
-      double lowest  = double.infinity;
+      double lowest = double.infinity;
       double highest = 0.0;
       for (final offer in offers) {
         final priceInfo = offer['price'] as Map<String, dynamic>;
         final totalPriceStr = priceInfo['total'] as String;
         final priceValue = double.tryParse(totalPriceStr) ?? 0.0;
-        if (priceValue < lowest)  lowest = priceValue;
+        if (priceValue < lowest) lowest = priceValue;
         if (priceValue > highest) highest = priceValue;
       }
       if (lowest == double.infinity) lowest = 0.0;
@@ -238,7 +240,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
       try {
         final dt = DateTime.parse(departureDateStr);
         final checkIn = departureDateStr;
-        final checkOut = DateFormat('yyyy-MM-dd').format(dt.add(const Duration(days: 1)));
+        final checkOut =
+            DateFormat('yyyy-MM-dd').format(dt.add(const Duration(days: 1)));
 
         final hotelResults = await service.searchHotels(
           cityCode: destinationCode,
@@ -274,13 +277,14 @@ class _FlightResultsPageState extends State<FlightResultsPage>
 
       try {
         final firstItin = offers[i]['itineraries'][0] as Map<String, dynamic>;
-        final firstSeg  = firstItin['segments'][0]  as Map<String, dynamic>;
-        final arr       = firstSeg['arrival']       as Map<String, dynamic>;
+        final firstSeg = firstItin['segments'][0] as Map<String, dynamic>;
+        final arr = firstSeg['arrival'] as Map<String, dynamic>;
         final airportCode = arr['iataCode'] as String;
 
         // The API expects a string like "2025-06-04T14:30"
         final pickupDateTime = DateTime.parse(arr['at'] as String);
-        final pickupStr = DateFormat("yyyy-MM-dd'T'HH:mm").format(pickupDateTime);
+        final pickupStr =
+            DateFormat("yyyy-MM-dd'T'HH:mm").format(pickupDateTime);
 
         final transfers = await service.searchAirportTransfers(
           airportCode: airportCode,
@@ -352,7 +356,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
           ],
         ),
         background: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -414,9 +418,13 @@ class _FlightResultsPageState extends State<FlightResultsPage>
               children: [
                 Text(
                   _currencySymbols[_selectedCurrency] ?? _selectedCurrency,
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold),
                 ),
-                const Icon(Icons.arrow_drop_down, color: Colors.white, size: 18),
+                const Icon(Icons.arrow_drop_down,
+                    color: Colors.white, size: 18),
               ],
             ),
             onSelected: (String currency) {
@@ -476,7 +484,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                     color: primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.search, color: primaryColor, size: 24),
+                  child:
+                      const Icon(Icons.search, color: primaryColor, size: 24),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -493,7 +502,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       ),
                       Text(
                         "Found ${_displayedOffers.length} flights",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
                           color: darkGrey,
                         ),
@@ -502,7 +511,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color: successColor,
                     borderRadius: BorderRadius.circular(20),
@@ -523,8 +533,10 @@ class _FlightResultsPageState extends State<FlightResultsPage>
               spacing: 10,
               runSpacing: 6,
               children: [
-                _buildInfoChip(Icons.people, "$adults passenger${adults > 1 ? 's' : ''}", primaryColor),
-                _buildInfoChip(Icons.business_center, travelClass.toLowerCase(), secondaryColor),
+                _buildInfoChip(Icons.people,
+                    "$adults passenger${adults > 1 ? 's' : ''}", primaryColor),
+                _buildInfoChip(Icons.business_center, travelClass.toLowerCase(),
+                    secondaryColor),
                 _buildInfoChip(
                   Icons.calendar_today,
                   DateFormat('MMM dd').format(DateTime.parse(departureDateStr)),
@@ -575,7 +587,10 @@ class _FlightResultsPageState extends State<FlightResultsPage>
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [accentOrange.withOpacity(0.1), accentGreen.withOpacity(0.1)],
+            colors: [
+              accentOrange.withOpacity(0.1),
+              accentGreen.withOpacity(0.1)
+            ],
           ),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: accentOrange.withOpacity(0.3)),
@@ -583,11 +598,11 @@ class _FlightResultsPageState extends State<FlightResultsPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
-                const Icon(Icons.add_business, color: primaryColor, size: 24),
-                const SizedBox(width: 8),
-                const Text(
+                Icon(Icons.add_business, color: primaryColor, size: 24),
+                SizedBox(width: 8),
+                Text(
                   "Additional Services",
                   style: TextStyle(
                     fontSize: 16,
@@ -615,10 +630,10 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                           ),
                         ],
                       ),
-                      child: Column(
+                      child: const Column(
                         children: [
                           Icon(Icons.hotel, color: accentOrange, size: 28),
-                          const SizedBox(height: 6),
+                          SizedBox(height: 6),
                           Text(
                             "Hotels",
                             style: TextStyle(
@@ -655,10 +670,11 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                           ),
                         ],
                       ),
-                      child: Column(
+                      child: const Column(
                         children: [
-                          Icon(Icons.directions_car, color: accentGreen, size: 28),
-                          const SizedBox(height: 6),
+                          Icon(Icons.directions_car,
+                              color: accentGreen, size: 28),
+                          SizedBox(height: 6),
                           Text(
                             "Transfers",
                             style: TextStyle(
@@ -753,7 +769,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                   ),
                   label: Text(
                     "Sort: $_sortBy",
-                    style: TextStyle(color: primaryColor, fontSize: 14),
+                    style: const TextStyle(color: primaryColor, fontSize: 14),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
@@ -788,7 +804,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                   height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [primaryColor, secondaryColor],
                     ),
                     boxShadow: [
@@ -799,7 +815,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.flight, color: Colors.white, size: 32),
+                  child:
+                      const Icon(Icons.flight, color: Colors.white, size: 32),
                 ),
               );
             },
@@ -814,7 +831,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          const Text(
             "Searching through hundreds of airlines",
             style: TextStyle(
               fontSize: 12,
@@ -837,7 +854,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                   widthFactor: _loadingAnimation.value,
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [primaryColor, secondaryColor],
                       ),
                       borderRadius: BorderRadius.circular(2),
@@ -865,10 +882,11 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                 color: Colors.red.shade50,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.error_outline, size: 56, color: Colors.red.shade700),
+              child: Icon(Icons.error_outline,
+                  size: 56, color: Colors.red.shade700),
             ),
             const SizedBox(height: 20),
-            Text(
+            const Text(
               "Unable to find flights",
               style: TextStyle(
                 fontSize: 20,
@@ -879,10 +897,10 @@ class _FlightResultsPageState extends State<FlightResultsPage>
             const SizedBox(height: 10),
             Text(
               message.contains('404')
-                ? "No flights available for this route"
-                : "Please check your connection and try again",
+                  ? "No flights available for this route"
+                  : "Please check your connection and try again",
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: darkGrey,
               ),
@@ -898,7 +916,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -910,8 +929,9 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                   label: const Text("Edit Search"),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: primaryColor,
-                    side: BorderSide(color: primaryColor),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    side: const BorderSide(color: primaryColor),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -938,7 +958,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                 color: subtleGrey.withOpacity(0.5),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.airplane_ticket, size: 56, color: darkGrey),
+              child:
+                  const Icon(Icons.airplane_ticket, size: 56, color: darkGrey),
             ),
             const SizedBox(height: 20),
             const Text(
@@ -950,7 +971,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
               ),
             ),
             const SizedBox(height: 10),
-            Text(
+            const Text(
               "Try adjusting your price range or travel dates",
               textAlign: TextAlign.center,
               style: TextStyle(
@@ -972,7 +993,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -1010,37 +1032,40 @@ class _FlightResultsPageState extends State<FlightResultsPage>
 
   Widget _buildRealisticFlightCard(Map<String, dynamic> offer, int index) {
     // 4.1) Price (with student discount)
-    final priceInfo    = offer['price'] as Map<String, dynamic>;
+    final priceInfo = offer['price'] as Map<String, dynamic>;
     final totalPriceStr = priceInfo['total'] as String;
-    double priceValue  = double.tryParse(totalPriceStr) ?? 0.0;
+    double priceValue = double.tryParse(totalPriceStr) ?? 0.0;
     if (isStudentFare) {
       priceValue *= 0.7;
     }
-    final convertedPrice = _convertCurrency(priceValue, 'MYR', _selectedCurrency);
+    final convertedPrice =
+        _convertCurrency(priceValue, 'MYR', _selectedCurrency);
 
     // 4.2) Itinerary details
     final itineraries = offer['itineraries'] as List<dynamic>;
-    final firstItin   = itineraries[0] as Map<String, dynamic>;
+    final firstItin = itineraries[0] as Map<String, dynamic>;
     final durationStr = firstItin['duration'] as String;
-    final segments    = firstItin['segments'] as List<dynamic>;
-    final firstSeg    = segments[0] as Map<String, dynamic>;
-    final dep         = firstSeg['departure'] as Map<String, dynamic>;
-    final arr         = firstSeg['arrival']   as Map<String, dynamic>;
-    final carrier     = firstSeg['carrierCode'] as String;
-    final flightNo    = firstSeg['number'] as String;
+    final segments = firstItin['segments'] as List<dynamic>;
+    final firstSeg = segments[0] as Map<String, dynamic>;
+    final dep = firstSeg['departure'] as Map<String, dynamic>;
+    final arr = firstSeg['arrival'] as Map<String, dynamic>;
+    final carrier = firstSeg['carrierCode'] as String;
+    final flightNo = firstSeg['number'] as String;
 
-    final depAt   = DateTime.parse(dep['at'] as String);
-    final arrAt   = DateTime.parse(arr['at'] as String);
+    final depAt = DateTime.parse(dep['at'] as String);
+    final arrAt = DateTime.parse(arr['at'] as String);
     final depTimeFmt = DateFormat('HH:mm').format(depAt);
     final arrTimeFmt = DateFormat('HH:mm').format(arrAt);
     final depDateFmt = DateFormat('MMM dd').format(depAt);
 
     // 4.3) Airline full name via the dictionary (if available)
-    final String airlineName = _carrierDictionary[carrier] as String? ?? 'Airline $carrier';
+    final String airlineName =
+        _carrierDictionary[carrier] as String? ?? 'Airline $carrier';
 
     // 4.4) Build a "logo URL" from the carrier code
     //     (Here we use a free CDN from Skyscanner / AirHex. Replace with your preferred provider.)
-    final String logoUrl = 'https://content.airhex.com/content/logos/airlines_${carrier.toLowerCase()}_200_200_s.png';
+    final String logoUrl =
+        'https://content.airhex.com/content/logos/airlines_${carrier.toLowerCase()}_200_200_s.png';
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -1062,7 +1087,10 @@ class _FlightResultsPageState extends State<FlightResultsPage>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [primaryColor.withOpacity(0.05), secondaryColor.withOpacity(0.05)],
+                colors: [
+                  primaryColor.withOpacity(0.05),
+                  secondaryColor.withOpacity(0.05)
+                ],
               ),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(24),
@@ -1123,7 +1151,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       const SizedBox(height: 2),
                       Text(
                         "$carrier $flightNo",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
                           color: darkGrey,
                           fontWeight: FontWeight.w500,
@@ -1137,7 +1165,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                   children: [
                     Text(
                       "${_currencySymbols[_selectedCurrency]}${_formatCurrency(convertedPrice)}",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: successColor,
@@ -1146,7 +1174,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                     if (isStudentFare)
                       Container(
                         margin: const EdgeInsets.only(top: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: successColor,
                           borderRadius: BorderRadius.circular(12),
@@ -1190,7 +1219,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                           const SizedBox(height: 2),
                           Text(
                             dep['iataCode'] as String,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: primaryColor,
@@ -1198,7 +1227,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                           ),
                           Text(
                             depDateFmt,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: darkGrey,
                             ),
@@ -1217,7 +1246,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                               Container(
                                 width: 8,
                                 height: 8,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: primaryColor,
                                   shape: BoxShape.circle,
                                 ),
@@ -1226,7 +1255,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                                 child: Container(
                                   height: 2,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
+                                    gradient: const LinearGradient(
                                       colors: [primaryColor, secondaryColor],
                                     ),
                                     borderRadius: BorderRadius.circular(2),
@@ -1235,17 +1264,18 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                               ),
                               Container(
                                 padding: const EdgeInsets.all(6),
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: primaryColor,
                                   shape: BoxShape.circle,
                                 ),
-                                child: const Icon(Icons.flight, color: Colors.white, size: 14),
+                                child: const Icon(Icons.flight,
+                                    color: Colors.white, size: 14),
                               ),
                               Expanded(
                                 child: Container(
                                   height: 2,
                                   decoration: BoxDecoration(
-                                    gradient: LinearGradient(
+                                    gradient: const LinearGradient(
                                       colors: [secondaryColor, primaryColor],
                                     ),
                                     borderRadius: BorderRadius.circular(2),
@@ -1255,7 +1285,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                               Container(
                                 width: 8,
                                 height: 8,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: primaryColor,
                                   shape: BoxShape.circle,
                                 ),
@@ -1265,7 +1295,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                           const SizedBox(height: 8),
                           Text(
                             _formatDuration(durationStr),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: darkGrey,
                               fontWeight: FontWeight.w600,
@@ -1274,14 +1304,15 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                           if (segments.length > 1)
                             Container(
                               margin: const EdgeInsets.only(top: 4),
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
                                 color: warningColor.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 "${segments.length - 1} stop${segments.length > 2 ? 's' : ''}",
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 10,
                                   color: warningColor,
                                   fontWeight: FontWeight.w600,
@@ -1309,7 +1340,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                           const SizedBox(height: 2),
                           Text(
                             arr['iataCode'] as String,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: primaryColor,
@@ -1317,7 +1348,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                           ),
                           Text(
                             DateFormat('MMM dd').format(arrAt),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: darkGrey,
                             ),
@@ -1348,7 +1379,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => _showFlightDetails(offer),
-                        icon: Icon(Icons.info_outline, color: primaryColor, size: 18),
+                        icon: const Icon(Icons.info_outline,
+                            color: primaryColor, size: 18),
                         label: const Text(
                           "Details",
                           style: TextStyle(
@@ -1356,7 +1388,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: primaryColor),
+                          side: const BorderSide(color: primaryColor),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -1369,22 +1401,23 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       flex: 2,
                       child: ElevatedButton.icon(
                         onPressed: () {
-   Navigator.pushNamed(
-     context,
-     '/seat-selection', 
-    arguments: {
-       'offer': offer,
-       'originCode': originCode,
-       'destinationCode': destinationCode,
-       'departureDate': departureDateStr,
-       'adults': adults,
-       'travelClass': travelClass,
-       'direct': direct,
-       'isStudentFare': isStudentFare,
-     },
-    );
-  },
-                        icon: const Icon(Icons.flight_takeoff, color: Colors.white, size: 18),
+                          Navigator.pushNamed(
+                            context,
+                            '/seat-selection',
+                            arguments: {
+                              'offer': offer,
+                              'originCode': originCode,
+                              'destinationCode': destinationCode,
+                              'departureDate': departureDateStr,
+                              'adults': adults,
+                              'travelClass': travelClass,
+                              'direct': direct,
+                              'isStudentFare': isStudentFare,
+                            },
+                          );
+                        },
+                        icon: const Icon(Icons.flight_takeoff,
+                            color: Colors.white, size: 18),
                         label: const Text(
                           "Book Flight",
                           style: TextStyle(
@@ -1416,7 +1449,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
   /// 4.7) Hotel UI
   Widget _buildHotelSection(int flightIndex) {
     final isLoading = _hotelLoadingMap[flightIndex] ?? false;
-    final hotels    = _hotelOffersMap[flightIndex] ?? [];
+    final hotels = _hotelOffersMap[flightIndex] ?? [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1425,11 +1458,11 @@ class _FlightResultsPageState extends State<FlightResultsPage>
         const SizedBox(height: 8),
         Row(
           children: [
-            Icon(Icons.hotel, color: accentOrange, size: 20),
+            const Icon(Icons.hotel, color: accentOrange, size: 20),
             const SizedBox(width: 6),
             Text(
               "Hotels in $destinationCode",
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: textColor,
@@ -1439,9 +1472,9 @@ class _FlightResultsPageState extends State<FlightResultsPage>
         ),
         const SizedBox(height: 8),
         if (isLoading)
-          Container(
+          SizedBox(
             height: 70,
-            child: Center(
+            child: const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(accentOrange),
               ),
@@ -1454,10 +1487,10 @@ class _FlightResultsPageState extends State<FlightResultsPage>
               color: subtleGrey.withOpacity(0.3),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(
+            child: const Row(
               children: [
                 Icon(Icons.hotel_outlined, color: darkGrey, size: 18),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     "No hotels available for these dates",
@@ -1475,20 +1508,22 @@ class _FlightResultsPageState extends State<FlightResultsPage>
               itemCount: hotels.length.clamp(0, 4),
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, idx) {
-                final hotel   = hotels[idx] as Map<String, dynamic>;
-                final hotelData= hotel['hotel'] as Map<String, dynamic>? ?? {};
-                final offers  = hotel['offers'] as List<dynamic>? ?? [];
+                final hotel = hotels[idx] as Map<String, dynamic>;
+                final hotelData = hotel['hotel'] as Map<String, dynamic>? ?? {};
+                final offers = hotel['offers'] as List<dynamic>? ?? [];
 
                 final hotelName = hotelData['name'] as String? ?? "Hotel";
-                final rating    = hotelData['rating'] as String? ?? "3";
-                String price    = "-";
+                final rating = hotelData['rating'] as String? ?? "3";
+                String price = "-";
                 String currency = _selectedCurrency;
 
                 if (offers.isNotEmpty) {
                   final firstOffer = offers[0] as Map<String, dynamic>;
-                  final priceData  = firstOffer['price'] as Map<String, dynamic>? ?? {};
-                  price    = priceData['total'] as String? ?? "-";
-                  currency = priceData['currency'] as String? ?? _selectedCurrency;
+                  final priceData =
+                      firstOffer['price'] as Map<String, dynamic>? ?? {};
+                  price = priceData['total'] as String? ?? "-";
+                  currency =
+                      priceData['currency'] as String? ?? _selectedCurrency;
                 }
 
                 return Container(
@@ -1511,12 +1546,14 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.hotel, size: 18, color: accentOrange),
+                          const Icon(Icons.hotel,
+                              size: 18, color: accentOrange),
                           const Spacer(),
                           Row(
                             children: List.generate(
                               int.tryParse(rating) ?? 3,
-                              (i) => Icon(Icons.star, size: 10, color: accentOrange),
+                              (i) => const Icon(Icons.star,
+                                  size: 10, color: accentOrange),
                             ),
                           ),
                         ],
@@ -1524,7 +1561,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       const SizedBox(height: 6),
                       Text(
                         hotelName,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: textColor,
@@ -1535,13 +1572,13 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       const Spacer(),
                       Text(
                         "${_currencySymbols[currency] ?? currency} $price",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: accentOrange,
                         ),
                       ),
-                      Text(
+                      const Text(
                         "per night",
                         style: TextStyle(
                           fontSize: 10,
@@ -1560,18 +1597,18 @@ class _FlightResultsPageState extends State<FlightResultsPage>
 
   /// 4.8) Transfer UI
   Widget _buildTransferSection(int flightIndex) {
-    final isLoading  = _transferLoadingMap[flightIndex] ?? false;
-    final transfers  = _transferOptionsMap[flightIndex] ?? [];
+    final isLoading = _transferLoadingMap[flightIndex] ?? false;
+    final transfers = _transferOptionsMap[flightIndex] ?? [];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Divider(),
         const SizedBox(height: 8),
-        Row(
+        const Row(
           children: [
             Icon(Icons.directions_car, color: accentGreen, size: 20),
-            const SizedBox(width: 6),
+            SizedBox(width: 6),
             Text(
               "Airport Transfers",
               style: TextStyle(
@@ -1584,9 +1621,9 @@ class _FlightResultsPageState extends State<FlightResultsPage>
         ),
         const SizedBox(height: 8),
         if (isLoading)
-          Container(
+          SizedBox(
             height: 70,
-            child: Center(
+            child: const Center(
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(accentGreen),
               ),
@@ -1599,10 +1636,10 @@ class _FlightResultsPageState extends State<FlightResultsPage>
               color: subtleGrey.withOpacity(0.3),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(
+            child: const Row(
               children: [
                 Icon(Icons.directions_car_outlined, color: darkGrey, size: 18),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     "No transfers available at this time",
@@ -1620,16 +1657,23 @@ class _FlightResultsPageState extends State<FlightResultsPage>
               itemCount: transfers.length.clamp(0, 4),
               separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (context, idx) {
-                final transfer   = transfers[idx] as Map<String, dynamic>;
-                final providerData= transfer['provider'] as Map<String, dynamic>? ?? {};
-                final priceData   = transfer['price'] as Map<String, dynamic>? ?? {};
-                final vehicleData = transfer['vehicle'] as Map<String, dynamic>? ?? {};
+                final transfer = transfers[idx] as Map<String, dynamic>;
+                final providerData =
+                    transfer['provider'] as Map<String, dynamic>? ?? {};
+                final priceData =
+                    transfer['price'] as Map<String, dynamic>? ?? {};
+                final vehicleData =
+                    transfer['vehicle'] as Map<String, dynamic>? ?? {};
 
-                final provider   = providerData['name'] as String? ?? "Transfer Service";
-                final price      = priceData['total'] as String? ?? "-";
-                final currency   = priceData['currency'] as String? ?? _selectedCurrency;
-                final transferType = transfer['transferType'] as String? ?? "PRIVATE";
-                final vehicleDesc  = vehicleData['description'] as String? ?? "Standard Vehicle";
+                final provider =
+                    providerData['name'] as String? ?? "Transfer Service";
+                final price = priceData['total'] as String? ?? "-";
+                final currency =
+                    priceData['currency'] as String? ?? _selectedCurrency;
+                final transferType =
+                    transfer['transferType'] as String? ?? "PRIVATE";
+                final vehicleDesc =
+                    vehicleData['description'] as String? ?? "Standard Vehicle";
 
                 return Container(
                   width: 160,
@@ -1652,21 +1696,23 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       Row(
                         children: [
                           Icon(
-                            transferType == "SHARED" ? Icons.people : Icons.person,
+                            transferType == "SHARED"
+                                ? Icons.people
+                                : Icons.person,
                             size: 18,
                             color: accentGreen,
                           ),
                           const Spacer(),
-
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
                               color: accentGreen.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               transferType.toLowerCase(),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 10,
                                 color: accentGreen,
                                 fontWeight: FontWeight.bold,
@@ -1678,7 +1724,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       const SizedBox(height: 6),
                       Text(
                         provider,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: textColor,
@@ -1688,7 +1734,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       ),
                       Text(
                         vehicleDesc,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 10,
                           color: darkGrey,
                         ),
@@ -1698,13 +1744,13 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       const Spacer(),
                       Text(
                         "${_currencySymbols[currency] ?? currency} $price",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: accentGreen,
                         ),
                       ),
-                      Text(
+                      const Text(
                         "one way",
                         style: TextStyle(
                           fontSize: 10,
@@ -1725,17 +1771,18 @@ class _FlightResultsPageState extends State<FlightResultsPage>
 
   Color _getAirlineColor(String carrier) {
     final colors = {
-      'MH': Color(0xFF5C2E00), // Malaysia Airlines
-      'AK': Color(0xFFDC2626), // AirAsia
-      'SQ': Color(0xFF8B5000), // Singapore Airlines
-      'TG': Color(0xFF7C2D92), // Thai Airways
-      'GA': Color(0xFFB28F5E), // Garuda
-      'EK': Color(0xFFB91C1C), // Emirates
+      'MH': const Color(0xFF5C2E00), // Malaysia Airlines
+      'AK': const Color(0xFFDC2626), // AirAsia
+      'SQ': const Color(0xFF8B5000), // Singapore Airlines
+      'TG': const Color(0xFF7C2D92), // Thai Airways
+      'GA': const Color(0xFFB28F5E), // Garuda
+      'EK': const Color(0xFFB91C1C), // Emirates
     };
     return colors[carrier] ?? primaryColor;
   }
 
-  double _convertCurrency(double amount, String fromCurrency, String toCurrency) {
+  double _convertCurrency(
+      double amount, String fromCurrency, String toCurrency) {
     if (fromCurrency == toCurrency) return amount;
     double amountInMYR = amount;
     if (fromCurrency != 'MYR') {
@@ -1756,7 +1803,10 @@ class _FlightResultsPageState extends State<FlightResultsPage>
       final minutes = match.group(2)!;
       return "${hours}h ${minutes}m";
     }
-    return isoDuration.replaceFirst("PT", "").replaceAll("H", "h ").replaceAll("M", "m");
+    return isoDuration
+        .replaceFirst("PT", "")
+        .replaceAll("H", "h ")
+        .replaceAll("M", "m");
   }
 
   String _getAirlineName(String code) {
@@ -1796,8 +1846,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
   void _bookFlight(Map<String, dynamic> offer) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
-          children: const [
+        content: const Row(
+          children: [
             Icon(Icons.flight_takeoff, color: Colors.white),
             SizedBox(width: 8),
             Text('Redirecting to booking...'),
@@ -1827,7 +1877,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               "Sort flights by",
               style: TextStyle(
                 fontSize: 20,
@@ -1838,7 +1888,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
             const SizedBox(height: 16),
             _buildSortOption('price', 'Price', Icons.attach_money),
             _buildSortOption('duration', 'Duration', Icons.schedule),
-            _buildSortOption('departure', 'Departure Time', Icons.flight_takeoff),
+            _buildSortOption(
+                'departure', 'Departure Time', Icons.flight_takeoff),
             const SizedBox(height: 16),
           ],
         ),
@@ -1855,7 +1906,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        leading: Icon(icon, color: isSelected ? primaryColor : darkGrey, size: 18),
+        leading:
+            Icon(icon, color: isSelected ? primaryColor : darkGrey, size: 18),
         title: Text(
           label,
           style: TextStyle(
@@ -1865,10 +1917,8 @@ class _FlightResultsPageState extends State<FlightResultsPage>
           ),
         ),
         trailing: isSelected
-            ? Icon(
-                _sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
-                color: primaryColor,
-                size: 16)
+            ? Icon(_sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                color: primaryColor, size: 16)
             : null,
         onTap: () {
           setState(() {
@@ -1907,7 +1957,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
+                      const Text(
                         "Filter by price",
                         style: TextStyle(
                           fontSize: 20,
@@ -1916,7 +1966,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                         ),
                       ),
                       IconButton(
-                        icon: Icon(Icons.close, color: darkGrey),
+                        icon: const Icon(Icons.close, color: darkGrey),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -1927,11 +1977,13 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                     children: [
                       Text(
                         "${_currencySymbols[_selectedCurrency]}${_formatCurrency(_convertCurrency(tempMin, 'MYR', _selectedCurrency))}",
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                       Text(
                         "${_currencySymbols[_selectedCurrency]}${_formatCurrency(_convertCurrency(tempMax, 'MYR', _selectedCurrency))}",
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -1939,14 +1991,18 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                   RangeSlider(
                     min: _minPriceFilter,
                     max: _maxPriceFilter,
-                    divisions: (_maxPriceFilter - _minPriceFilter).round().clamp(1, 100),
+                    divisions: (_maxPriceFilter - _minPriceFilter)
+                        .round()
+                        .clamp(1, 100),
                     values: RangeValues(tempMin, tempMax),
                     activeColor: primaryColor,
                     inactiveColor: subtleGrey,
                     onChanged: (RangeValues values) {
                       setLocalState(() {
-                        tempMin = values.start.clamp(_minPriceFilter, _maxPriceFilter);
-                        tempMax = values.end.clamp(_minPriceFilter, _maxPriceFilter);
+                        tempMin = values.start
+                            .clamp(_minPriceFilter, _maxPriceFilter);
+                        tempMax =
+                            values.end.clamp(_minPriceFilter, _maxPriceFilter);
                       });
                     },
                   ),
@@ -1971,7 +2027,10 @@ class _FlightResultsPageState extends State<FlightResultsPage>
                       ),
                       child: const Text(
                         "Apply Filter",
-                        style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -1988,7 +2047,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
   void _applyPriceFilterAndSort() {
     final filtered = _allFlightOffers.where((offer) {
       final priceInfo = offer['price'] as Map<String, dynamic>;
-      final rawPrice  = double.tryParse(priceInfo['total'] as String) ?? 0.0;
+      final rawPrice = double.tryParse(priceInfo['total'] as String) ?? 0.0;
       final discounted = isStudentFare ? rawPrice * 0.7 : rawPrice;
       return discounted >= _currentMinPrice && discounted <= _currentMaxPrice;
     }).toList();
@@ -2003,13 +2062,17 @@ class _FlightResultsPageState extends State<FlightResultsPage>
     _displayedOffers.sort((a, b) {
       switch (_sortBy) {
         case 'price':
-          final priceA = double.tryParse((a['price']['total'] as String)) ?? 0.0;
-          final priceB = double.tryParse((b['price']['total'] as String)) ?? 0.0;
+          final priceA =
+              double.tryParse((a['price']['total'] as String)) ?? 0.0;
+          final priceB =
+              double.tryParse((b['price']['total'] as String)) ?? 0.0;
           final discA = isStudentFare ? priceA * 0.7 : priceA;
           final discB = isStudentFare ? priceB * 0.7 : priceB;
           final convA = _convertCurrency(discA, 'MYR', _selectedCurrency);
           final convB = _convertCurrency(discB, 'MYR', _selectedCurrency);
-          return _sortAscending ? convA.compareTo(convB) : convB.compareTo(convA);
+          return _sortAscending
+              ? convA.compareTo(convB)
+              : convB.compareTo(convA);
 
         case 'duration':
           final itinA = (a['itineraries'][0] as Map<String, dynamic>);
@@ -2019,8 +2082,10 @@ class _FlightResultsPageState extends State<FlightResultsPage>
           return _sortAscending ? durA.compareTo(durB) : durB.compareTo(durA);
 
         case 'departure':
-          final depA = DateTime.parse(a['itineraries'][0]['segments'][0]['departure']['at']);
-          final depB = DateTime.parse(b['itineraries'][0]['segments'][0]['departure']['at']);
+          final depA = DateTime.parse(
+              a['itineraries'][0]['segments'][0]['departure']['at']);
+          final depB = DateTime.parse(
+              b['itineraries'][0]['segments'][0]['departure']['at']);
           return _sortAscending ? depA.compareTo(depB) : depB.compareTo(depA);
 
         default:

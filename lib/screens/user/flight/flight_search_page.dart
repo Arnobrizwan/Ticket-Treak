@@ -218,12 +218,12 @@ class _FlightSearchPageState extends State<FlightSearchPage>
       backgroundColor: primaryColor,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
-        title: Row(
+        title: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.flight_takeoff, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            const Text(
+            SizedBox(width: 8),
+            Text(
               "Search Flights",
               style: TextStyle(
                 color: Colors.white,
@@ -234,7 +234,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
           ],
         ),
         background: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -304,7 +304,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 ),
               ],
             ),
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
@@ -312,8 +312,8 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                   size: 16,
                   color: primaryColor, // dark‐wood icon
                 ),
-                const SizedBox(width: 6),
-                const Text(
+                SizedBox(width: 6),
+                Text(
                   "Student Rates",
                   style: TextStyle(
                     fontSize: 12,
@@ -358,10 +358,10 @@ class _FlightSearchPageState extends State<FlightSearchPage>
           children: [
             const Icon(Icons.local_offer, size: 24, color: Colors.white),
             const SizedBox(width: 8),
-            Expanded(
+            const Expanded(
               child: Text(
                 "Flash Sale: 50% OFF select student routes!",
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
@@ -695,7 +695,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 children: [
                   Text(
                     label,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12, // from 13→12
                       color: darkGrey,
                       fontWeight: FontWeight.w600,
@@ -715,7 +715,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios,
+            const Icon(Icons.arrow_forward_ios,
                 size: 14, color: darkGrey), // from 16→14
           ],
         ),
@@ -802,7 +802,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 children: [
                   Text(
                     label,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12, // from 13→12
                       color: darkGrey,
                       fontWeight: FontWeight.w600,
@@ -822,7 +822,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                   if (dayInfo != null)
                     Text(
                       dayInfo,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12, // from 13→12
                         color: accentOrange,
                         fontWeight: FontWeight.w500,
@@ -831,7 +831,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 14, color: darkGrey),
+            const Icon(Icons.arrow_forward_ios, size: 14, color: darkGrey),
           ],
         ),
       ),
@@ -869,7 +869,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(Icons.people,
+                child: const Icon(Icons.people,
                     size: 24, color: primaryColor), // from 26→24
               ),
               const SizedBox(width: 16), // from 20→16
@@ -877,7 +877,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       "Passengers & Class",
                       style: TextStyle(
                         fontSize: 12, // from 13→12
@@ -898,7 +898,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward_ios, size: 14, color: darkGrey),
+              const Icon(Icons.arrow_forward_ios, size: 14, color: darkGrey),
             ],
           ),
         ),
@@ -918,7 +918,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 color: primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.add_business,
+              child: const Icon(Icons.add_business,
                   size: 18, color: primaryColor), // from 20→18
             ),
             const SizedBox(width: 8), // from 12→8
@@ -963,15 +963,15 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.hotel,
+                  child: const Icon(Icons.hotel,
                       color: accentOrange, size: 22), // from 24→22
                 ),
                 const SizedBox(width: 12), // from 16→12
-                Expanded(
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         "Add Hotel Booking",
                         style: TextStyle(
                           fontSize: 15, // from 16→15
@@ -979,7 +979,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                           color: textColor,
                         ),
                       ),
-                      const SizedBox(height: 2), // from 4→2
+                      SizedBox(height: 2), // from 4→2
                       Text(
                         "Save up to 25% on hotel stays",
                         style: TextStyle(
@@ -1033,15 +1033,15 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(Icons.directions_car,
+                  child: const Icon(Icons.directions_car,
                       color: accentGreen, size: 22), // from 24→22
                 ),
                 const SizedBox(width: 12),
-                Expanded(
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         "Add Ground Transport",
                         style: TextStyle(
                           fontSize: 15, // from 16→15
@@ -1049,7 +1049,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                           color: textColor,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      SizedBox(height: 2),
                       Text(
                         "Airport transfers & car rentals",
                         style: TextStyle(
@@ -1130,7 +1130,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                         ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.airline_seat_recline_extra,
+                      child: const Icon(Icons.airline_seat_recline_extra,
                           color: accentOrange, size: 22),
                     ),
                     const SizedBox(width: 12),
@@ -1147,7 +1147,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
+                          const Text(
                             "Choose your preferred seat location",
                             style: TextStyle(
                               fontSize: 12, // from 13→12
@@ -1212,15 +1212,15 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.date_range,
+              child: const Icon(Icons.date_range,
                   color: primaryColor, size: 22), // from 24→22
             ),
             const SizedBox(width: 16), // from 20→16
-            Expanded(
+            const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     "Flexible Dates",
                     style: TextStyle(
                       fontSize: 15, // from 17→15
@@ -1228,7 +1228,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                       color: textColor,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2),
                   Text(
                     "Find cheaper flights ±3 days",
                     style: TextStyle(
@@ -1352,7 +1352,8 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 color: primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.trending_up, size: 20, color: primaryColor),
+              child:
+                  const Icon(Icons.trending_up, size: 20, color: primaryColor),
             ),
             const SizedBox(width: 12),
             const Text(
@@ -1539,7 +1540,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                                               const SizedBox(height: 2),
                                               Text(
                                                 "RM${route['price']}",
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                   fontSize: 18, // from 20→18
                                                   fontWeight: FontWeight.bold,
                                                   color: successColor,
@@ -1560,7 +1561,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                                               borderRadius:
                                                   BorderRadius.circular(12),
                                             ),
-                                            child: Icon(
+                                            child: const Icon(
                                               Icons.flight_takeoff,
                                               color: primaryColor,
                                               size: 20,
@@ -1573,7 +1574,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                                       Text(
                                         (route['airlines'] as List<String>)
                                             .join(" • "),
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 12, // from 13→12
                                           color: darkGrey,
                                           fontWeight: FontWeight.w500,
@@ -1622,10 +1623,9 @@ class _FlightSearchPageState extends State<FlightSearchPage>
           expand: false,
           builder: (context, scrollController) {
             return Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: backgroundColor,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(24)),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -1812,7 +1812,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                                             borderRadius:
                                                 BorderRadius.circular(8),
                                           ),
-                                          child: Text(
+                                          child: const Text(
                                             "30% OFF",
                                             style: TextStyle(
                                               fontSize: 11, // from 12→11
@@ -1915,7 +1915,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                   TextField(
                     decoration: InputDecoration(
                       hintText: "Search airports",
-                      prefixIcon: Icon(Icons.search, color: darkGrey),
+                      prefixIcon: const Icon(Icons.search, color: darkGrey),
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(
@@ -1925,11 +1925,11 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                     ),
                   ),
                   const SizedBox(height: 12), // from 20→12
-                  Row(
+                  const Row(
                     children: [
                       Icon(Icons.location_on, size: 20, color: primaryColor),
-                      const SizedBox(width: 8),
-                      const Text(
+                      SizedBox(width: 8),
+                      Text(
                         "Malaysian Airports",
                         style: TextStyle(
                           fontSize: 16,
@@ -1958,11 +1958,11 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                           padding: EdgeInsets.symmetric(vertical: 12),
                           child: Divider(),
                         ),
-                        Row(
+                        const Row(
                           children: [
                             Icon(Icons.public, size: 20, color: primaryColor),
-                            const SizedBox(width: 8),
-                            const Text(
+                            SizedBox(width: 8),
+                            Text(
                               "Popular International",
                               style: TextStyle(
                                 fontSize: 16,
@@ -2060,7 +2060,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.light(
               primary: primaryColor,
               onPrimary: Colors.white,
               surface: backgroundColor,
@@ -2114,11 +2114,11 @@ class _FlightSearchPageState extends State<FlightSearchPage>
         _departureDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
+          content: const Row(
             children: [
-              const Icon(Icons.warning, color: Colors.white),
-              const SizedBox(width: 12),
-              const Text('Please fill in all required fields'),
+              Icon(Icons.warning, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Please fill in all required fields'),
             ],
           ),
           backgroundColor: Colors.red.shade700,
@@ -2135,11 +2135,11 @@ class _FlightSearchPageState extends State<FlightSearchPage>
     if (_isRoundTrip && _returnDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
+          content: const Row(
             children: [
-              const Icon(Icons.warning, color: Colors.white),
-              const SizedBox(width: 12),
-              const Text('Please select a return date'),
+              Icon(Icons.warning, color: Colors.white),
+              SizedBox(width: 12),
+              Text('Please select a return date'),
             ],
           ),
           backgroundColor: Colors.red.shade700,
@@ -2228,7 +2228,8 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                         color: primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.history, size: 20, color: primaryColor),
+                      child: const Icon(Icons.history,
+                          size: 20, color: primaryColor),
                     ),
                     const SizedBox(width: 12),
                     const Text(
@@ -2243,7 +2244,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 ),
                 TextButton(
                   onPressed: _clearRecentSearches,
-                  child: Text(
+                  child: const Text(
                     "Clear All",
                     style: TextStyle(
                       color: primaryColor,
@@ -2309,7 +2310,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                   color: subtleGrey.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(Icons.history,
+                child: const Icon(Icons.history,
                     color: darkGrey, size: 18), // from 20→18
               ),
               const SizedBox(width: 12),
@@ -2348,7 +2349,7 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                     const SizedBox(height: 2),
                     Text(
                       "$date • $passengers",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: darkGrey,
                       ),
@@ -2357,7 +2358,8 @@ class _FlightSearchPageState extends State<FlightSearchPage>
                 ),
               ),
               IconButton(
-                icon: Icon(Icons.north_east, color: primaryColor, size: 20),
+                icon:
+                    const Icon(Icons.north_east, color: primaryColor, size: 20),
                 onPressed: () {
                   setState(() {
                     _departureCity = departure;
@@ -2387,8 +2389,8 @@ class _FlightSearchPageState extends State<FlightSearchPage>
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
-            children: const [
+          content: const Row(
+            children: [
               Icon(Icons.check_circle, color: Colors.white),
               SizedBox(width: 12),
               Text('Recent searches cleared'),

@@ -219,8 +219,9 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
     _flightNumber = tempFlightNumber ?? 'N/A';
     // Use parsedAirlineName if available, then tempAirlineCode, then default to "Batik Airlines"
     _airlineName = parsedAirlineName ?? (tempAirlineCode ?? 'Batik Airlines');
-    if (_airlineName.isEmpty)
+    if (_airlineName.isEmpty) {
       _airlineName = 'Batik Airlines'; // Ensure it's not empty string
+    }
 
     debugPrint(
         "_parseBookingData: Final FlightNumber: $_flightNumber, Airline: $_airlineName");
@@ -294,7 +295,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           backgroundColor: backgroundColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: Row(
+          title: const Row(
             children: [
               Icon(Icons.email_outlined, color: primaryColor),
               SizedBox(width: 10),
@@ -308,23 +309,24 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               key: formKey,
               child: ListBody(
                 children: <Widget>[
-                  Text(
+                  const Text(
                       'Enter the email address to send the booking receipt to:',
                       style: TextStyle(color: darkGrey)),
-                  SizedBox(height: 15),
+                  const SizedBox(height: 15),
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       hintText: 'example@email.com',
                       labelText: 'Email Address',
-                      labelStyle: TextStyle(color: primaryColor),
-                      prefixIcon:
-                          Icon(Icons.alternate_email_rounded, color: darkGrey),
+                      labelStyle: const TextStyle(color: primaryColor),
+                      prefixIcon: const Icon(Icons.alternate_email_rounded,
+                          color: darkGrey),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10)),
                       focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: primaryColor, width: 2),
+                          borderSide:
+                              const BorderSide(color: primaryColor, width: 2),
                           borderRadius: BorderRadius.circular(10)),
                     ),
                     validator: (value) {
@@ -344,10 +346,11 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             ),
           ),
           actionsAlignment: MainAxisAlignment.spaceBetween,
-          actionsPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          actionsPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel',
+              child: const Text('Cancel',
                   style:
                       TextStyle(color: darkGrey, fontWeight: FontWeight.bold)),
               onPressed: () {
@@ -355,8 +358,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               },
             ),
             ElevatedButton.icon(
-              icon: Icon(Icons.send_rounded, size: 18),
-              label: Text('Send Receipt'),
+              icon: const Icon(Icons.send_rounded, size: 18),
+              label: const Text('Send Receipt'),
               style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
@@ -387,7 +390,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           backgroundColor: backgroundColor,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          title: Row(
+          title: const Row(
             children: [
               Icon(Icons.sms_outlined, color: primaryColor),
               SizedBox(width: 10),
@@ -401,23 +404,24 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               key: formKey,
               child: ListBody(
                 children: <Widget>[
-                  Text(
+                  const Text(
                       'Enter the phone number to send the booking receipt to (with country code):',
                       style: TextStyle(color: darkGrey)),
-                  SizedBox(height: 15),
+                  const SizedBox(height: 15),
                   TextFormField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       hintText: '+1234567890',
                       labelText: 'Phone Number',
-                      labelStyle: TextStyle(color: primaryColor),
-                      prefixIcon:
-                          Icon(Icons.phone_android_rounded, color: darkGrey),
+                      labelStyle: const TextStyle(color: primaryColor),
+                      prefixIcon: const Icon(Icons.phone_android_rounded,
+                          color: darkGrey),
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10)),
                       focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: primaryColor, width: 2),
+                          borderSide:
+                              const BorderSide(color: primaryColor, width: 2),
                           borderRadius: BorderRadius.circular(10)),
                     ),
                     validator: (value) {
@@ -436,10 +440,11 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             ),
           ),
           actionsAlignment: MainAxisAlignment.spaceBetween,
-          actionsPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          actionsPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel',
+              child: const Text('Cancel',
                   style:
                       TextStyle(color: darkGrey, fontWeight: FontWeight.bold)),
               onPressed: () {
@@ -447,8 +452,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               },
             ),
             ElevatedButton.icon(
-              icon: Icon(Icons.send_rounded, size: 18),
-              label: Text('Send Receipt'),
+              icon: const Icon(Icons.send_rounded, size: 18),
+              label: const Text('Send Receipt'),
               style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
@@ -496,7 +501,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         ),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: primaryColor))
+          ? const Center(child: CircularProgressIndicator(color: primaryColor))
           : _errorMessage != null
               ? _buildErrorState()
               : _bookingDataFromFirestore == null
@@ -515,9 +520,10 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline_rounded, color: errorColor, size: 60),
+            const Icon(Icons.error_outline_rounded,
+                color: errorColor, size: 60),
             const SizedBox(height: 20),
-            Text('Oops!',
+            const Text('Oops!',
                 style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -525,14 +531,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             const SizedBox(height: 10),
             Text(
               customMessage ?? _errorMessage ?? "An unexpected error occurred.",
-              style: TextStyle(fontSize: 16, color: darkGrey),
+              style: const TextStyle(fontSize: 16, color: darkGrey),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
             ElevatedButton.icon(
               onPressed: _fetchBookingDetails,
-              icon: Icon(Icons.refresh_rounded),
-              label: Text('Retry Loading'),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Retry Loading'),
               style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
@@ -614,7 +620,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Booking Reference',
               style: TextStyle(
                   fontSize: 14, color: darkGrey, fontWeight: FontWeight.w500),
@@ -622,7 +628,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             const SizedBox(height: 4),
             SelectableText(
               _displayBookingReference ?? 'N/A',
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: primaryColor,
@@ -647,11 +653,12 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.calendar_today_rounded, color: darkGrey, size: 16),
+                  const Icon(Icons.calendar_today_rounded,
+                      color: darkGrey, size: 16),
                   const SizedBox(width: 8),
                   Text(
                     'Booked on: ${DateFormat('dd MMM yy, hh:mm a').format(_bookingCreationDate!)}',
-                    style: TextStyle(fontSize: 13, color: darkGrey),
+                    style: const TextStyle(fontSize: 13, color: darkGrey),
                   ),
                 ],
               ),
@@ -695,17 +702,17 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                   children: [
                     Text(
                       _airlineName.toUpperCase(),
-                      style: TextStyle(
+                      style: const TextStyle(
                           color: primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 12,
                           letterSpacing: 1),
                     ),
-                    Icon(Icons.flight_class_rounded,
+                    const Icon(Icons.flight_class_rounded,
                         color: primaryColor, size: 28),
                   ],
                 ),
-                Text(
+                const Text(
                   'BOARDING PASS',
                   style: TextStyle(
                       color: primaryColor,
@@ -722,8 +729,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                   children: [
                     _ticketInfoColumn('FROM', _originCity, _originCode,
                         CrossAxisAlignment.start),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
                       child: Icon(Icons.arrow_right_alt_rounded,
                           color: primaryColor, size: 28),
                     ),
@@ -774,7 +781,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 10,
               color: darkGrey,
               fontWeight: FontWeight.w500,
@@ -783,7 +790,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         const SizedBox(height: 2),
         Text(
           value,
-          style: TextStyle(
+          style: const TextStyle(
               fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
         ),
         if (subValue.isNotEmpty)
@@ -791,7 +798,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             padding: const EdgeInsets.only(top: 1.0),
             child: Text(
               subValue,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 11, fontWeight: FontWeight.w500, color: darkGrey),
             ),
           ),
@@ -807,7 +814,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           Icon(icon, color: primaryColor, size: 22),
           const SizedBox(width: 10),
           Text(title,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 19, fontWeight: FontWeight.bold, color: textColor)),
         ],
       ),
@@ -863,12 +870,12 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Seat Information",
+            const Text("Seat Information",
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: textColor)),
-            Divider(height: 16, color: subtleGrey),
+            const Divider(height: 16, color: subtleGrey),
             _detailRow('Aircraft Type:',
                 _seatBookingDetails['aircraftType'] as String? ?? 'N/A'),
             _detailRow('Selected Seats:', seatsDisplay),
@@ -888,14 +895,14 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Selected Add-ons",
+            const Text("Selected Add-ons",
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: textColor)),
-            Divider(height: 16, color: subtleGrey),
+            const Divider(height: 16, color: subtleGrey),
             _selectedAddons.isEmpty
-                ? Text("No add-ons selected.",
+                ? const Text("No add-ons selected.",
                     style: TextStyle(color: darkGrey))
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -914,7 +921,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 3.0),
                         child: Text("• $addonName $addonDetails".trim(),
-                            style: TextStyle(fontSize: 14, color: textColor)),
+                            style: const TextStyle(
+                                fontSize: 14, color: textColor)),
                       );
                     }).toList(),
                   ),
@@ -932,7 +940,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: _passengers.isEmpty
-            ? Text("No passenger information available.",
+            ? const Text("No passenger information available.",
                 style: TextStyle(color: darkGrey))
             : ListView.separated(
                 shrinkWrap: true,
@@ -969,30 +977,30 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(fullName,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       color: textColor,
                                       fontSize: 15)),
                               if (passport != 'N/A')
                                 Text('Passport: $passport',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 13, color: darkGrey)),
                               if (passengerSeat != 'N/A')
                                 Text('Seat: $passengerSeat',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                         fontSize: 13, color: darkGrey)),
                             ],
                           ),
                         ),
                         if (isPrimary)
                           Chip(
-                            label: Text('Primary',
+                            label: const Text('Primary',
                                 style: TextStyle(
                                     fontSize: 10,
                                     color: primaryColor,
                                     fontWeight: FontWeight.bold)),
                             backgroundColor: primaryColor.withOpacity(0.1),
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 horizontal: 6, vertical: 0),
                             visualDensity: VisualDensity.compact,
                           ),
@@ -1048,7 +1056,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             flex: 2,
             child: Text(
               label,
-              style: TextStyle(
+              style: const TextStyle(
                   color: darkGrey, fontWeight: FontWeight.w500, fontSize: 14),
             ),
           ),
@@ -1077,13 +1085,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             "Actions & Receipts", Icons.settings_applications_rounded),
         const SizedBox(height: 8),
         ElevatedButton.icon(
-          icon: Icon(Icons.download_for_offline_rounded, size: 20),
-          label: Text('Download Ticket (PDF)'),
+          icon: const Icon(Icons.download_for_offline_rounded, size: 20),
+          label: const Text('Download Ticket (PDF)'),
           onPressed: _downloadTicket,
           style: ElevatedButton.styleFrom(
               backgroundColor: primaryColor,
               foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(vertical: 13),
+              padding: const EdgeInsets.symmetric(vertical: 13),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10))),
         ),
@@ -1092,13 +1100,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                icon: Icon(Icons.email_outlined, size: 18),
-                label: Text('Email Receipt'),
+                icon: const Icon(Icons.email_outlined, size: 18),
+                label: const Text('Email Receipt'),
                 onPressed: _showEmailReceiptDialog,
                 style: OutlinedButton.styleFrom(
                     foregroundColor: primaryColor,
-                    side: BorderSide(color: primaryColor),
-                    padding: EdgeInsets.symmetric(vertical: 11),
+                    side: const BorderSide(color: primaryColor),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10))),
               ),
@@ -1106,13 +1114,13 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton.icon(
-                icon: Icon(Icons.sms_outlined, size: 18),
-                label: Text('SMS Receipt'),
+                icon: const Icon(Icons.sms_outlined, size: 18),
+                label: const Text('SMS Receipt'),
                 onPressed: _showSmsReceiptDialog, // Call the new SMS dialog
                 style: OutlinedButton.styleFrom(
                     foregroundColor: primaryColor,
-                    side: BorderSide(color: primaryColor),
-                    padding: EdgeInsets.symmetric(vertical: 11),
+                    side: const BorderSide(color: primaryColor),
+                    padding: const EdgeInsets.symmetric(vertical: 11),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10))),
               ),
@@ -1136,7 +1144,7 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
             BoxShadow(
                 color: Colors.black.withOpacity(0.08),
                 blurRadius: 10,
-                offset: Offset(0, -3))
+                offset: const Offset(0, -3))
           ],
           border:
               Border(top: BorderSide(color: Colors.grey.shade200, width: 0.5))),
@@ -1144,8 +1152,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
         children: [
           Expanded(
             child: OutlinedButton.icon(
-              icon: Icon(Icons.list_alt_rounded, size: 18),
-              label: Text('My Bookings'),
+              icon: const Icon(Icons.list_alt_rounded, size: 18),
+              label: const Text('My Bookings'),
               onPressed: () {
                 Navigator.pushNamedAndRemoveUntil(context, AppRoutes.myBookings,
                     ModalRoute.withName(AppRoutes.home));
@@ -1161,8 +1169,8 @@ class _BookingDetailScreenState extends State<BookingDetailScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: ElevatedButton.icon(
-              icon: Icon(Icons.home_rounded, size: 18),
-              label: Text('Go Home'),
+              icon: const Icon(Icons.home_rounded, size: 18),
+              label: const Text('Go Home'),
               onPressed: () {
                 Navigator.pushNamedAndRemoveUntil(
                     context, AppRoutes.home, (route) => false);

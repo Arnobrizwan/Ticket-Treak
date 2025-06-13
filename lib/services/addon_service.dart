@@ -90,20 +90,24 @@ class AddonService {
 
     // Baggage add-ons
     addons.addAll([
-      FlightAddon(
+      const FlightAddon(
         id: 'extra_luggage_20kg',
         type: AddonType.extraLuggage20kg,
         price: 80.0,
         isPopular: true,
         features: ['20kg additional weight', 'Priority handling'],
       ),
-      FlightAddon(
+      const FlightAddon(
         id: 'extra_luggage_32kg',
         type: AddonType.extraLuggage32kg,
         price: 120.0,
-        features: ['32kg additional weight', 'Priority handling', 'Fragile tag'],
+        features: [
+          '32kg additional weight',
+          'Priority handling',
+          'Fragile tag'
+        ],
       ),
-      FlightAddon(
+      const FlightAddon(
         id: 'sports_equipment',
         type: AddonType.sportsEquipment,
         price: 95.0,
@@ -113,7 +117,7 @@ class AddonService {
 
     // Meal add-ons
     addons.addAll([
-      FlightAddon(
+      const FlightAddon(
         id: 'vegetarian_meal',
         type: AddonType.vegetarianMeal,
         price: 25.0,
@@ -121,13 +125,13 @@ class AddonService {
         isRecommended: true,
         features: ['Fresh ingredients', 'Nutritionally balanced'],
       ),
-      FlightAddon(
+      const FlightAddon(
         id: 'halal_meal',
         type: AddonType.halalMeal,
         price: 25.0,
         features: ['Certified halal', 'Traditional flavors'],
       ),
-      FlightAddon(
+      const FlightAddon(
         id: 'kosher_meal',
         type: AddonType.kosherMeal,
         price: 30.0,
@@ -140,7 +144,7 @@ class AddonService {
         isRecommended: travelClass.toLowerCase() == 'economy',
         features: ['Chef-prepared', '3-course meal', 'Premium ingredients'],
       ),
-      FlightAddon(
+      const FlightAddon(
         id: 'child_meal',
         type: AddonType.childMeal,
         price: 20.0,
@@ -150,44 +154,52 @@ class AddonService {
 
     // Service add-ons
     addons.addAll([
-      FlightAddon(
+      const FlightAddon(
         id: 'priority_boarding',
         type: AddonType.priorityBoarding,
         price: 25.0,
         isPopular: true,
         features: ['Board first', 'Overhead space guaranteed'],
       ),
-      FlightAddon(
+      const FlightAddon(
         id: 'lounge_access',
         type: AddonType.loungeAccess,
         price: 65.0,
         isRecommended: true,
-        features: ['Complimentary drinks', 'WiFi access', 'Comfortable seating'],
+        features: [
+          'Complimentary drinks',
+          'WiFi access',
+          'Comfortable seating'
+        ],
       ),
-      FlightAddon(
+      const FlightAddon(
         id: 'fast_track_security',
         type: AddonType.fastTrackSecurity,
         price: 30.0,
         features: ['Skip queues', 'Dedicated lanes'],
       ),
-      FlightAddon(
+      const FlightAddon(
         id: 'meet_and_greet',
         type: AddonType.meetAndGreet,
         price: 85.0,
-        features: ['Personal assistant', 'Baggage handling', 'Check-in assistance'],
+        features: [
+          'Personal assistant',
+          'Baggage handling',
+          'Check-in assistance'
+        ],
       ),
     ]);
 
     // Entertainment add-ons
     addons.addAll([
-      FlightAddon(
+      const FlightAddon(
         id: 'wifi',
         type: AddonType.wifi,
         price: 15.0,
         isPopular: true,
         features: ['Unlimited data', 'High-speed connection'],
       ),
-      FlightAddon(
+      const FlightAddon(
         id: 'entertainment',
         type: AddonType.entertainment,
         price: 12.0,
@@ -197,14 +209,14 @@ class AddonService {
 
     // Insurance add-ons
     addons.addAll([
-      FlightAddon(
+      const FlightAddon(
         id: 'travel_insurance',
         type: AddonType.travelInsurance,
         price: 45.0,
         isRecommended: true,
         features: ['Medical coverage', 'Trip interruption', '24/7 support'],
       ),
-      FlightAddon(
+      const FlightAddon(
         id: 'cancellation_cover',
         type: AddonType.cancellationCover,
         price: 35.0,

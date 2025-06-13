@@ -349,13 +349,13 @@ class _PassengerFormCardState extends State<PassengerFormCard> {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: accentColor.withOpacity(0.3)),
                   ),
-                  child: Row(
+                  child: const Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(Icons.info_outline_rounded,
                           color: accentColor, size: 20),
-                      const SizedBox(width: 12),
-                      const Expanded(
+                      SizedBox(width: 12),
+                      Expanded(
                         child: Text(
                           'The primary passenger\'s contact details will be used for booking confirmation and payment billing.',
                           style: TextStyle(
@@ -844,7 +844,7 @@ class _NationalityPickerState extends State<NationalityPicker> {
           // List of Countries
           Expanded(
             child: _filteredCountries.isEmpty
-                ? Center(
+                ? const Center(
                     child: Text("No countries match your search.",
                         style: TextStyle(color: darkGrey, fontSize: 16)))
                 : ListView.builder(
@@ -971,8 +971,9 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
 
   void _initializePassengers({int count = 1}) {
     final int validCount = count > 0 ? count : 1;
-    if (_passengers.length == validCount && _passengers.isNotEmpty)
+    if (_passengers.length == validCount && _passengers.isNotEmpty) {
       return; // Avoid re-init if count is same
+    }
 
     _passengers =
         List.generate(validCount, (index) => PassengerData(index + 1));
@@ -1042,7 +1043,9 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
 
   bool _validateCurrentPassenger() {
     if (_currentPassengerIndex < 0 ||
-        _currentPassengerIndex >= _passengers.length) return false;
+        _currentPassengerIndex >= _passengers.length) {
+      return false;
+    }
     return _passengers[_currentPassengerIndex].isValid();
   }
 
@@ -1131,7 +1134,9 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted ||
           passengerIndex < 0 ||
-          passengerIndex >= _passengers.length) return;
+          passengerIndex >= _passengers.length) {
+        return;
+      }
 
       final passenger = _passengers[passengerIndex];
       final now = DateTime.now();
@@ -1157,7 +1162,7 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
         builder: (ctx, child) {
           return Theme(
             data: Theme.of(ctx).copyWith(
-              colorScheme: ColorScheme.light(
+              colorScheme: const ColorScheme.light(
                 primary: primaryColor,
                 onPrimary: Colors.white, // Text on primary color button
                 surface: backgroundColor,
@@ -1165,13 +1170,13 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
                 secondary: accentColor,
                 onSecondary: Colors.white,
               ),
-              dialogBackgroundColor: backgroundColor,
               textButtonTheme: TextButtonThemeData(
                 style: TextButton.styleFrom(
                     foregroundColor:
                         primaryColor, // OK/Cancel button text color
                     textStyle: const TextStyle(fontWeight: FontWeight.bold)),
               ),
+              dialogTheme: DialogThemeData(backgroundColor: backgroundColor),
             ),
             child: child!,
           );
@@ -1196,7 +1201,9 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted ||
           passengerIndex < 0 ||
-          passengerIndex >= _passengers.length) return;
+          passengerIndex >= _passengers.length) {
+        return;
+      }
 
       showModalBottomSheet(
         context: context,
@@ -1537,8 +1544,9 @@ class _PassengerDetailsScreenState extends State<PassengerDetailsScreen>
       },
       itemCount: _passengers.length,
       itemBuilder: (context, index) {
-        if (index < 0 || index >= _passengers.length)
+        if (index < 0 || index >= _passengers.length) {
           return const SizedBox.shrink();
+        }
         return ScaleTransition(
           // Apply scale animation per page
           scale: _scaleAnimation,

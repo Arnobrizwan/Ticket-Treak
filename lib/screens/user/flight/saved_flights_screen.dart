@@ -16,13 +16,13 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
     with TickerProviderStateMixin {
   // Violin color palette (matching OnboardingScreen)
   static const Color backgroundColor = Color(0xFFF5F0E1);
-  static const Color primaryColor    = Color(0xFF5C2E00);
-  static const Color secondaryColor  = Color(0xFF8B5000);
-  static const Color textColor       = Color(0xFF35281E);
-  static const Color subtleGrey      = Color(0xFFDAC1A7);
-  static const Color darkGrey        = Color(0xFF7E5E3C);
-  static const Color accentOrange    = Color(0xFFD4A373);
-  static const Color successColor    = Color(0xFF8B5000);
+  static const Color primaryColor = Color(0xFF5C2E00);
+  static const Color secondaryColor = Color(0xFF8B5000);
+  static const Color textColor = Color(0xFF35281E);
+  static const Color subtleGrey = Color(0xFFDAC1A7);
+  static const Color darkGrey = Color(0xFF7E5E3C);
+  static const Color accentOrange = Color(0xFFD4A373);
+  static const Color successColor = Color(0xFF8B5000);
 
   late final String _userId;
   final _firestore = FirebaseFirestore.instance;
@@ -96,11 +96,11 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
+          content: const Row(
             children: [
               Icon(Icons.refresh, color: Colors.white, size: 18),
-              const SizedBox(width: 8),
-              const Text('Saved flights refreshed', style: TextStyle(fontSize: 14)),
+              SizedBox(width: 8),
+              Text('Saved flights refreshed', style: TextStyle(fontSize: 14)),
             ],
           ),
           backgroundColor: successColor,
@@ -148,7 +148,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                   color: primaryColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.bookmark_border, size: 60, color: primaryColor),
+                child: const Icon(Icons.bookmark_border,
+                    size: 60, color: primaryColor),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -160,7 +161,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 "Please sign in to view and manage your saved flights",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -171,7 +172,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
               ),
               const SizedBox(height: 30),
               ElevatedButton.icon(
-                onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                onPressed: () =>
+                    Navigator.pushReplacementNamed(context, '/login'),
                 icon: const Icon(Icons.login, color: Colors.white, size: 18),
                 label: const Text(
                   "Sign In",
@@ -183,7 +185,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -237,12 +240,12 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
         titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Row(
+        title: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.bookmark, color: Colors.white, size: 18),
-            const SizedBox(width: 6),
-            const Text(
+            Icon(Icons.bookmark, color: Colors.white, size: 18),
+            SizedBox(width: 6),
+            Text(
               "Saved Flights",
               style: TextStyle(
                 color: Colors.white,
@@ -253,7 +256,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
           ],
         ),
         background: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -320,7 +323,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
               return Transform.rotate(
                 angle: _refreshAnimation.value * 2 * 3.14159,
                 child: IconButton(
-                  icon: const Icon(Icons.refresh, color: Colors.white, size: 20),
+                  icon:
+                      const Icon(Icons.refresh, color: Colors.white, size: 20),
                   onPressed: _isRefreshing ? null : _refreshList,
                   tooltip: "Refresh",
                 ),
@@ -400,7 +404,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
               height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(
+                gradient: const LinearGradient(
                   colors: [primaryColor, secondaryColor],
                 ),
                 boxShadow: [
@@ -423,7 +427,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
               ),
             ),
             const SizedBox(height: 6),
-            Text(
+            const Text(
               "Just a moment",
               style: TextStyle(
                 fontSize: 12,
@@ -451,7 +455,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                   color: Colors.red.shade50,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.error_outline, size: 48, color: Colors.red.shade700),
+                child: Icon(Icons.error_outline,
+                    size: 48, color: Colors.red.shade700),
               ),
               const SizedBox(height: 20),
               const Text(
@@ -464,7 +469,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              Text(
+              const Text(
                 "Please check your connection and try again",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -483,7 +488,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -511,7 +517,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                   color: subtleGrey.withOpacity(0.5),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.bookmark_border, size: 60, color: darkGrey),
+                child: const Icon(Icons.bookmark_border,
+                    size: 60, color: darkGrey),
               ),
               const SizedBox(height: 24),
               const Text(
@@ -524,7 +531,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 "Start saving your favorite flights to see them here.\nEasily compare and book later!",
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -538,8 +545,10 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () => Navigator.pushReplacementNamed(context, '/flight-search'),
-                    icon: const Icon(Icons.search, color: Colors.white, size: 16),
+                    onPressed: () => Navigator.pushReplacementNamed(
+                        context, '/flight-search'),
+                    icon:
+                        const Icon(Icons.search, color: Colors.white, size: 16),
                     label: const Text(
                       "Search Flights",
                       style: TextStyle(
@@ -550,7 +559,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -564,8 +574,9 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                         Navigator.pushReplacementNamed(context, '/home');
                       }
                     },
-                    icon: Icon(Icons.arrow_back, color: primaryColor, size: 16),
-                    label: Text(
+                    icon: const Icon(Icons.arrow_back,
+                        color: primaryColor, size: 16),
+                    label: const Text(
                       "Go Back",
                       style: TextStyle(
                         color: primaryColor,
@@ -574,8 +585,9 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                       ),
                     ),
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: primaryColor),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      side: const BorderSide(color: primaryColor),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -614,11 +626,15 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [primaryColor.withOpacity(0.1), accentOrange.withOpacity(0.1)],
+                    colors: [
+                      primaryColor.withOpacity(0.1),
+                      accentOrange.withOpacity(0.1)
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(Icons.bookmark, color: primaryColor, size: 28),
+                child:
+                    const Icon(Icons.bookmark, color: primaryColor, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -636,7 +652,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                     const SizedBox(height: 2),
                     Text(
                       "${docs.length} flight${docs.length == 1 ? '' : 's'} saved for later",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 12,
                         color: darkGrey,
                       ),
@@ -645,14 +661,15 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
                   color: successColor,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
                   "${docs.length}",
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -687,42 +704,43 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
       }
 
       // Parse flight data safely
-      final priceInfo  = offer['price'] as Map<String, dynamic>? ?? {};
+      final priceInfo = offer['price'] as Map<String, dynamic>? ?? {};
       final totalPrice = priceInfo['total'] as String? ?? 'N/A';
-      final currency   = priceInfo['currency'] as String? ?? 'MYR';
+      final currency = priceInfo['currency'] as String? ?? 'MYR';
 
       final itineraries = offer['itineraries'] as List<dynamic>? ?? [];
       if (itineraries.isEmpty) {
         return _buildErrorCard("No itinerary data", index);
       }
 
-      final firstItin   = itineraries[0] as Map<String, dynamic>;
+      final firstItin = itineraries[0] as Map<String, dynamic>;
       final durationStr = firstItin['duration'] as String? ?? 'N/A';
-      final segments    = firstItin['segments'] as List<dynamic>? ?? [];
+      final segments = firstItin['segments'] as List<dynamic>? ?? [];
       if (segments.isEmpty) {
         return _buildErrorCard("No segment data", index);
       }
 
-      final firstSeg  = segments[0] as Map<String, dynamic>;
-      final dep       = firstSeg['departure'] as Map<String, dynamic>? ?? {};
-      final arr       = firstSeg['arrival'] as Map<String, dynamic>? ?? {};
-      final carrier   = (firstSeg['carrierCode'] as String? ?? 'N/A').toUpperCase();
-      final flightNo  = firstSeg['number'] as String? ?? 'N/A';
+      final firstSeg = segments[0] as Map<String, dynamic>;
+      final dep = firstSeg['departure'] as Map<String, dynamic>? ?? {};
+      final arr = firstSeg['arrival'] as Map<String, dynamic>? ?? {};
+      final carrier =
+          (firstSeg['carrierCode'] as String? ?? 'N/A').toUpperCase();
+      final flightNo = firstSeg['number'] as String? ?? 'N/A';
 
-      final depAtStr  = dep['at'] as String?;
-      final arrAtStr  = arr['at'] as String?;
+      final depAtStr = dep['at'] as String?;
+      final arrAtStr = arr['at'] as String?;
       if (depAtStr == null || arrAtStr == null) {
         return _buildErrorCard("Invalid time data", index);
       }
 
-      final depAt      = DateTime.parse(depAtStr);
-      final arrAt      = DateTime.parse(arrAtStr);
+      final depAt = DateTime.parse(depAtStr);
+      final arrAt = DateTime.parse(arrAtStr);
       final depTimeFmt = DateFormat('HH:mm').format(depAt);
       final arrTimeFmt = DateFormat('HH:mm').format(arrAt);
       final depDateFmt = DateFormat('MMM dd').format(depAt);
 
       // Saved date
-      final savedAt   = saved['savedAt'] as Timestamp?;
+      final savedAt = saved['savedAt'] as Timestamp?;
       final savedDate = savedAt?.toDate();
 
       return Dismissible(
@@ -738,12 +756,12 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
             ),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Column(
+          child: const Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.delete_forever, color: Colors.white, size: 28),
-              const SizedBox(height: 6),
-              const Text(
+              Icon(Icons.delete_forever, color: Colors.white, size: 28),
+              SizedBox(height: 6),
+              Text(
                 "Remove",
                 style: TextStyle(
                   color: Colors.white,
@@ -780,7 +798,10 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [primaryColor.withOpacity(0.05), secondaryColor.withOpacity(0.05)],
+                    colors: [
+                      primaryColor.withOpacity(0.05),
+                      secondaryColor.withOpacity(0.05)
+                    ],
                   ),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
@@ -846,7 +867,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                           const SizedBox(height: 2),
                           Text(
                             "$carrier $flightNo",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: darkGrey,
                               fontWeight: FontWeight.w500,
@@ -862,7 +883,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                       children: [
                         Text(
                           "$currency $totalPrice",
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: successColor,
@@ -871,7 +892,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                         if (savedDate != null)
                           Text(
                             "Saved ${DateFormat('MMM dd').format(savedDate)}",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 10,
                               color: darkGrey,
                             ),
@@ -884,7 +905,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.redAccent),
                       onPressed: () async {
-                        final confirmed = await _showDeleteConfirmation(context);
+                        final confirmed =
+                            await _showDeleteConfirmation(context);
                         if (confirmed == true) {
                           await _deleteSavedFlight(doc.id);
                         }
@@ -918,7 +940,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                               const SizedBox(height: 4),
                               Text(
                                 dep['iataCode'] as String? ?? 'N/A',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: primaryColor,
@@ -926,7 +948,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                               ),
                               Text(
                                 depDateFmt,
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 10,
                                   color: darkGrey,
                                 ),
@@ -945,7 +967,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                                   Container(
                                     width: 8,
                                     height: 8,
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: primaryColor,
                                       shape: BoxShape.circle,
                                     ),
@@ -954,8 +976,11 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                                     child: Container(
                                       height: 2,
                                       decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [primaryColor, secondaryColor],
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            primaryColor,
+                                            secondaryColor
+                                          ],
                                         ),
                                         borderRadius: BorderRadius.circular(1),
                                       ),
@@ -963,18 +988,22 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                                   ),
                                   Container(
                                     padding: const EdgeInsets.all(6),
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: primaryColor,
                                       shape: BoxShape.circle,
                                     ),
-                                    child: const Icon(Icons.flight, color: Colors.white, size: 16),
+                                    child: const Icon(Icons.flight,
+                                        color: Colors.white, size: 16),
                                   ),
                                   Expanded(
                                     child: Container(
                                       height: 2,
                                       decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [secondaryColor, primaryColor],
+                                        gradient: const LinearGradient(
+                                          colors: [
+                                            secondaryColor,
+                                            primaryColor
+                                          ],
                                         ),
                                         borderRadius: BorderRadius.circular(1),
                                       ),
@@ -983,7 +1012,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                                   Container(
                                     width: 8,
                                     height: 8,
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                       color: primaryColor,
                                       shape: BoxShape.circle,
                                     ),
@@ -993,7 +1022,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                               const SizedBox(height: 6),
                               Text(
                                 _formatDuration(durationStr),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 10,
                                   color: darkGrey,
                                   fontWeight: FontWeight.w600,
@@ -1002,14 +1031,15 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                               if (segments.length > 1)
                                 Container(
                                   margin: const EdgeInsets.only(top: 4),
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
                                     color: accentOrange.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     "${segments.length - 1} stop${segments.length > 2 ? 's' : ''}",
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 10,
                                       color: accentOrange,
                                       fontWeight: FontWeight.w600,
@@ -1037,7 +1067,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                               const SizedBox(height: 4),
                               Text(
                                 arr['iataCode'] as String? ?? 'N/A',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: primaryColor,
@@ -1045,7 +1075,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                               ),
                               Text(
                                 DateFormat('MMM dd').format(arrAt),
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 10,
                                   color: darkGrey,
                                 ),
@@ -1064,7 +1094,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () => _navigateToDetails(saved, offer),
-                            icon: Icon(Icons.info_outline, color: primaryColor, size: 18),
+                            icon: const Icon(Icons.info_outline,
+                                color: primaryColor, size: 18),
                             label: const Text(
                               "View Details",
                               style: TextStyle(
@@ -1074,7 +1105,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
-                              side: BorderSide(color: primaryColor),
+                              side: const BorderSide(color: primaryColor),
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -1086,23 +1117,30 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                         Expanded(
                           flex: 2,
                           child: ElevatedButton.icon(
-                           onPressed: () {
-  Navigator.pushNamed(
-    context,
-    '/seat-selection',    
-    arguments: {
-      'offer': offer,
-      'originCode': saved['originCode'] as String? ?? '',
-      'destinationCode': saved['destinationCode'] as String? ?? '',
-      'departureDate': saved['departureDateStr'] as String? ?? '',
-      'adults': saved['adults'] as int? ?? 1,
-      'travelClass': saved['travelClass'] as String? ?? '',
-      'direct': saved['direct'] as bool? ?? false,
-      'isStudentFare': saved['isStudentFare'] as bool? ?? false,
-    },
-  );
-},
-                            icon: const Icon(Icons.flight_takeoff, color: Colors.white, size: 18),
+                            onPressed: () {
+                              Navigator.pushNamed(
+                                context,
+                                '/seat-selection',
+                                arguments: {
+                                  'offer': offer,
+                                  'originCode':
+                                      saved['originCode'] as String? ?? '',
+                                  'destinationCode':
+                                      saved['destinationCode'] as String? ?? '',
+                                  'departureDate':
+                                      saved['departureDateStr'] as String? ??
+                                          '',
+                                  'adults': saved['adults'] as int? ?? 1,
+                                  'travelClass':
+                                      saved['travelClass'] as String? ?? '',
+                                  'direct': saved['direct'] as bool? ?? false,
+                                  'isStudentFare':
+                                      saved['isStudentFare'] as bool? ?? false,
+                                },
+                              );
+                            },
+                            icon: const Icon(Icons.flight_takeoff,
+                                color: Colors.white, size: 18),
                             label: const Text(
                               "Book Now",
                               style: TextStyle(
@@ -1214,7 +1252,7 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
             children: [
               Icon(Icons.delete_forever, color: Colors.red.shade700, size: 20),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 "Remove Flight?",
                 style: TextStyle(
                   color: textColor,
@@ -1224,14 +1262,14 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
               ),
             ],
           ),
-          content: Text(
+          content: const Text(
             "This flight will be permanently removed from your saved flights. You can always save it again later.",
             style: TextStyle(color: darkGrey, fontSize: 14),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
+              child: const Text(
                 "Cancel",
                 style: TextStyle(color: darkGrey, fontSize: 14),
               ),
@@ -1243,7 +1281,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
               child: const Text(
                 "Remove",
@@ -1262,11 +1301,11 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
+            content: const Row(
               children: [
                 Icon(Icons.check_circle, color: Colors.white, size: 18),
-                const SizedBox(width: 8),
-                const Text('Flight removed from saved flights',
+                SizedBox(width: 8),
+                Text('Flight removed from saved flights',
                     style: TextStyle(fontSize: 14)),
               ],
             ),
@@ -1299,7 +1338,8 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
     }
   }
 
-  void _navigateToDetails(Map<String, dynamic> saved, Map<String, dynamic> offer) {
+  void _navigateToDetails(
+      Map<String, dynamic> saved, Map<String, dynamic> offer) {
     Navigator.pushNamed(
       context,
       '/flight-detail',
@@ -1320,11 +1360,11 @@ class _SavedFlightsScreenState extends State<SavedFlightsScreen>
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Row(
+          content: const Row(
             children: [
               Icon(Icons.flight_takeoff, color: Colors.white, size: 18),
-              const SizedBox(width: 8),
-              const Text('Redirecting to booking...', style: TextStyle(fontSize: 14)),
+              SizedBox(width: 8),
+              Text('Redirecting to booking...', style: TextStyle(fontSize: 14)),
             ],
           ),
           backgroundColor: primaryColor,

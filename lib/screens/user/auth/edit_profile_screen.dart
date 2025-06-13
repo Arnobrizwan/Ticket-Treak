@@ -6,9 +6,9 @@ import '../../../routes/app_routes.dart';
 class EditProfileScreen extends StatefulWidget {
   final String userName;
   final String email;
-  
+
   const EditProfileScreen({
-    super.key, 
+    super.key,
     required this.userName,
     this.email = "arnob@example.com",
   });
@@ -23,13 +23,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _phoneController;
   late TextEditingController _currentPasswordController;
   late TextEditingController _newPasswordController;
-  
+
   bool _obscureCurrentPassword = true;
   bool _obscureNewPassword = true;
   bool _isChangePasswordVisible = false;
   bool _isLoading = false;
   bool _isDeleting = false;
-  
+
   // Enterprise color palette (matching register screen)
   static const Color backgroundColor = Color(0xFFF5F7FA);
   static const Color primaryColor = Color(0xFF3F3D9A);
@@ -40,7 +40,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   @override
   void initState() {
     super.initState();
@@ -49,10 +49,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _phoneController = TextEditingController();
     _currentPasswordController = TextEditingController();
     _newPasswordController = TextEditingController();
-    
+
     _loadUserData();
   }
-  
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -68,13 +68,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       final user = _auth.currentUser;
       if (user != null) {
-        DocumentSnapshot userDoc = await _firestore
-            .collection('users')
-            .doc(user.uid)
-            .get();
-        
+        DocumentSnapshot userDoc =
+            await _firestore.collection('users').doc(user.uid).get();
+
         if (userDoc.exists) {
-          Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+          Map<String, dynamic> userData =
+              userDoc.data() as Map<String, dynamic>;
           setState(() {
             _nameController.text = userData['name'] ?? widget.userName;
             _emailController.text = userData['email'] ?? widget.email;
@@ -89,7 +88,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   // Update profile in Firebase
   Future<void> _updateProfile() async {
-    if (_nameController.text.trim().isEmpty || 
+    if (_nameController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty) {
       _showSnackBar('Please fill all required fields', Colors.orange);
       return;
@@ -102,7 +101,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (user != null) {
         // Update display name in Firebase Auth
         await user.updateDisplayName(_nameController.text.trim());
-        
+
         // Update email if changed (requires reauthentication for email change)
         if (_emailController.text.trim() != user.email) {
           await user.updateEmail(_emailController.text.trim());
@@ -117,7 +116,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         });
 
         _showSnackBar('Profile updated successfully!', Colors.green);
-        
+
         // Navigate back
         Navigator.pop(context);
       }
@@ -133,14 +132,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   // Change password
   Future<void> _changePassword() async {
-    if (_currentPasswordController.text.isEmpty || 
+    if (_currentPasswordController.text.isEmpty ||
         _newPasswordController.text.isEmpty) {
       _showSnackBar('Please fill both password fields', Colors.orange);
       return;
     }
 
     if (_newPasswordController.text.length < 6) {
-      _showSnackBar('New password must be at least 6 characters', Colors.orange);
+      _showSnackBar(
+          'New password must be at least 6 characters', Colors.orange);
       return;
     }
 
@@ -154,14 +154,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           email: user.email!,
           password: _currentPasswordController.text,
         );
-        
+
         await user.reauthenticateWithCredential(credential);
-        
+
         // Update password
         await user.updatePassword(_newPasswordController.text);
-        
+
         _showSnackBar('Password changed successfully!', Colors.green);
-        
+
         // Clear password fields and hide section
         _currentPasswordController.clear();
         _newPasswordController.clear();
@@ -186,19 +186,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (user != null) {
         // Delete user document from Firestore
         await _firestore.collection('users').doc(user.uid).delete();
-        
+
         // Delete user from Firebase Auth
         await user.delete();
-        
+
         if (mounted) {
           _showSnackBar('Account deleted successfully', Colors.red);
-          
+
           // Navigate to login screen
           Navigator.pushNamedAndRemoveUntil(
-            context, 
-            AppRoutes.login, 
-            (route) => false
-          );
+              context, AppRoutes.login, (route) => false);
         }
       }
     } on FirebaseAuthException catch (e) {
@@ -241,12 +238,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           content: Text(message),
           backgroundColor: color,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -292,15 +290,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 16),
-              
+
               // Profile Picture
               _buildProfilePicture(),
               const SizedBox(height: 32),
-              
+
               // Personal Information Section
               _buildSectionHeader("Personal Information"),
               const SizedBox(height: 20),
-              
+
               // Name Field
               _buildTextField(
                 controller: _nameController,
@@ -308,7 +306,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 icon: Icons.person_outline,
               ),
               const SizedBox(height: 16),
-              
+
               // Email Field
               _buildTextField(
                 controller: _emailController,
@@ -317,7 +315,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
-              
+
               // Phone Field
               _buildTextField(
                 controller: _phoneController,
@@ -326,34 +324,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 keyboardType: TextInputType.phone,
               ),
               const SizedBox(height: 32),
-              
+
               // Password Section
               _buildSectionHeader("Security"),
               const SizedBox(height: 20),
-              
+
               // Change Password Button
               _buildChangePasswordButton(),
-              
+
               // Password Change Fields (conditionally visible)
               if (_isChangePasswordVisible) ...[
                 const SizedBox(height: 16),
-                
+
                 _buildPasswordField(
                   controller: _currentPasswordController,
                   label: "Current Password",
                   isObscured: _obscureCurrentPassword,
-                  toggleObscure: () => setState(() => _obscureCurrentPassword = !_obscureCurrentPassword),
+                  toggleObscure: () => setState(
+                      () => _obscureCurrentPassword = !_obscureCurrentPassword),
                 ),
                 const SizedBox(height: 16),
-                
+
                 _buildPasswordField(
                   controller: _newPasswordController,
                   label: "New Password",
                   isObscured: _obscureNewPassword,
-                  toggleObscure: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
+                  toggleObscure: () => setState(
+                      () => _obscureNewPassword = !_obscureNewPassword),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Change Password Submit Button
                 ElevatedButton(
                   onPressed: _isLoading ? null : _changePassword,
@@ -366,24 +366,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                     minimumSize: const Size.fromHeight(45),
                   ),
-                  child: _isLoading 
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          strokeWidth: 2,
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Update Password',
+                          style: TextStyle(fontWeight: FontWeight.w600),
                         ),
-                      )
-                    : const Text(
-                        'Update Password',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
                 ),
               ],
-              
+
               const SizedBox(height: 40),
-              
+
               // Save Profile Button
               ElevatedButton(
                 onPressed: _isLoading ? null : _updateProfile,
@@ -398,25 +399,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   elevation: 2,
                 ),
                 child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        strokeWidth: 2,
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Save Changes',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    )
-                  : const Text(
-                      'Save Changes',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Delete Account Button
               TextButton.icon(
                 onPressed: _isDeleting ? null : _showDeleteAccountDialog,
@@ -438,7 +440,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
     );
   }
-  
+
   Widget _buildProfilePicture() {
     return Stack(
       alignment: Alignment.bottomRight,
@@ -459,9 +461,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           child: Center(
             child: Text(
-              widget.userName.isNotEmpty 
-                ? widget.userName.substring(0, 1).toUpperCase()
-                : 'U',
+              widget.userName.isNotEmpty
+                  ? widget.userName.substring(0, 1).toUpperCase()
+                  : 'U',
               style: const TextStyle(
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
@@ -470,7 +472,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
         ),
-        
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -489,7 +490,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             onTap: () {
               _showSnackBar('Profile picture upload coming soon!', Colors.blue);
             },
-            child: Icon(
+            child: const Icon(
               Icons.camera_alt,
               color: primaryColor,
               size: 20,
@@ -499,7 +500,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ],
     );
   }
-  
+
   Widget _buildSectionHeader(String title) {
     return Row(
       children: [
@@ -521,7 +522,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ],
     );
   }
-  
+
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -546,7 +547,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         style: const TextStyle(color: textColor),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: darkGrey),
+          labelStyle: const TextStyle(color: darkGrey),
           prefixIcon: Icon(icon, color: primaryColor),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -562,12 +563,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
     );
   }
-  
+
   Widget _buildPasswordField({
     required TextEditingController controller,
     required String label,
@@ -592,8 +594,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         style: const TextStyle(color: textColor),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: TextStyle(color: darkGrey),
-          prefixIcon: Icon(Icons.lock_outline, color: primaryColor),
+          labelStyle: const TextStyle(color: darkGrey),
+          prefixIcon: const Icon(Icons.lock_outline, color: primaryColor),
           suffixIcon: IconButton(
             icon: Icon(
               isObscured ? Icons.visibility : Icons.visibility_off,
@@ -615,12 +617,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           filled: true,
           fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
     );
   }
-  
+
   Widget _buildChangePasswordButton() {
     return Container(
       decoration: BoxDecoration(
@@ -653,14 +656,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             children: [
               Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.security,
                     color: primaryColor,
                     size: 24,
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    _isChangePasswordVisible ? "Cancel Password Change" : "Change Password",
+                    _isChangePasswordVisible
+                        ? "Cancel Password Change"
+                        : "Change Password",
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
@@ -670,7 +675,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ],
               ),
               Icon(
-                _isChangePasswordVisible ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                _isChangePasswordVisible
+                    ? Icons.keyboard_arrow_up
+                    : Icons.keyboard_arrow_down,
                 color: darkGrey,
               ),
             ],
@@ -679,7 +686,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
     );
   }
-  
+
   void _showDeleteAccountDialog() {
     showDialog(
       context: context,
@@ -701,7 +708,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
+            child: const Text(
               'Cancel',
               style: TextStyle(color: darkGrey),
             ),

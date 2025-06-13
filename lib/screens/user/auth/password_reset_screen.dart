@@ -14,14 +14,15 @@ class PasswordResetScreen extends StatefulWidget {
 
 class _PasswordResetScreenState extends State<PasswordResetScreen> {
   // “Violin” palette (same as Login/Registration)
-  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
-  static const Color primaryColor    = Color(0xFF5C2E00);  // Dark Brown (wood grain)
-  static const Color secondaryColor  = Color(0xFF8B5000);  // Amber Brown
-  static const Color textColor       = Color(0xFF35281E);  // Deep Wood (almost black)
-  static const Color subtleGrey      = Color(0xFFDAC1A7);  // Light Tan
-  static const Color darkGrey        = Color(0xFF7E5E3C);  // Medium Brown
-  static const Color accentOrange    = Color(0xFFD4A373);  // Warm Highlight
-  static const Color accentGreen     = Color(0xFFB28F5E);  // Muted Brown
+  static const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
+  static const Color primaryColor =
+      Color(0xFF5C2E00); // Dark Brown (wood grain)
+  static const Color secondaryColor = Color(0xFF8B5000); // Amber Brown
+  static const Color textColor = Color(0xFF35281E); // Deep Wood (almost black)
+  static const Color subtleGrey = Color(0xFFDAC1A7); // Light Tan
+  static const Color darkGrey = Color(0xFF7E5E3C); // Medium Brown
+  static const Color accentOrange = Color(0xFFD4A373); // Warm Highlight
+  static const Color accentGreen = Color(0xFFB28F5E); // Muted Brown
 
   final TextEditingController _emailController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -50,8 +51,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
 
   /// Validate that the string is a properly formatted email
   bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-        .hasMatch(email);
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
   /// Map Firebase password reset errors to user‐friendly messages
@@ -183,8 +183,8 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                 opacity: _opacity,
                 duration: const Duration(milliseconds: 600),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -205,9 +205,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                           ],
                         ),
                         child: Icon(
-                          _emailSent
-                              ? Icons.mark_email_read
-                              : Icons.lock_reset,
+                          _emailSent ? Icons.mark_email_read : Icons.lock_reset,
                           size: 48,
                           color: primaryColor,
                         ),
@@ -237,7 +235,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                                   _emailSent
                                       ? 'Check Your Email'
                                       : 'Reset Password',
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 28,
                                     fontWeight: FontWeight.bold,
                                     color: primaryColor,
@@ -249,7 +247,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                                       ? 'We’ve sent instructions to your email.'
                                       : 'Enter your email to receive reset instructions',
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     color: darkGrey,
                                   ),
@@ -265,25 +263,26 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                                     keyboardType: TextInputType.emailAddress,
                                     style: const TextStyle(color: textColor),
                                     decoration: InputDecoration(
-                                      prefixIcon: Icon(
+                                      prefixIcon: const Icon(
                                         Icons.email_outlined,
                                         color: darkGrey,
                                       ),
                                       labelText: 'Email Address',
-                                      labelStyle: TextStyle(color: darkGrey),
+                                      labelStyle:
+                                          const TextStyle(color: darkGrey),
                                       border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide:
-                                            BorderSide(color: subtleGrey),
+                                            const BorderSide(color: subtleGrey),
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
                                         borderSide:
-                                            BorderSide(color: subtleGrey),
+                                            const BorderSide(color: subtleGrey),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        borderSide: BorderSide(
+                                        borderSide: const BorderSide(
                                             color: primaryColor, width: 2),
                                       ),
                                       errorBorder: OutlineInputBorder(
@@ -318,9 +317,10 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                                       onPressed: _isLoading
                                           ? null
                                           : () {
-                                              if (!_formKey
-                                                  .currentState!
-                                                  .validate()) return;
+                                              if (!_formKey.currentState!
+                                                  .validate()) {
+                                                return;
+                                              }
                                               _sendPasswordResetEmail();
                                             },
                                       style: ElevatedButton.styleFrom(
@@ -340,8 +340,8 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                                               width: 20,
                                               child: CircularProgressIndicator(
                                                 valueColor:
-                                                    AlwaysStoppedAnimation<Color>(
-                                                        Colors.white),
+                                                    AlwaysStoppedAnimation<
+                                                        Color>(Colors.white),
                                                 strokeWidth: 2,
                                               ),
                                             )
@@ -369,7 +369,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                                     ),
                                     child: Column(
                                       children: [
-                                        Icon(
+                                        const Icon(
                                           Icons.check_circle,
                                           color: Colors.green,
                                           size: 48,
@@ -411,7 +411,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                                             Navigator.pushReplacementNamed(
                                                 context, AppRoutes.login);
                                           },
-                                    icon: Icon(
+                                    icon: const Icon(
                                       Icons.arrow_back,
                                       color: primaryColor,
                                     ),
@@ -419,7 +419,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                                       _emailSent
                                           ? 'Back to Sign In'
                                           : 'Remembered your password? Sign In',
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 14,
                                         color: primaryColor,
                                       ),

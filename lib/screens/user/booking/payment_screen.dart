@@ -10,14 +10,14 @@ import 'package:ticket_trek/services/stripe_service.dart';
 
 /// ─── "Violin" color palette (same as before) ──────────────────────
 const Color backgroundColor = Color(0xFFF5F0E1);
-const Color primaryColor     = Color(0xFF5C2E00);
-const Color secondaryColor   = Color(0xFF8B5000);
-const Color textColor        = Color(0xFF35281E);
-const Color subtleGrey       = Color(0xFFDAC1A7);
-const Color darkGrey         = Color(0xFF7E5E3C);
-const Color accentColor      = Color(0xFFD4A373);
-const Color errorColor       = Color(0xFFEF4444);
-const Color successColor     = Color(0xFF10B981);
+const Color primaryColor = Color(0xFF5C2E00);
+const Color secondaryColor = Color(0xFF8B5000);
+const Color textColor = Color(0xFF35281E);
+const Color subtleGrey = Color(0xFFDAC1A7);
+const Color darkGrey = Color(0xFF7E5E3C);
+const Color accentColor = Color(0xFFD4A373);
+const Color errorColor = Color(0xFFEF4444);
+const Color successColor = Color(0xFF10B981);
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({Key? key}) : super(key: key);
@@ -26,7 +26,7 @@ class PaymentScreen extends StatefulWidget {
   State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-class _PaymentScreenState extends State<PaymentScreen> 
+class _PaymentScreenState extends State<PaymentScreen>
     with TickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -59,11 +59,11 @@ class _PaymentScreenState extends State<PaymentScreen>
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isProcessing = false;
   String? _errorMessage;
-  
+
   // Stripe-specific
-  CardFormEditController _cardController = CardFormEditController();
+  final CardFormEditController _cardController = CardFormEditController();
   String? _paymentIntentClientSecret;
-  
+
   // Booking data from previous screen
   Map<String, dynamic>? _bookingData;
   List<Map<String, dynamic>>? _passengers;
@@ -80,7 +80,8 @@ class _PaymentScreenState extends State<PaymentScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    final args =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (args != null) {
       _bookingData = args;
       _passengers = args['passengers'] as List<Map<String, dynamic>>?;
@@ -111,11 +112,11 @@ class _PaymentScreenState extends State<PaymentScreen>
       parent: _slideController,
       curve: Curves.easeOutCubic,
     ));
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
     );
-    
+
     _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
@@ -146,7 +147,7 @@ class _PaymentScreenState extends State<PaymentScreen>
       final adults = _bookingData!['adults'] as int? ?? 0;
       final children = _bookingData!['children'] as int? ?? 0;
       final basePrice = _bookingData!['price'] as double? ?? 299.0;
-      
+
       _totalAmount = (adults * basePrice) + (children * basePrice * 0.7);
       _totalAmount += (_totalAmount * 0.12); // 12% tax
       _totalAmount += 25.0; // Service fee
@@ -165,11 +166,11 @@ class _PaymentScreenState extends State<PaymentScreen>
           'passengerCount': _passengers?.length.toString() ?? '1',
         },
       );
-      
+
       setState(() {
         _paymentIntentClientSecret = paymentIntent['client_secret'];
       });
-      
+
       debugPrint('Payment Intent created: ${paymentIntent['id']}');
     } catch (e) {
       debugPrint('Error creating payment intent: $e');
@@ -245,10 +246,10 @@ class _PaymentScreenState extends State<PaymentScreen>
         // Payment successful
         await _updateBookingStatus('confirmed', paymentIntent.id);
         _showSuccessMessage();
-        
+
         await Future.delayed(const Duration(milliseconds: 1500));
         if (!mounted) return;
-        
+
         Navigator.pushNamedAndRemoveUntil(
           context,
           AppRoutes.paymentSuccess,
@@ -269,7 +270,6 @@ class _PaymentScreenState extends State<PaymentScreen>
         });
         _showErrorMessage(_errorMessage!);
       }
-      
     } on StripeException catch (e) {
       // Handle test cases specifically
       final errorMessage = _getTestCaseErrorMessage(e);
@@ -277,7 +277,7 @@ class _PaymentScreenState extends State<PaymentScreen>
         _errorMessage = errorMessage;
       });
       _showErrorMessage(errorMessage);
-      
+
       // Log which test case was triggered
       if (errorMessage.contains('Payment declined. Use another card.')) {
         debugPrint('✅ NS02-FLG-4: Invalid payment test case triggered');
@@ -298,7 +298,8 @@ class _PaymentScreenState extends State<PaymentScreen>
     }
   }
 
-  Future<void> _updateBookingStatus(String status, String? paymentIntentId) async {
+  Future<void> _updateBookingStatus(
+      String status, String? paymentIntentId) async {
     try {
       if (_bookingId != null) {
         await _firestore.collection('bookings').doc(_bookingId).update({
@@ -333,7 +334,7 @@ class _PaymentScreenState extends State<PaymentScreen>
     ].contains(error.error.code)) {
       return 'Payment declined. Use another card.';
     }
-    
+
     // For other errors, provide specific messages
     switch (error.error.code) {
       case 'incorrect_number':
@@ -346,7 +347,8 @@ class _PaymentScreenState extends State<PaymentScreen>
       case 'rate_limit':
         return 'Too many requests. Please wait a moment and try again.';
       default:
-        return error.error.localizedMessage ?? 'Payment failed. Please try again.';
+        return error.error.localizedMessage ??
+            'Payment failed. Please try again.';
     }
   }
 
@@ -423,7 +425,8 @@ class _PaymentScreenState extends State<PaymentScreen>
                 Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(20),
-                    keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     child: Form(
                       key: _formKey,
                       child: Column(
@@ -482,11 +485,11 @@ class _PaymentScreenState extends State<PaymentScreen>
             ),
           ),
           const SizedBox(width: 16),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Secure Payment',
                   style: TextStyle(
                     fontSize: 24,
@@ -497,7 +500,7 @@ class _PaymentScreenState extends State<PaymentScreen>
                 Row(
                   children: [
                     Icon(Icons.security, color: successColor, size: 16),
-                    const SizedBox(width: 4),
+                    SizedBox(width: 4),
                     Text(
                       'Powered by Stripe • SSL encrypted',
                       style: TextStyle(
@@ -580,16 +583,18 @@ class _PaymentScreenState extends State<PaymentScreen>
             ],
           ),
           const SizedBox(height: 16),
-          
           if (_bookingData != null) ...[
-            _buildSummaryRow('Route', '${_bookingData!['from'] ?? 'KUL'} → ${_bookingData!['to'] ?? 'SIN'}'),
+            _buildSummaryRow('Route',
+                '${_bookingData!['from'] ?? 'KUL'} → ${_bookingData!['to'] ?? 'SIN'}'),
             _buildSummaryRow('Date', _bookingData!['departureDate'] ?? 'Today'),
-            _buildSummaryRow('Passengers', '${_passengers?.length ?? 1} passenger(s)'),
+            _buildSummaryRow(
+                'Passengers', '${_passengers?.length ?? 1} passenger(s)'),
             const Divider(height: 24),
           ],
-          
-          _buildSummaryRow('Subtotal', 'RM ${(_totalAmount / 1.12 - 25).toStringAsFixed(2)}'),
-          _buildSummaryRow('Taxes & Fees', 'RM ${((_totalAmount / 1.12 - 25) * 0.12).toStringAsFixed(2)}'),
+          _buildSummaryRow('Subtotal',
+              'RM ${(_totalAmount / 1.12 - 25).toStringAsFixed(2)}'),
+          _buildSummaryRow('Taxes & Fees',
+              'RM ${((_totalAmount / 1.12 - 25) * 0.12).toStringAsFixed(2)}'),
           _buildSummaryRow('Service Fee', 'RM 25.00'),
           const Divider(height: 16),
           Row(
@@ -626,7 +631,7 @@ class _PaymentScreenState extends State<PaymentScreen>
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               color: darkGrey,
             ),
@@ -708,13 +713,13 @@ class _PaymentScreenState extends State<PaymentScreen>
               ),
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
-          Row(
+
+          const Row(
             children: [
               Icon(Icons.security, color: successColor, size: 16),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 'Your payment information is secure and encrypted',
                 style: TextStyle(
@@ -772,7 +777,6 @@ class _PaymentScreenState extends State<PaymentScreen>
             ],
           ),
           const SizedBox(height: 20),
-
           _buildTextField(
             controller: _cardHolderController,
             focusNode: _cardHolderFocus,
@@ -788,7 +792,6 @@ class _PaymentScreenState extends State<PaymentScreen>
             },
           ),
           const SizedBox(height: 16),
-
           _buildTextField(
             controller: _emailController,
             focusNode: _emailFocus,
@@ -801,14 +804,14 @@ class _PaymentScreenState extends State<PaymentScreen>
               if (value == null || value.isEmpty) {
                 return 'Please enter your email';
               }
-              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                  .hasMatch(value)) {
                 return 'Enter a valid email';
               }
               return null;
             },
           ),
           const SizedBox(height: 16),
-
           _buildTextField(
             controller: _phoneController,
             focusNode: _phoneFocus,
@@ -825,7 +828,6 @@ class _PaymentScreenState extends State<PaymentScreen>
             },
           ),
           const SizedBox(height: 16),
-
           _buildTextField(
             controller: _addressController,
             focusNode: _addressFocus,
@@ -841,7 +843,6 @@ class _PaymentScreenState extends State<PaymentScreen>
             },
           ),
           const SizedBox(height: 16),
-
           Row(
             children: [
               Expanded(
@@ -897,11 +898,11 @@ class _PaymentScreenState extends State<PaymentScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(Icons.security, color: successColor, size: 20),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 'Secure Payment with Stripe',
                 style: TextStyle(
                   fontSize: 14,
@@ -912,7 +913,7 @@ class _PaymentScreenState extends State<PaymentScreen>
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Test case information
           Container(
             padding: const EdgeInsets.all(12),
@@ -921,10 +922,10 @@ class _PaymentScreenState extends State<PaymentScreen>
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.blue.withOpacity(0.3)),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   '🧪 Test Cases (for testing only):',
                   style: TextStyle(
                     fontSize: 12,
@@ -932,8 +933,8 @@ class _PaymentScreenState extends State<PaymentScreen>
                     color: textColor,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
+                SizedBox(height: 8),
+                Text(
                   '✅ NS02-FLG-2: Valid Payment Test\n• Use: 4242 4242 4242 4242\n• Result: Payment successful → Redirect to confirmation\n',
                   style: TextStyle(
                     fontSize: 11,
@@ -952,7 +953,7 @@ class _PaymentScreenState extends State<PaymentScreen>
               ],
             ),
           ),
-          
+
           const SizedBox(height: 12),
           const Text(
             '• Your payment is processed securely by Stripe\n• All card information is encrypted\n• We never store your card details\n• PCI DSS Level 1 compliant',
@@ -990,7 +991,7 @@ class _PaymentScreenState extends State<PaymentScreen>
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: darkGrey),
-        labelStyle: TextStyle(color: darkGrey),
+        labelStyle: const TextStyle(color: darkGrey),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -1009,7 +1010,8 @@ class _PaymentScreenState extends State<PaymentScreen>
         ),
         filled: true,
         fillColor: subtleGrey,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }
@@ -1051,19 +1053,20 @@ class _PaymentScreenState extends State<PaymentScreen>
                   elevation: _isProcessing ? 0 : 4,
                 ),
                 child: _isProcessing
-                    ? Row(
+                    ? const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(
+                          SizedBox(
                             height: 20,
                             width: 20,
                             child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                               strokeWidth: 2,
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          const Text(
+                          SizedBox(width: 12),
+                          Text(
                             'Processing Payment...',
                             style: TextStyle(
                               fontSize: 16,
