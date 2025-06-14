@@ -19,6 +19,16 @@ import '../screens/user/booking/payment_success_screen.dart';
 import '../screens/user/booking/seat_selection_page.dart';
 import '../screens/user/booking/addon_selection_page.dart';
 
+
+
+
+import '../screens/flight_management_screen.dart'; // To be implemented
+import '../screens/booking_management_screen.dart'; // To be implemented
+import '../screens/refund_requests_screen.dart'; // To be implemented
+import '../screens/user_management_screen.dart'; // To be implemented
+import '../screens/settings_screen.dart'; // To be implemented
+
+
 class AppRoutes {
   // --- Route names ---
   static const String splash = '/';
@@ -48,6 +58,22 @@ class AppRoutes {
   static const String groupBooking = '/group-booking';
   static const String support = '/support';
 
+
+
+
+
+// Admin Routes
+  static const String adminLogin = '/admin-login';
+  static const String adminDashboard = '/admin-dashboard';
+  static const String flightManagement = '/flight-management';
+  static const String bookingManagement = '/booking-management';
+  static const String refundRequests = '/refund-requests';
+  static const String userManagement = '/user-management';
+  static const String settings = '/settings';
+
+
+
+
   // --- Routes without arguments ---
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -62,6 +88,24 @@ class AppRoutes {
       savedFlights: (context) => const SavedFlightsScreen(),
       myBookings: (context) => const MyBookingsScreen(),
       bookingHistory: (context) => const MyBookingsScreen(),
+
+
+
+      // Admin Routes
+        adminLogin: (context) => const AdminLoginScreen(),
+        adminDashboard: (context) => const AdminDashboardScreen(), // To be implemented
+        flightManagement: (context) => const FlightManagementScreen(), // Placeholder
+        bookingManagement: (context) => const BookingManagementScreen(), // Placeholder
+        refundRequests: (context) => const RefundRequestsScreen(), // Placeholder
+        userManagement: (context) => const UserManagementScreen(), // Placeholder
+        settings: (context) => const SettingsScreen(), // Placeholder
+      };
+
+
+
+
+
+      
       // Placeholder screens...
       editProfile: (context) => Scaffold(
           appBar: AppBar(title: const Text('Edit Profile')),
