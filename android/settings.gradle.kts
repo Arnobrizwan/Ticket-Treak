@@ -1,3 +1,5 @@
+// File: android/settings.gradle.kts
+
 pluginManagement {
     val flutterSdkPath = run {
         val properties = java.util.Properties()
@@ -22,7 +24,8 @@ plugins {
     // START: FlutterFire Configuration
     id("com.google.gms.google-services") version("4.3.15") apply false
     // END: FlutterFire Configuration
-    id("org.jetbrains.kotlin.android") version "1.8.22" apply false
+    // FIX: Updated Kotlin Gradle plugin version to 2.0.0
+    id("org.jetbrains.kotlin.android") version "2.0.0" apply false // <-- CHANGED THIS LINE
 }
 
 include(":app")

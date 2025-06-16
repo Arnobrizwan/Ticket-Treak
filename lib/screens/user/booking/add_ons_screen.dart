@@ -36,7 +36,9 @@ class _AddOnsPageState extends State<AddOnsPage> {
   // Calculate total add-ons
   void _updateTotal() {
     setState(() {
-      _totalAddOns = _baggageCost + _mealCost + (_insuranceSelected ? 10.0 : 0.0); // Insurance mocked at $10
+      _totalAddOns = _baggageCost +
+          _mealCost +
+          (_insuranceSelected ? 10.0 : 0.0); // Insurance mocked at $10
     });
   }
 
@@ -51,7 +53,11 @@ class _AddOnsPageState extends State<AddOnsPage> {
       try {
         await _firestore.collection('bookings').doc().set({
           'userId': user.uid,
-          'flight': {'code': 'AK123', 'route': 'KUL-BKK', 'duration': '2h 10min'},
+          'flight': {
+            'code': 'AK123',
+            'route': 'KUL-BKK',
+            'duration': '2h 10min'
+          },
           'addons': {
             'baggage': _baggageCost,
             'meal': _mealCost,
@@ -64,10 +70,11 @@ class _AddOnsPageState extends State<AddOnsPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Add-ons saved successfully!'),
+              content: const Text('Add-ons saved successfully!'),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
           );
 
@@ -81,7 +88,8 @@ class _AddOnsPageState extends State<AddOnsPage> {
               content: Text('Error saving add-ons: $e'),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
           );
         }
@@ -96,10 +104,11 @@ class _AddOnsPageState extends State<AddOnsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Please log in to continue.'),
+            content: const Text('Please log in to continue.'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
         setState(() {
@@ -127,15 +136,15 @@ class _AddOnsPageState extends State<AddOnsPage> {
                       : () {
                           Navigator.pop(context); // Go back to previous page
                         },
-                  icon: Icon(Icons.arrow_back, color: primaryColor),
-                  label: Text(
+                  icon: const Icon(Icons.arrow_back, color: primaryColor),
+                  label: const Text(
                     'Back to Seat Selection',
                     style: TextStyle(color: primaryColor, fontSize: 16),
                   ),
                 ),
               ),
               // Header
-              Text(
+              const Text(
                 'Customize Your Flight',
                 style: TextStyle(
                   fontSize: 24,
@@ -146,13 +155,13 @@ class _AddOnsPageState extends State<AddOnsPage> {
               const SizedBox(height: 16),
               // Flight Details
               Container(
-                padding: EdgeInsets.all(12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: subtleGrey,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
-                child: Text(
+                child: const Text(
                   'AK123 | KUL-BKK | Duration: 2h 10min',
                   style: TextStyle(
                     fontSize: 16,
@@ -170,7 +179,7 @@ class _AddOnsPageState extends State<AddOnsPage> {
                     children: [
                       // Checked Baggage
                       Container(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: Colors.grey.shade300),
@@ -179,7 +188,7 @@ class _AddOnsPageState extends State<AddOnsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Checked Baggage',
                               style: TextStyle(
                                 fontSize: 18,
@@ -193,21 +202,27 @@ class _AddOnsPageState extends State<AddOnsPage> {
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: Colors.grey.shade300),
+                                  borderSide:
+                                      BorderSide(color: Colors.grey.shade300),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: primaryColor, width: 2),
+                                  borderSide: const BorderSide(
+                                      color: primaryColor, width: 2),
                                 ),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
                               ),
-                              items: [
-                                DropdownMenuItem(value: 0.0, child: Text('None (\$0)')),
-                                DropdownMenuItem(value: 12.0, child: Text('20kg - \$12')),
+                              items: const [
+                                DropdownMenuItem(
+                                    value: 0.0, child: Text('None (\$0)')),
+                                DropdownMenuItem(
+                                    value: 12.0, child: Text('20kg - \$12')),
                               ],
                               onChanged: (value) {
                                 setState(() {
@@ -222,7 +237,7 @@ class _AddOnsPageState extends State<AddOnsPage> {
                       const SizedBox(height: 16),
                       // Meal Selection
                       Container(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: Colors.grey.shade300),
@@ -231,7 +246,7 @@ class _AddOnsPageState extends State<AddOnsPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
+                            const Text(
                               'Meal Selection',
                               style: TextStyle(
                                 fontSize: 18,
@@ -260,13 +275,14 @@ class _AddOnsPageState extends State<AddOnsPage> {
                                         fit: BoxFit.cover,
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(
+                                      const Text(
                                         'Nasi Lemak',
                                         style: TextStyle(color: textColor),
                                       ),
                                       Text(
                                         '\$4.00',
-                                        style: TextStyle(color: Colors.green[600]),
+                                        style:
+                                            TextStyle(color: Colors.green[600]),
                                       ),
                                     ],
                                   ),
@@ -288,13 +304,14 @@ class _AddOnsPageState extends State<AddOnsPage> {
                                         fit: BoxFit.cover,
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(
+                                      const Text(
                                         'Chicken Rice',
                                         style: TextStyle(color: textColor),
                                       ),
                                       Text(
                                         '\$4.50',
-                                        style: TextStyle(color: Colors.green[600]),
+                                        style:
+                                            TextStyle(color: Colors.green[600]),
                                       ),
                                     ],
                                   ),
@@ -316,13 +333,14 @@ class _AddOnsPageState extends State<AddOnsPage> {
                                         fit: BoxFit.cover,
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(
+                                      const Text(
                                         'Vegetarian Pasta',
                                         style: TextStyle(color: textColor),
                                       ),
                                       Text(
                                         '\$4.00',
-                                        style: TextStyle(color: Colors.green[600]),
+                                        style:
+                                            TextStyle(color: Colors.green[600]),
                                       ),
                                     ],
                                   ),
@@ -335,7 +353,7 @@ class _AddOnsPageState extends State<AddOnsPage> {
                       const SizedBox(height: 16),
                       // Travel Insurance
                       Container(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: Colors.grey.shade300),
@@ -344,7 +362,7 @@ class _AddOnsPageState extends State<AddOnsPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Column(
+                            const Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
@@ -355,10 +373,11 @@ class _AddOnsPageState extends State<AddOnsPage> {
                                     color: textColor,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                SizedBox(height: 4),
                                 Text(
                                   'Basic coverage (including delays, cancellations)',
-                                  style: TextStyle(fontSize: 14, color: darkGrey),
+                                  style:
+                                      TextStyle(fontSize: 14, color: darkGrey),
                                 ),
                               ],
                             ),
@@ -378,7 +397,7 @@ class _AddOnsPageState extends State<AddOnsPage> {
                       const SizedBox(height: 16),
                       // Total Add-Ons
                       Container(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(color: Colors.grey.shade300),
@@ -387,7 +406,7 @@ class _AddOnsPageState extends State<AddOnsPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
+                            const Text(
                               'Total Add-Ons:',
                               style: TextStyle(
                                 fontSize: 18,
@@ -419,7 +438,7 @@ class _AddOnsPageState extends State<AddOnsPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -431,13 +450,15 @@ class _AddOnsPageState extends State<AddOnsPage> {
                           height: 20,
                           width: 20,
                           child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
                             strokeWidth: 2,
                           ),
                         )
                       : const Text(
                           'Continue',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                 ),
               ),

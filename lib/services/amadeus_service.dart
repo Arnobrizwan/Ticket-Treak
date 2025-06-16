@@ -5,17 +5,17 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 /// Replace these with your real Amadeus test/live credentials.
-const String _amadeusClientId     = 'HdrxjwkMggMOlUf5qk4J3zTkmzWxNaAD';
+const String _amadeusClientId = 'HdrxjwkMggMOlUf5qk4J3zTkmzWxNaAD';
 const String _amadeusClientSecret = '16BZleHCAGFL8cSF';
 
 class AmadeusService {
-  static const String _oauthEndpoint           =
+  static const String _oauthEndpoint =
       'https://test.api.amadeus.com/v1/security/oauth2/token';
-  static const String _flightOffersEndpoint    =
+  static const String _flightOffersEndpoint =
       'https://test.api.amadeus.com/v2/shopping/flight-offers';
-  static const String _hotelOffersEndpoint     =
+  static const String _hotelOffersEndpoint =
       'https://test.api.amadeus.com/v3/shopping/hotel-offers';
-  static const String _hotelReferenceEndpoint  =
+  static const String _hotelReferenceEndpoint =
       'https://test.api.amadeus.com/v3/reference-data/locations/hotels';
   static const String _airportTransferEndpoint =
       'https://test.api.amadeus.com/v1/shopping/airport-transfers';
@@ -33,25 +33,22 @@ class AmadeusService {
     }
 
     try {
-      final response = await http
-          .post(
-            Uri.parse(_oauthEndpoint),
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: {
-              'grant_type':    'client_credentials',
-              'client_id':     _amadeusClientId,
-              'client_secret': _amadeusClientSecret,
-            },
-          )
-          .timeout(const Duration(seconds: 30));
+      final response = await http.post(
+        Uri.parse(_oauthEndpoint),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {
+          'grant_type': 'client_credentials',
+          'client_id': _amadeusClientId,
+          'client_secret': _amadeusClientSecret,
+        },
+      ).timeout(const Duration(seconds: 30));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> body = json.decode(response.body);
         _accessToken = body['access_token'] as String?;
         final expiresIn = body['expires_in'] as int? ?? 1800;
         // Subtract a small buffer (60 seconds) so we don’t accidentally go right to expiry.
-        _tokenExpiry =
-            DateTime.now().add(Duration(seconds: expiresIn - 60));
+        _tokenExpiry = DateTime.now().add(Duration(seconds: expiresIn - 60));
 
         if (kDebugMode) {
           debugPrint(
@@ -74,9 +71,9 @@ class AmadeusService {
 
   /// 2) Search Flights (v2). Returns `{ "data": [ … ], "dictionaries": { "carriers": { … }}}`.
   Future<Map<String, dynamic>> searchFlights({
-    required String originCode,      // e.g. "KUL"
+    required String originCode, // e.g. "KUL"
     required String destinationCode, // e.g. "PEN"
-    required String departureDate,   // format "YYYY-MM-DD"
+    required String departureDate, // format "YYYY-MM-DD"
     bool direct = false,
     int adults = 1,
     String travelClass = 'ECONOMY',
@@ -89,14 +86,14 @@ class AmadeusService {
     }
 
     final queryParams = {
-      'originLocationCode':      originCode.toUpperCase(),
+      'originLocationCode': originCode.toUpperCase(),
       'destinationLocationCode': destinationCode.toUpperCase(),
-      'departureDate':           departureDate,
-      'adults':                  adults.toString(),
-      'travelClass':             travelClass.toUpperCase(),
-      'nonStop':                 direct ? 'true' : 'false',
-      'currencyCode':            currencyCode.toUpperCase(),
-      'max':                     maxResults.toString(),
+      'departureDate': departureDate,
+      'adults': adults.toString(),
+      'travelClass': travelClass.toUpperCase(),
+      'nonStop': direct ? 'true' : 'false',
+      'currencyCode': currencyCode.toUpperCase(),
+      'max': maxResults.toString(),
     };
 
     final uri =
@@ -106,15 +103,13 @@ class AmadeusService {
       debugPrint('[AmadeusService] 🛫 Searching flights → $uri');
     }
 
-    final response = await http
-        .get(
-          uri,
-          headers: {
-            'Authorization': 'Bearer $_accessToken',
-            'Content-Type':  'application/json',
-          },
-        )
-        .timeout(const Duration(seconds: 45));
+    final response = await http.get(
+      uri,
+      headers: {
+        'Authorization': 'Bearer $_accessToken',
+        'Content-Type': 'application/json',
+      },
+    ).timeout(const Duration(seconds: 45));
 
     if (kDebugMode) {
       debugPrint(
@@ -140,8 +135,8 @@ class AmadeusService {
 
     if (response.statusCode == 400) {
       final Map<String, dynamic> errorJson = json.decode(response.body);
-      final String detail =
-          (errorJson['errors']?[0]?['detail']) ?? 'Invalid flight search params';
+      final String detail = (errorJson['errors']?[0]?['detail']) ??
+          'Invalid flight search params';
       if (kDebugMode) {
         debugPrint('[AmadeusService] Flight search (400): $detail');
       }
@@ -169,8 +164,8 @@ class AmadeusService {
   /// 3a) Step 1 of hotel search: look up hotel IDs by cityCode
   Future<List<String>> _lookupHotelIdsByCity({
     required String cityCode,
-    String? brandCode,      // optional filter
-    int maxHotels = 10,     // limit how many IDs we fetch
+    String? brandCode, // optional filter
+    int maxHotels = 10, // limit how many IDs we fetch
   }) async {
     await _authenticate();
     if (_accessToken == null) {
@@ -192,15 +187,13 @@ class AmadeusService {
     }
 
     try {
-      final response = await http
-          .get(
-            uri,
-            headers: {
-              'Authorization': 'Bearer $_accessToken',
-              'Content-Type':  'application/json',
-            },
-          )
-          .timeout(const Duration(seconds: 30));
+      final response = await http.get(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 30));
 
       if (kDebugMode) {
         debugPrint(
@@ -212,7 +205,8 @@ class AmadeusService {
         final List<dynamic> data = body['data'] as List<dynamic>? ?? [];
         // Extract "hotelId" from each entry
         final List<String> hotelIds = data
-            .map((entry) => (entry as Map<String, dynamic>)['hotelId'] as String)
+            .map(
+                (entry) => (entry as Map<String, dynamic>)['hotelId'] as String)
             .toList();
         return hotelIds;
       }
@@ -263,32 +257,30 @@ class AmadeusService {
     final hotelIdsParam = hotelIds.join(',');
 
     final queryParams = {
-      'hotelIds':    hotelIdsParam,
-      'checkInDate':  checkInDate,
+      'hotelIds': hotelIdsParam,
+      'checkInDate': checkInDate,
       'checkOutDate': checkOutDate,
-      'adults':       adults.toString(),
-      'currency':     currencyCode.toUpperCase(),
-      'roomQuantity': '1',          // required for v3
-      'limit':        maxResults.toString(),
+      'adults': adults.toString(),
+      'currency': currencyCode.toUpperCase(),
+      'roomQuantity': '1', // required for v3
+      'limit': maxResults.toString(),
     };
 
-    final uri = Uri.parse(_hotelOffersEndpoint)
-        .replace(queryParameters: queryParams);
+    final uri =
+        Uri.parse(_hotelOffersEndpoint).replace(queryParameters: queryParams);
 
     if (kDebugMode) {
       debugPrint('[AmadeusService] 🏨 Fetching hotel‐offers → $uri');
     }
 
     try {
-      final response = await http
-          .get(
-            uri,
-            headers: {
-              'Authorization': 'Bearer $_accessToken',
-              'Content-Type':  'application/json',
-            },
-          )
-          .timeout(const Duration(seconds: 30));
+      final response = await http.get(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 30));
 
       if (kDebugMode) {
         debugPrint(
@@ -404,7 +396,8 @@ class AmadeusService {
   ///    Fall back to mock on error.
   Future<List<dynamic>> searchAirportTransfers({
     required String airportCode,
-    required String pickupDateTime, // e.g. "2025-06-23T11:15" or "2025-06-23T11:15:00"
+    required String
+        pickupDateTime, // e.g. "2025-06-23T11:15" or "2025-06-23T11:15:00"
     String currencyCode = 'MYR',
   }) async {
     await _authenticate();
@@ -419,10 +412,10 @@ class AmadeusService {
     }
 
     final queryParams = {
-      'airportCode':    airportCode.toUpperCase(),
+      'airportCode': airportCode.toUpperCase(),
       'pickupDateTime': isoTimestamp,
-      'currency':       currencyCode.toUpperCase(),
-      'transferType':   'PRIVATE,SHARED',
+      'currency': currencyCode.toUpperCase(),
+      'transferType': 'PRIVATE,SHARED',
     };
 
     final uri = Uri.parse(_airportTransferEndpoint)
@@ -433,15 +426,13 @@ class AmadeusService {
     }
 
     try {
-      final response = await http
-          .get(
-            uri,
-            headers: {
-              'Authorization': 'Bearer $_accessToken',
-              'Content-Type':  'application/json',
-            },
-          )
-          .timeout(const Duration(seconds: 30));
+      final response = await http.get(
+        uri,
+        headers: {
+          'Authorization': 'Bearer $_accessToken',
+          'Content-Type': 'application/json',
+        },
+      ).timeout(const Duration(seconds: 30));
 
       if (kDebugMode) {
         debugPrint(
@@ -513,16 +504,25 @@ class AmadeusService {
   /// 5) Mock Hotel Data (unchanged from your original, for fallback)
   List<dynamic> _getMockHotelData(String cityCode, String currency) {
     final hotelNames = {
-      'KUL': ['Petronas Twin Towers Hotel', 'KLCC Grand Hotel', 'Bukit Bintang Suite'],
+      'KUL': [
+        'Petronas Twin Towers Hotel',
+        'KLCC Grand Hotel',
+        'Bukit Bintang Suite'
+      ],
       'SIN': ['Marina Bay Hotel', 'Orchard Central Hotel', 'Sentosa Resort'],
       'BKK': ['Siam Square Hotel', 'Sukhumvit Grand', 'Chatuchak Plaza'],
       'CGK': ['Jakarta Crown Plaza', 'Thamrin Executive', 'Menteng Palace'],
-      'PEN': ['Penang Riverside Hotel', 'Gurney Plaza Inn', 'Straits Quay Boutique'],
+      'PEN': [
+        'Penang Riverside Hotel',
+        'Gurney Plaza Inn',
+        'Straits Quay Boutique'
+      ],
     };
 
-    final hotels =
-        hotelNames[cityCode] ?? ['City Center Hotel', 'Airport Plaza', 'Downtown Inn'];
-    final basePrice = (currency == 'MYR') ? 200.0 : ((currency == 'USD') ? 50.0 : 45.0);
+    final hotels = hotelNames[cityCode] ??
+        ['City Center Hotel', 'Airport Plaza', 'Downtown Inn'];
+    final basePrice =
+        (currency == 'MYR') ? 200.0 : ((currency == 'USD') ? 50.0 : 45.0);
 
     return hotels.map((name) {
       final hHash = name.hashCode % 100;
@@ -536,7 +536,7 @@ class AmadeusService {
         },
         'offers': [
           {
-            'id': 'offer_${hHash}',
+            'id': 'offer_$hHash',
             'price': {
               'currency': currency,
               'total': (basePrice + (hHash * 1.0)).toStringAsFixed(0),
@@ -551,10 +551,7 @@ class AmadeusService {
               }
             },
             'ratePlans': [
-              {
-                'ratePlanCode': 'RAC',
-                'description': 'Room Only'
-              }
+              {'ratePlanCode': 'RAC', 'description': 'Room Only'}
             ]
           }
         ]
@@ -570,7 +567,8 @@ class AmadeusService {
       'Premium Shuttle',
       'Economy Ride'
     ];
-    final basePrice = (currency == 'MYR') ? 35.0 : ((currency == 'USD') ? 8.0 : 7.0);
+    final basePrice =
+        (currency == 'MYR') ? 35.0 : ((currency == 'USD') ? 8.0 : 7.0);
 
     return providers.map((provider) {
       final pHash = provider.hashCode % 50;
@@ -581,22 +579,19 @@ class AmadeusService {
           'name': provider,
           'code': provider.substring(0, 3).toUpperCase(),
         },
-        'transferType':
-            provider.contains('Economy') ? 'SHARED' : 'PRIVATE',
+        'transferType': provider.contains('Economy') ? 'SHARED' : 'PRIVATE',
         'vehicle': {
           'category': provider.contains('Premium') ? 'BU' : 'EC',
-          'description':
-              provider.contains('Premium') ? 'Premium Vehicle' : 'Standard Vehicle',
+          'description': provider.contains('Premium')
+              ? 'Premium Vehicle'
+              : 'Standard Vehicle',
         },
         'price': {
           'currency': currency,
           'total': (basePrice + (pHash * 1.0)).toStringAsFixed(0),
         },
         'duration': 'PT${25 + (pHash % 20)}M',
-        'distance': {
-          'value': 15 + (pHash % 10),
-          'unit': 'KM'
-        }
+        'distance': {'value': 15 + (pHash % 10), 'unit': 'KM'}
       };
     }).toList();
   }

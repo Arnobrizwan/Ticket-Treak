@@ -1,7 +1,5 @@
 // lib/utils/seat_selection_utils.dart
 
-import 'package:ticket_trek/models/seat_model.dart';
-
 /// A simple result object for seat-validation
 class SeatSelectionValidationResult {
   final bool isValid;
@@ -148,8 +146,20 @@ class SeatSelectionUtils {
     if (seats.length <= 1) return true;
 
     // Extract just the column letters for each seat in this row
-    final columns = seats.map((s) => s.replaceAll(RegExp(r'[0-9]'), '')).toList();
-    final columnOrder = <String>['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K'];
+    final columns =
+        seats.map((s) => s.replaceAll(RegExp(r'[0-9]'), '')).toList();
+    final columnOrder = <String>[
+      'A',
+      'B',
+      'C',
+      'D',
+      'E',
+      'F',
+      'G',
+      'H',
+      'J',
+      'K'
+    ];
 
     for (int i = 1; i < columns.length; i++) {
       final cur = columns[i];

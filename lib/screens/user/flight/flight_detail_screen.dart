@@ -271,12 +271,12 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
     return AppBar(
       backgroundColor: primaryColor,
       elevation: 0,
-      title: Row(
+      title: const Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.flight, color: Colors.white, size: 20),
-          const SizedBox(width: 8),
-          const Text(
+          Icon(Icons.flight, color: Colors.white, size: 20),
+          SizedBox(width: 8),
+          Text(
             "Flight Details",
             style: TextStyle(
               fontSize: 16,
@@ -319,7 +319,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
         ),
       ],
       flexibleSpace: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -333,8 +333,9 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
   Widget _buildBody() {
     if (_isLoading) return _buildEnhancedLoadingState();
     if (_errorMessage != null) return _buildErrorState();
-    if (_offer == null)
+    if (_offer == null) {
       return _buildErrorState(errorText: "No flight data available");
+    }
     return _buildContent();
   }
 
@@ -353,7 +354,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                   height: 80,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [primaryColor, secondaryColor],
                     ),
                     boxShadow: [
@@ -380,7 +381,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          const Text(
             "Please wait a moment",
             style: TextStyle(
               fontSize: 14,
@@ -409,7 +410,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                   size: 64, color: Colors.red.shade700),
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               "Unable to load flight details",
               style: TextStyle(
                 fontSize: 18,
@@ -422,7 +423,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
             Text(
               errorText ?? _errorMessage ?? "Please try again",
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: darkGrey),
+              style: const TextStyle(fontSize: 14, color: darkGrey),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -576,7 +577,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                             ? DateFormat('EEEE, MMM dd, yyyy')
                                 .format(DateTime.parse(_departureDateStr!))
                             : 'Date not available',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 14,
                           color: darkGrey,
                           fontWeight: FontWeight.w500,
@@ -641,7 +642,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                     // 1) Price (e.g. “RM 164.28”)
                     Text(
                       "${_currencySymbols[currency] ?? currency} $totalPrice",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: primaryColor,
@@ -795,7 +796,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                                   itineraries.length > 1
                                       ? "Journey ${itinIndex + 1}"
                                       : "Flight Journey",
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: primaryColor,
@@ -811,12 +812,12 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(Icons.schedule,
+                                      const Icon(Icons.schedule,
                                           size: 14, color: primaryColor),
                                       const SizedBox(width: 4),
                                       Text(
                                         _formatDuration(durationStr),
-                                        style: TextStyle(
+                                        style: const TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w600,
                                           color: primaryColor,
@@ -971,7 +972,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                           const SizedBox(height: 4),
                           Text(
                             "Flight $carrier $flightNo",
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: darkGrey,
                               fontWeight: FontWeight.w600,
@@ -1006,7 +1007,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                       ),
                       child: Text(
                         "Segment ${segIndex + 1}",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           color: accentOrange,
@@ -1038,7 +1039,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                           const SizedBox(height: 6),
                           Text(
                             dep['iataCode'] as String? ?? 'N/A',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: primaryColor,
@@ -1046,7 +1047,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                           ),
                           Text(
                             depDateFmt,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: darkGrey,
                             ),
@@ -1062,7 +1063,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                               ),
                               child: Text(
                                 "Terminal ${dep['terminal']}",
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 10,
                                   color: accentOrange,
                                   fontWeight: FontWeight.w600,
@@ -1140,7 +1141,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                           const SizedBox(height: 10),
                           Text(
                             durationStr,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: darkGrey,
                               fontWeight: FontWeight.w600,
@@ -1167,7 +1168,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                           const SizedBox(height: 6),
                           Text(
                             arr['iataCode'] as String? ?? 'N/A',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: primaryColor,
@@ -1175,7 +1176,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                           ),
                           Text(
                             arrDateFmt,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: darkGrey,
                             ),
@@ -1191,7 +1192,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                               ),
                               child: Text(
                                 "Terminal ${arr['terminal']}",
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 10,
                                   color: accentOrange,
                                   fontWeight: FontWeight.w600,
@@ -1221,11 +1222,11 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.schedule, size: 18, color: warningColor),
+                  const Icon(Icons.schedule, size: 18, color: warningColor),
                   const SizedBox(width: 6),
                   Text(
                     "Layover in ${arr['iataCode'] ?? 'N/A'}",
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: warningColor,
@@ -1285,7 +1286,7 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                     gradient: _alreadySaved
                         ? LinearGradient(
                             colors: [darkGrey, darkGrey.withOpacity(0.8)])
-                        : LinearGradient(
+                        : const LinearGradient(
                             colors: [primaryColor, secondaryColor]),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
@@ -1349,8 +1350,9 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                   ),
                   child: OutlinedButton.icon(
                     onPressed: _shareFlightDetails,
-                    icon: Icon(Icons.share, color: primaryColor, size: 18),
-                    label: Text(
+                    icon:
+                        const Icon(Icons.share, color: primaryColor, size: 18),
+                    label: const Text(
                       "Share",
                       style: TextStyle(
                         color: primaryColor,
@@ -1378,8 +1380,8 @@ class _FlightDetailScreenState extends State<FlightDetailScreen>
                 child: Container(
                   height: 48,
                   decoration: BoxDecoration(
-                    gradient:
-                        LinearGradient(colors: [successColor, accentGreen]),
+                    gradient: const LinearGradient(
+                        colors: [successColor, accentGreen]),
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(

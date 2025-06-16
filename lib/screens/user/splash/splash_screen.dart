@@ -17,19 +17,19 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   // Violin color palette (consistent with other screens)
-  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
-  static const Color primaryColor = Color(0xFF5C2E00);     // Dark Brown
-  static const Color secondaryColor = Color(0xFF8B5000);   // Amber Brown
-  static const Color textColor = Color(0xFF35281E);        // Deep Wood
-  static const Color subtleGrey = Color(0xFFDAC1A7);       // Light Tan
-  static const Color darkGrey = Color(0xFF7E5E3C);         // Medium Brown
-  static const Color accentOrange = Color(0xFFD4A373);     // Warm Highlight
-  static const Color accentGreen = Color(0xFFB28F5E);      // Muted Brown
+  static const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
+  static const Color primaryColor = Color(0xFF5C2E00); // Dark Brown
+  static const Color secondaryColor = Color(0xFF8B5000); // Amber Brown
+  static const Color textColor = Color(0xFF35281E); // Deep Wood
+  static const Color subtleGrey = Color(0xFFDAC1A7); // Light Tan
+  static const Color darkGrey = Color(0xFF7E5E3C); // Medium Brown
+  static const Color accentOrange = Color(0xFFD4A373); // Warm Highlight
+  static const Color accentGreen = Color(0xFFB28F5E); // Muted Brown
 
   late AnimationController _mainController;
   late AnimationController _loadingController;
   late AnimationController _floatingController;
-  
+
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<double> _slideAnimation;
@@ -44,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Set status bar style
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
@@ -141,44 +141,44 @@ class _SplashScreenState extends State<SplashScreen>
         _loadingMessage = 'Initializing Firebase...';
         _loadingProgress = 0.2;
       });
-      
+
       await Firebase.initializeApp();
       await FirebaseAnalytics.instance.logAppOpen();
       await Future.delayed(const Duration(milliseconds: 800));
-      
+
       // Step 2: Load app configuration
       setState(() {
         _loadingMessage = 'Loading configurations...';
         _loadingProgress = 0.4;
       });
-      
+
       await Future.delayed(const Duration(milliseconds: 600));
-      
+
       // Step 3: Check student verification
       setState(() {
         _loadingMessage = 'Checking student benefits...';
         _loadingProgress = 0.6;
       });
-      
+
       await Future.delayed(const Duration(milliseconds: 700));
-      
+
       // Step 4: Loading travel data
       setState(() {
         _loadingMessage = 'Loading travel destinations...';
         _loadingProgress = 0.8;
       });
-      
+
       await Future.delayed(const Duration(milliseconds: 600));
-      
+
       // Step 5: Finalizing
       setState(() {
         _loadingMessage = 'Ready for takeoff!';
         _loadingProgress = 1.0;
         _isInitialized = true;
       });
-      
+
       await Future.delayed(const Duration(milliseconds: 1000));
-      
+
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.onboarding);
       }
@@ -203,13 +203,13 @@ class _SplashScreenState extends State<SplashScreen>
           children: [
             Icon(Icons.error_outline, color: Colors.red.shade700),
             const SizedBox(width: 8),
-            Text(
+            const Text(
               'Connection Issue',
               style: TextStyle(color: textColor),
             ),
           ],
         ),
-        content: Text(
+        content: const Text(
           'We couldn\'t start the app. Please check your internet connection and try again.',
           style: TextStyle(
             color: darkGrey,
@@ -226,7 +226,7 @@ class _SplashScreenState extends State<SplashScreen>
               });
               _initializeApp();
             },
-            child: Text(
+            child: const Text(
               'Retry',
               style: TextStyle(color: primaryColor),
             ),
@@ -264,7 +264,7 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
           ),
-          
+
           // Dotted pattern background
           Positioned.fill(
             child: CustomPaint(
@@ -273,10 +273,10 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ),
           ),
-          
+
           // Floating elements
           _buildFloatingElements(),
-          
+
           // Main content
           SafeArea(
             child: Center(
@@ -284,7 +284,7 @@ class _SplashScreenState extends State<SplashScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Spacer(flex: 2),
-                  
+
                   // Animated logo (single, merged design)
                   AnimatedBuilder(
                     animation: _mainController,
@@ -298,9 +298,9 @@ class _SplashScreenState extends State<SplashScreen>
                       );
                     },
                   ),
-                  
+
                   const SizedBox(height: 32),
-                  
+
                   // App name and tagline
                   AnimatedBuilder(
                     animation: _mainController,
@@ -314,9 +314,9 @@ class _SplashScreenState extends State<SplashScreen>
                       );
                     },
                   ),
-                  
+
                   const Spacer(flex: 1),
-                  
+
                   // Loading section
                   AnimatedBuilder(
                     animation: _mainController,
@@ -335,9 +335,9 @@ class _SplashScreenState extends State<SplashScreen>
                       );
                     },
                   ),
-                  
+
                   const Spacer(flex: 2),
-                  
+
                   // Footer
                   _buildFooter(),
                 ],
@@ -368,7 +368,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
             ),
-            
+
             // Floating graduation cap
             Positioned(
               top: 200 - _bounceAnimation.value * 0.8,
@@ -379,7 +379,7 @@ class _SplashScreenState extends State<SplashScreen>
                 color: accentGreen.withOpacity(0.4),
               ),
             ),
-            
+
             // Floating map pin
             Positioned(
               bottom: 250 + _bounceAnimation.value * 1.2,
@@ -390,7 +390,7 @@ class _SplashScreenState extends State<SplashScreen>
                 color: secondaryColor.withOpacity(0.3),
               ),
             ),
-            
+
             // Floating luggage
             Positioned(
               bottom: 180 - _bounceAnimation.value * 0.6,
@@ -450,7 +450,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
               ),
-              
+
               // Main content - integrated design without positioned elements
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -461,7 +461,7 @@ class _SplashScreenState extends State<SplashScreen>
                     children: [
                       Container(
                         padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           gradient: LinearGradient(
                             colors: [accentOrange, secondaryColor],
                           ),
@@ -475,7 +475,8 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: accentGreen,
                           borderRadius: BorderRadius.circular(8),
@@ -491,13 +492,13 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 8),
-                  
+
                   // Main airplane icon
                   Transform.rotate(
                     angle: -0.1,
-                    child: Icon(
+                    child: const Icon(
                       Icons.flight_takeoff,
                       size: 40,
                       color: primaryColor,
@@ -517,7 +518,7 @@ class _SplashScreenState extends State<SplashScreen>
       children: [
         // App name with gradient
         ShaderMask(
-          shaderCallback: (bounds) => LinearGradient(
+          shaderCallback: (bounds) => const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
@@ -537,9 +538,9 @@ class _SplashScreenState extends State<SplashScreen>
             ),
           ),
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Tagline
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -559,16 +560,16 @@ class _SplashScreenState extends State<SplashScreen>
               ),
             ],
           ),
-          child: Row(
+          child: const Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.school,
                 size: 16,
                 color: Colors.white,
               ),
-              const SizedBox(width: 8),
-              const Text(
+              SizedBox(width: 8),
+              Text(
                 'Student Flight Booking',
                 style: TextStyle(
                   fontSize: 14,
@@ -580,11 +581,11 @@ class _SplashScreenState extends State<SplashScreen>
             ],
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         // Features text
-        Text(
+        const Text(
           'Exclusive discounts • Budget-friendly • Easy booking',
           style: TextStyle(
             fontSize: 13,
@@ -592,9 +593,9 @@ class _SplashScreenState extends State<SplashScreen>
             letterSpacing: 0.2,
           ),
         ),
-        
+
         const SizedBox(height: 20),
-        
+
         // Trust badges
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -632,7 +633,7 @@ class _SplashScreenState extends State<SplashScreen>
         children: [
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: primaryColor,
@@ -641,7 +642,7 @@ class _SplashScreenState extends State<SplashScreen>
           const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 10,
               color: darkGrey,
               fontWeight: FontWeight.w500,
@@ -693,14 +694,14 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
               ),
-              
+
               // Center icon with pulse
               Transform.scale(
                 scale: _pulseAnimation.value,
                 child: Container(
                   width: 35,
                   height: 35,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [primaryColor, secondaryColor],
                     ),
@@ -728,7 +729,7 @@ class _SplashScreenState extends State<SplashScreen>
           child: Text(
             _loadingMessage,
             key: ValueKey(_loadingMessage),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
               color: textColor,
@@ -754,7 +755,7 @@ class _SplashScreenState extends State<SplashScreen>
           width: 220 * _loadingProgress,
           height: 6,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [primaryColor, accentOrange, accentGreen],
             ),
             borderRadius: BorderRadius.circular(3),
@@ -779,7 +780,7 @@ class _SplashScreenState extends State<SplashScreen>
                 color: primaryColor.withOpacity(0.2),
               ),
             ),
-            child: Row(
+            child: const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
@@ -787,7 +788,7 @@ class _SplashScreenState extends State<SplashScreen>
                   size: 14,
                   color: accentGreen,
                 ),
-                const SizedBox(width: 6),
+                SizedBox(width: 6),
                 Text(
                   'Trusted by universities worldwide',
                   style: TextStyle(
@@ -799,9 +800,9 @@ class _SplashScreenState extends State<SplashScreen>
               ],
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Version info
           Text(
             'Version 1.2.0 • Made with ❤️ for students',
@@ -823,7 +824,9 @@ class DottedPatternPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..style = PaintingStyle.fill;
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
     for (double x = 0; x < size.width; x += 40) {
       for (double y = 0; y < size.height; y += 40) {
         if ((x + y) % 80 == 0) {

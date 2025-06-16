@@ -10,7 +10,8 @@ class BookingConfirmationScreen extends StatefulWidget {
   const BookingConfirmationScreen({super.key, required this.bookingId});
 
   @override
-  State<BookingConfirmationScreen> createState() => _BookingConfirmationScreenState();
+  State<BookingConfirmationScreen> createState() =>
+      _BookingConfirmationScreenState();
 }
 
 class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
@@ -33,7 +34,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   String _nationality = '';
   String _contactEmail = '';
   String _contactPhone = '';
-  Map<String, dynamic> _addOns = {'baggage': 0.0, 'meal': 0.0, 'insurance': 0.0};
+  Map<String, dynamic> _addOns = {
+    'baggage': 0.0,
+    'meal': 0.0,
+    'insurance': 0.0
+  };
   double _totalPaid = 0.0;
   String _bookingId = '';
   bool _isLoading = true;
@@ -53,23 +58,24 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     User? user = _auth.currentUser;
     if (user != null) {
       try {
-        DocumentSnapshot booking = await _firestore
-            .collection('bookings')
-            .doc(widget.bookingId)
-            .get();
+        DocumentSnapshot booking =
+            await _firestore.collection('bookings').doc(widget.bookingId).get();
 
         if (booking.exists) {
           var data = booking.data() as Map<String, dynamic>;
           var passenger = data['passengers'][0] ?? {};
           setState(() {
-            _flight = '${data['flight']['code'] ?? 'AK123'} | ${data['flight']['route'] ?? 'KUL > BKK'}';
-            _dateTime = '20 June 2025, 10:00 AM (GMT+8)'; // Hardcoded to match earlier UI; update if stored
+            _flight =
+                '${data['flight']['code'] ?? 'AK123'} | ${data['flight']['route'] ?? 'KUL > BKK'}';
+            _dateTime =
+                '20 June 2025, 10:00 AM (GMT+8)'; // Hardcoded to match earlier UI; update if stored
             _passengerFullName = passenger['fullName'] ?? 'Arnob';
             _passportNumber = passenger['passportNumber'] ?? 'AI2345678';
             _nationality = passenger['nationality'] ?? 'Malaysia';
             _contactEmail = passenger['contactEmail'] ?? 'arnob@email.com';
             _contactPhone = passenger['contactPhone'] ?? '+60 123456789';
-            _addOns = data['addons'] ?? {'baggage': 0.0, 'meal': 0.0, 'insurance': 0.0};
+            _addOns = data['addons'] ??
+                {'baggage': 0.0, 'meal': 0.0, 'insurance': 0.0};
             _totalPaid = data['fareSummary']['total'] ?? 72.50;
             _bookingId = widget.bookingId;
             _isLoading = false;
@@ -78,10 +84,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Booking not found.'),
+                content: const Text('Booking not found.'),
                 backgroundColor: Colors.red,
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
             );
           }
@@ -93,7 +100,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               content: Text('Error fetching booking data: $e'),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
           );
         }
@@ -108,10 +116,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Please log in to view booking details.'),
+            content: const Text('Please log in to view booking details.'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
         setState(() {
@@ -125,7 +134,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   void _sendEmailReceipt() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Email receipt sent!'),
+        content: const Text('Email receipt sent!'),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -136,7 +145,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   void _sendSMSReceipt() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('SMS receipt sent!'),
+        content: const Text('SMS receipt sent!'),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -169,7 +178,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Booking Confirmation',
                       style: TextStyle(
                         fontSize: 24,
@@ -181,7 +190,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                     Expanded(
                       child: SingleChildScrollView(
                         child: Container(
-                          padding: EdgeInsets.all(16),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             border: Border.all(color: Colors.grey.shade300),
@@ -192,18 +201,20 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                             children: [
                               Text(
                                 'Booking Number $_bookingId',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w500,
                                   color: textColor,
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              const Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'AK123',
@@ -213,7 +224,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                           color: textColor,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      SizedBox(height: 4),
                                       Text(
                                         'KUL\nKuala Lumpur',
                                         style: TextStyle(
@@ -221,7 +232,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                           color: darkGrey,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      SizedBox(height: 4),
                                       Text(
                                         '10:00 AM',
                                         style: TextStyle(
@@ -231,7 +242,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                       ),
                                     ],
                                   ),
-                                  const Icon(
+                                  Icon(
                                     Icons.flight_takeoff,
                                     size: 24,
                                     color: primaryColor,
@@ -247,7 +258,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                           color: textColor,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      SizedBox(height: 4),
                                       Text(
                                         'Bangkok',
                                         style: TextStyle(
@@ -255,7 +266,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                           color: darkGrey,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      SizedBox(height: 4),
                                       Text(
                                         '11:00 AM',
                                         style: TextStyle(
@@ -269,26 +280,31 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                               ),
                               const SizedBox(height: 24),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
                                   ElevatedButton(
                                     onPressed: _sendEmailReceipt,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       foregroundColor: primaryColor,
-                                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 12),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        side: BorderSide(color: primaryColor),
+                                        side: const BorderSide(
+                                            color: primaryColor),
                                       ),
                                     ),
-                                    child: Row(
-                                      children: const [
+                                    child: const Row(
+                                      children: [
                                         Icon(Icons.email, size: 16),
                                         SizedBox(width: 4),
                                         Text(
                                           'Email Receipt',
-                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600),
                                         ),
                                       ],
                                     ),
@@ -298,19 +314,23 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.white,
                                       foregroundColor: primaryColor,
-                                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 12),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
-                                        side: BorderSide(color: primaryColor),
+                                        side: const BorderSide(
+                                            color: primaryColor),
                                       ),
                                     ),
-                                    child: Row(
-                                      children: const [
+                                    child: const Row(
+                                      children: [
                                         Icon(Icons.sms, size: 16),
                                         SizedBox(width: 4),
                                         Text(
                                           'SMS Receipt',
-                                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600),
                                         ),
                                       ],
                                     ),
@@ -331,16 +351,17 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primaryColor,
                           foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 16),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           minimumSize: const Size.fromHeight(50),
                           elevation: 2,
                         ),
-                        child: Text(
+                        child: const Text(
                           'Back to Home',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),

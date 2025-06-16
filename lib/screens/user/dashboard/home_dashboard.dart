@@ -15,26 +15,27 @@ class HomeDashboard extends StatefulWidget {
   State<HomeDashboard> createState() => _HomeDashboardState();
 }
 
-class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateMixin {
+class _HomeDashboardState extends State<HomeDashboard>
+    with TickerProviderStateMixin {
   // Violin color palette matching OnboardingScreen
-  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
-  static const Color primaryColor    = Color(0xFF5C2E00);  // Dark Brown
-  static const Color secondaryColor  = Color(0xFF8B5000);  // Amber Brown
-  static const Color textColor       = Color(0xFF35281E);  // Deep Wood
-  static const Color subtleGrey      = Color(0xFFDAC1A7);  // Light Tan
-  static const Color darkGrey        = Color(0xFF7E5E3C);  // Medium Brown
-  static const Color accentOrange    = Color(0xFFD4A373);  // Warm Highlight
-  static const Color accentGreen     = Color(0xFFB28F5E);  // Muted Brown
+  static const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
+  static const Color primaryColor = Color(0xFF5C2E00); // Dark Brown
+  static const Color secondaryColor = Color(0xFF8B5000); // Amber Brown
+  static const Color textColor = Color(0xFF35281E); // Deep Wood
+  static const Color subtleGrey = Color(0xFFDAC1A7); // Light Tan
+  static const Color darkGrey = Color(0xFF7E5E3C); // Medium Brown
+  static const Color accentOrange = Color(0xFFD4A373); // Warm Highlight
+  static const Color accentGreen = Color(0xFFB28F5E); // Muted Brown
 
   late AnimationController _animationController;
-  late Animation<double>   _fadeAnimation;
-  late Animation<double>   _slideAnimation;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _slideAnimation;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth      _auth      = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Map<String, dynamic>? _userData;
-  bool                 _isLoading = true;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -67,8 +68,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
         final doc = await _firestore.collection('users').doc(user.uid).get();
         if (mounted) {
           setState(() {
-            _userData   = doc.data();
-            _isLoading  = false;
+            _userData = doc.data();
+            _isLoading = false;
           });
         }
       }
@@ -88,7 +89,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final screenSize    = MediaQuery.of(context).size;
+    final screenSize = MediaQuery.of(context).size;
     final isLargeScreen = screenSize.width > 400;
 
     return Scaffold(
@@ -146,7 +147,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                             const SizedBox(height: 24),
 
                             // Quick actions for students
-                            _buildSectionHeader("Quick Actions", Icons.flash_on),
+                            _buildSectionHeader(
+                                "Quick Actions", Icons.flash_on),
                             const SizedBox(height: 12),
                             _buildStudentQuickActions(context),
                             const SizedBox(height: 24),
@@ -159,26 +161,30 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
 
                             // ─────────────────────────
                             // Saved Flights Section
-                            _buildSectionHeader("Saved Flights", Icons.bookmark),
+                            _buildSectionHeader(
+                                "Saved Flights", Icons.bookmark),
                             const SizedBox(height: 12),
                             _buildSavedFlightsSection(),
                             const SizedBox(height: 24),
                             // ─────────────────────────
 
                             // Popular student destinations
-                            _buildSectionHeader("Trending Destinations", Icons.trending_up),
+                            _buildSectionHeader(
+                                "Trending Destinations", Icons.trending_up),
                             const SizedBox(height: 12),
                             _buildTrendingDestinations(),
                             const SizedBox(height: 24),
 
                             // Student deals
-                            _buildSectionHeader("Student Deals", Icons.local_offer),
+                            _buildSectionHeader(
+                                "Student Deals", Icons.local_offer),
                             const SizedBox(height: 12),
                             _buildStudentDeals(),
                             const SizedBox(height: 24),
 
                             // Recent activity from Firebase
-                            _buildSectionHeader("Recent Activity", Icons.history),
+                            _buildSectionHeader(
+                                "Recent Activity", Icons.history),
                             const SizedBox(height: 12),
                             _buildRecentActivity(),
                             const SizedBox(height: 24),
@@ -200,14 +206,14 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
   // Loading / Empty / Error States
   // ───────────────────────────────────────────────────────────
   Widget _buildLoadingState() {
-    return Center(
+    return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Text(
             'Loading your dashboard...',
             style: TextStyle(
@@ -250,7 +256,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: darkGrey,
               ),
@@ -275,7 +281,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
           ),
         ],
       ),
-      child: Center(
+      child: const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
         ),
@@ -297,7 +303,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               width: 45,
               height: 45,
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [primaryColor, secondaryColor]),
+                gradient: const LinearGradient(
+                    colors: [primaryColor, secondaryColor]),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -321,7 +328,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                     color: textColor,
                   ),
                 ),
-                Text(
+                const Text(
                   'Ready for your next adventure?',
                   style: TextStyle(fontSize: 13, color: darkGrey),
                 ),
@@ -365,11 +372,12 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                         top: 0,
                         child: Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: accentOrange,
                             shape: BoxShape.circle,
                           ),
-                          constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                          constraints:
+                              const BoxConstraints(minWidth: 16, minHeight: 16),
                           child: Text(
                             '$unreadCount',
                             style: const TextStyle(
@@ -403,13 +411,15 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                         ? CachedNetworkImage(
                             imageUrl: _userData!['profileImage']!,
                             fit: BoxFit.cover,
-                            placeholder: (context, url) => Center(
+                            placeholder: (context, url) => const Center(
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             ),
-                            errorWidget: (context, url, error) => _buildAvatarPlaceholder(),
+                            errorWidget: (context, url, error) =>
+                                _buildAvatarPlaceholder(),
                           )
                         : _buildAvatarPlaceholder(),
                   ),
@@ -454,7 +464,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
           ClipRRect(
             borderRadius: BorderRadius.circular(20),
             child: CachedNetworkImage(
-              imageUrl: 'https://images.unsplash.com/photo-1525130413817-d45c1d127c42?w=800&q=80',
+              imageUrl:
+                  'https://images.unsplash.com/photo-1525130413817-d45c1d127c42?w=800&q=80',
               fit: BoxFit.cover,
               width: double.infinity,
               height: 180,
@@ -462,7 +473,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                 color: subtleGrey,
                 child: const Center(child: CircularProgressIndicator()),
               ),
-              errorWidget: (context, url, error) => Container(color: subtleGrey),
+              errorWidget: (context, url, error) =>
+                  Container(color: subtleGrey),
             ),
           ),
 
@@ -489,7 +501,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: accentOrange,
                     borderRadius: BorderRadius.circular(20),
@@ -568,10 +581,26 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
 
   Widget _buildStudentQuickActions(BuildContext context) {
     final actions = [
-      {'icon': Icons.search, 'title': 'Search\nFlights', 'route': AppRoutes.flightSearch},
-      {'icon': Icons.discount, 'title': 'Student\nDeals', 'route': AppRoutes.deals},
-      {'icon': Icons.group, 'title': 'Group\nBooking', 'route': AppRoutes.groupBooking},
-      {'icon': Icons.support_agent, 'title': 'Support\nChat', 'route': AppRoutes.support},
+      {
+        'icon': Icons.search,
+        'title': 'Search\nFlights',
+        'route': AppRoutes.flightSearch
+      },
+      {
+        'icon': Icons.discount,
+        'title': 'Student\nDeals',
+        'route': AppRoutes.deals
+      },
+      {
+        'icon': Icons.group,
+        'title': 'Group\nBooking',
+        'route': AppRoutes.groupBooking
+      },
+      {
+        'icon': Icons.support_agent,
+        'title': 'Support\nChat',
+        'route': AppRoutes.support
+      },
     ];
 
     return SizedBox(
@@ -587,7 +616,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
             },
             child: Container(
               width: 80,
-              margin: EdgeInsets.only(right: index < actions.length - 1 ? 12 : 0),
+              margin:
+                  EdgeInsets.only(right: index < actions.length - 1 ? 12 : 0),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
@@ -668,7 +698,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
   Widget _buildBookingCard(Map<String, dynamic> booking) {
     final departureDate = (booking['departureDate'] as Timestamp).toDate();
     final isToday = DateFormat('yyyy-MM-dd').format(departureDate) ==
-                    DateFormat('yyyy-MM-dd').format(DateTime.now());
+        DateFormat('yyyy-MM-dd').format(DateTime.now());
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -689,9 +719,9 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
           if (isToday)
             Container(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: accentOrange,
-                borderRadius: const BorderRadius.only(
+                borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(14),
                   topRight: Radius.circular(14),
                 ),
@@ -727,16 +757,17 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                         ),
                         Text(
                           booking['originCity'] ?? '',
-                          style: TextStyle(fontSize: 12, color: darkGrey),
+                          style: const TextStyle(fontSize: 12, color: darkGrey),
                         ),
                       ],
                     ),
                     Column(
                       children: [
-                        Icon(Icons.flight_takeoff, color: primaryColor, size: 24),
+                        const Icon(Icons.flight_takeoff,
+                            color: primaryColor, size: 24),
                         Text(
                           booking['flightNumber'] ?? '',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 12,
                             color: darkGrey,
                             fontWeight: FontWeight.w600,
@@ -757,7 +788,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                         ),
                         Text(
                           booking['destinationCity'] ?? '',
-                          style: TextStyle(fontSize: 12, color: darkGrey),
+                          style: const TextStyle(fontSize: 12, color: darkGrey),
                         ),
                       ],
                     ),
@@ -779,19 +810,20 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                         ),
                         Text(
                           booking['departureTime'] ?? '',
-                          style: TextStyle(fontSize: 12, color: darkGrey),
+                          style: const TextStyle(fontSize: 12, color: darkGrey),
                         ),
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: accentGreen.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
                         'RM ${booking['price'] ?? '0'}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: primaryColor,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -809,7 +841,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                           onPressed: () {},
                           style: OutlinedButton.styleFrom(
                             foregroundColor: primaryColor,
-                            side: BorderSide(color: primaryColor),
+                            side: const BorderSide(color: primaryColor),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -850,21 +882,24 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
         'city': 'Bangkok',
         'country': 'Thailand',
         'price': 'From RM199',
-        'image': 'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80',
+        'image':
+            'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=400&q=80',
         'discount': '25% OFF',
       },
       {
         'city': 'Bali',
         'country': 'Indonesia',
         'price': 'From RM289',
-        'image': 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&q=80',
+        'image':
+            'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=400&q=80',
         'discount': '30% OFF',
       },
       {
         'city': 'Singapore',
         'country': 'Singapore',
         'price': 'From RM159',
-        'image': 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400&q=80',
+        'image':
+            'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=400&q=80',
         'discount': '20% OFF',
       },
     ];
@@ -878,7 +913,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
           final dest = destinations[index];
           return Container(
             width: 160,
-            margin: EdgeInsets.only(right: index < destinations.length - 1 ? 12 : 0),
+            margin: EdgeInsets.only(
+                right: index < destinations.length - 1 ? 12 : 0),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
@@ -903,7 +939,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                       color: subtleGrey,
                       child: const Center(child: CircularProgressIndicator()),
                     ),
-                    errorWidget: (context, url, error) => Container(color: subtleGrey),
+                    errorWidget: (context, url, error) =>
+                        Container(color: subtleGrey),
                   ),
                 ),
 
@@ -927,7 +964,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                   top: 12,
                   right: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: accentOrange,
                       borderRadius: BorderRadius.circular(12),
@@ -1042,11 +1080,11 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
   }
 
   Widget _buildDealCard({
-    required String  airline,
-    required String  route,
-    required String  originalPrice,
-    required String  discountedPrice,
-    required String  discount,
+    required String airline,
+    required String route,
+    required String originalPrice,
+    required String discountedPrice,
+    required String discount,
     required DateTime validUntil,
   }) {
     final daysLeft = validUntil.difference(DateTime.now()).inDays;
@@ -1078,7 +1116,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
             child: Center(
               child: Text(
                 discount,
-                style: TextStyle(
+                style: const TextStyle(
                   color: primaryColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -1093,7 +1131,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               children: [
                 Text(
                   airline,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: darkGrey,
                     fontSize: 12,
                   ),
@@ -1110,7 +1148,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                   children: [
                     Text(
                       originalPrice,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         color: darkGrey,
                         decoration: TextDecoration.lineThrough,
@@ -1119,7 +1157,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                     const SizedBox(width: 8),
                     Text(
                       discountedPrice,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: accentOrange,
@@ -1136,7 +1174,9 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: (daysLeft <= 3) ? Colors.red.shade50 : Colors.green.shade50,
+                  color: (daysLeft <= 3)
+                      ? Colors.red.shade50
+                      : Colors.green.shade50,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -1153,7 +1193,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -1196,7 +1237,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
           children: snapshot.data!.docs.map((doc) {
             final booking = doc.data() as Map<String, dynamic>;
             return _buildActivityCard(
-              route: '${booking['origin'] ?? 'N/A'} → ${booking['destination'] ?? 'N/A'}',
+              route:
+                  '${booking['origin'] ?? 'N/A'} → ${booking['destination'] ?? 'N/A'}',
               date: DateFormat('MMM dd, yyyy').format(
                 (booking['completedDate'] as Timestamp).toDate(),
               ),
@@ -1241,7 +1283,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               color: subtleGrey.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.flight, color: primaryColor, size: 20),
+            child: const Icon(Icons.flight, color: primaryColor, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -1261,12 +1303,12 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                   children: [
                     Text(
                       airline,
-                      style: TextStyle(fontSize: 12, color: darkGrey),
+                      style: const TextStyle(fontSize: 12, color: darkGrey),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       '• $date',
-                      style: TextStyle(fontSize: 12, color: darkGrey),
+                      style: const TextStyle(fontSize: 12, color: darkGrey),
                     ),
                   ],
                 ),
@@ -1287,7 +1329,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
               if (savedAmount != null)
                 Text(
                   savedAmount,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
                     color: accentGreen,
                     fontWeight: FontWeight.w600,
@@ -1366,8 +1408,8 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
 
   Widget _buildNavItem({
     required IconData icon,
-    required String   label,
-    required bool     isSelected,
+    required String label,
+    required bool isSelected,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -1429,32 +1471,33 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
         return Column(
           children: snapshot.data!.docs.map((doc) {
             final savedData = doc.data() as Map<String, dynamic>;
-            final offer     = savedData['rawOfferJson'] as Map<String, dynamic>? ?? {};
+            final offer =
+                savedData['rawOfferJson'] as Map<String, dynamic>? ?? {};
 
             // Pull out a few fields safely
-            String originCode          = savedData['originCode']       ?? 'N/A';
-            String destinationCode     = savedData['destinationCode']  ?? 'N/A';
-            String departureDateStr    = savedData['departureDateStr'] ?? '';
-            String flightNumber        = 'N/A';
-            String airlineCode         = 'N/A';
-            String price               = 'N/A';
-            String currency            = 'MYR';
+            String originCode = savedData['originCode'] ?? 'N/A';
+            String destinationCode = savedData['destinationCode'] ?? 'N/A';
+            String departureDateStr = savedData['departureDateStr'] ?? '';
+            String flightNumber = 'N/A';
+            String airlineCode = 'N/A';
+            String price = 'N/A';
+            String currency = 'MYR';
 
             try {
-              final priceInfo   = (offer['price'] as Map<String, dynamic>?);
+              final priceInfo = (offer['price'] as Map<String, dynamic>?);
               if (priceInfo != null) {
-                price    = priceInfo['total']?.toString()    ?? price;
+                price = priceInfo['total']?.toString() ?? price;
                 currency = priceInfo['currency']?.toString() ?? currency;
               }
               final itineraries = (offer['itineraries'] as List<dynamic>?);
               if (itineraries != null && itineraries.isNotEmpty) {
                 final firstItin = itineraries[0] as Map<String, dynamic>;
-                final segments  = (firstItin['segments'] as List<dynamic>?);
+                final segments = (firstItin['segments'] as List<dynamic>?);
                 if (segments != null && segments.isNotEmpty) {
                   final firstSeg = (segments[0] as Map<String, dynamic>);
-                  flightNumber   =
+                  flightNumber =
                       "${firstSeg['carrierCode'] ?? 'XX'} ${firstSeg['number'] ?? ''}";
-                  airlineCode    = (firstSeg['carrierCode'] ?? 'XX').toString();
+                  airlineCode = (firstSeg['carrierCode'] ?? 'XX').toString();
                 }
               }
             } catch (_) {
@@ -1521,7 +1564,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                         const SizedBox(height: 4),
                         Text(
                           flightNumber,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 12,
                             color: darkGrey,
                             fontWeight: FontWeight.w600,
@@ -1530,7 +1573,7 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                         const SizedBox(height: 4),
                         Text(
                           departureDateFormatted,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 12,
                             color: darkGrey,
                           ),
@@ -1565,16 +1608,18 @@ class _HomeDashboardState extends State<HomeDashboard> with TickerProviderStateM
                               'adults': savedData['adults'] ?? 1,
                               'travelClass': savedData['travelClass'] ?? '',
                               'direct': savedData['direct'] ?? false,
-                              'isStudentFare': savedData['isStudentFare'] ?? false,
+                              'isStudentFare':
+                                  savedData['isStudentFare'] ?? false,
                             },
                           );
                         },
                         style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: primaryColor),
+                          side: const BorderSide(color: primaryColor),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                         ),
                         child: const Text(
                           "Details",

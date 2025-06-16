@@ -18,15 +18,15 @@ class SeatSelectionPage extends StatefulWidget {
 class _SeatSelectionPageState extends State<SeatSelectionPage>
     with TickerProviderStateMixin {
   // Violin color palette (matching FlightResultsPage)
-  static const Color backgroundColor = Color(0xFFF5F0E1);  // Ivory
-  static const Color primaryColor    = Color(0xFF5C2E00);  // Dark Brown
-  static const Color secondaryColor  = Color(0xFF8B5000);  // Amber Brown
-  static const Color textColor       = Color(0xFF35281E);  // Deep Wood
-  static const Color subtleGrey      = Color(0xFFDAC1A7);  // Light Tan
-  static const Color darkGrey        = Color(0xFF7E5E3C);  // Medium Brown
-  static const Color accentGreen     = Color(0xFFB28F5E);  // Muted Brown
-  static const Color successColor    = Color(0xFF8B5000);  // Success
-  static const Color warningColor    = Color(0xFFD4A373);  // Warning
+  static const Color backgroundColor = Color(0xFFF5F0E1); // Ivory
+  static const Color primaryColor = Color(0xFF5C2E00); // Dark Brown
+  static const Color secondaryColor = Color(0xFF8B5000); // Amber Brown
+  static const Color textColor = Color(0xFF35281E); // Deep Wood
+  static const Color subtleGrey = Color(0xFFDAC1A7); // Light Tan
+  static const Color darkGrey = Color(0xFF7E5E3C); // Medium Brown
+  static const Color accentGreen = Color(0xFFB28F5E); // Muted Brown
+  static const Color successColor = Color(0xFF8B5000); // Success
+  static const Color warningColor = Color(0xFFD4A373); // Warning
 
   // Services
   final SeatService _seatService = SeatService();
@@ -38,7 +38,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
   String? _errorMessage;
   List<Seat> _allSeats = [];
   List<Seat> _filteredSeats = [];
-  Map<String, String> _selectedSeats = {}; // PassengerIndex -> SeatId
+  final Map<String, String> _selectedSeats = {}; // PassengerIndex -> SeatId
   Map<SeatCategory, double> _seatPricing = {};
   SeatCategory? _selectedCategoryFilter;
   String _selectedDeck = 'Main';
@@ -117,7 +117,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     _flightOffer = args['offer'] as Map<String, dynamic>;
     _originCode = args['originCode'] as String;
     _destinationCode = args['destinationCode'] as String;
@@ -155,7 +156,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
         _errorMessage = null;
       });
 
-      final flightPrice = double.tryParse(_flightOffer['price']['total'] as String) ?? 0.0;
+      final flightPrice =
+          double.tryParse(_flightOffer['price']['total'] as String) ?? 0.0;
       final adjustedPrice = _isStudentFare ? flightPrice * 0.7 : flightPrice;
 
       final booking = await _bookingService.createFlightBooking(
@@ -208,7 +210,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
       final itineraries = _flightOffer['itineraries'] as List<dynamic>;
       final segments = itineraries[0]['segments'] as List<dynamic>;
       final firstSegment = segments[0] as Map<String, dynamic>;
-      final flightNumber = '${firstSegment['carrierCode']}${firstSegment['number']}';
+      final flightNumber =
+          '${firstSegment['carrierCode']}${firstSegment['number']}';
       const aircraftType = 'A320'; // Default for demo
 
       // Load seat map and pricing concurrently
@@ -228,7 +231,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
 
       setState(() {
         _allSeats = seats;
-        _filteredSeats = seats.where((seat) => seat.deck == _selectedDeck).toList();
+        _filteredSeats =
+            seats.where((seat) => seat.deck == _selectedDeck).toList();
         _seatPricing = pricing;
         _isLoading = false;
       });
@@ -249,7 +253,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
         if (seat.deck != _selectedDeck) return false;
 
         // Category filter
-        if (_selectedCategoryFilter != null && seat.category != _selectedCategoryFilter) {
+        if (_selectedCategoryFilter != null &&
+            seat.category != _selectedCategoryFilter) {
           return false;
         }
 
@@ -263,7 +268,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
 
     setState(() {
       // Remove previous selection for current passenger
-      _selectedSeats.removeWhere((key, value) => key == _currentPassengerIndex.toString());
+      _selectedSeats.removeWhere(
+          (key, value) => key == _currentPassengerIndex.toString());
 
       // Add new selection
       _selectedSeats[_currentPassengerIndex.toString()] = seat.id;
@@ -289,7 +295,6 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
 
     final recommendations = availableSeats.take(_adults).toList();
 
-
     setState(() {
       _selectedSeats.clear();
 
@@ -297,9 +302,11 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
         _selectedSeats[i.toString()] = recommendations[i];
 
         // Update seat status
-        final seatIndex = _filteredSeats.indexWhere((s) => s.id == recommendations[i]);
+        final seatIndex =
+            _filteredSeats.indexWhere((s) => s.id == recommendations[i]);
         if (seatIndex != -1) {
-          _filteredSeats[seatIndex] = _filteredSeats[seatIndex].copyWith(status: SeatStatus.selected);
+          _filteredSeats[seatIndex] =
+              _filteredSeats[seatIndex].copyWith(status: SeatStatus.selected);
         }
       }
     });
@@ -350,7 +357,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
       final itineraries = _flightOffer['itineraries'] as List<dynamic>;
       final segments = itineraries[0]['segments'] as List<dynamic>;
       final firstSegment = segments[0] as Map<String, dynamic>;
-      final flightNumber = '${firstSegment['carrierCode']}${firstSegment['number']}';
+      final flightNumber =
+          '${firstSegment['carrierCode']}${firstSegment['number']}';
       const aircraftType = 'A320'; // Default for demo
 
       final updatedBooking = await _bookingService.updateWithSeatSelection(
@@ -399,28 +407,33 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: backgroundColor,
-        title: Text(
+        title: const Text(
           'Seat Selection Error',
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: errors.map((error) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                Icon(Icons.error_outline, color: Colors.red, size: 16),
-                const SizedBox(width: 8),
-                Expanded(child: Text(error, style: TextStyle(color: textColor))),
-              ],
-            ),
-          )).toList(),
+          children: errors
+              .map((error) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.error_outline,
+                            color: Colors.red, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                            child: Text(error,
+                                style: const TextStyle(color: textColor))),
+                      ],
+                    ),
+                  ))
+              .toList(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: primaryColor)),
+            child: const Text('OK', style: TextStyle(color: primaryColor)),
           ),
         ],
       ),
@@ -432,28 +445,33 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: backgroundColor,
-        title: Text(
+        title: const Text(
           'Important Notice',
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: warnings.map((warning) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              children: [
-                Icon(Icons.warning_amber, color: warningColor, size: 16),
-                const SizedBox(width: 8),
-                Expanded(child: Text(warning, style: TextStyle(color: textColor))),
-              ],
-            ),
-          )).toList(),
+          children: warnings
+              .map((warning) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.warning_amber,
+                            color: warningColor, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                            child: Text(warning,
+                                style: const TextStyle(color: textColor))),
+                      ],
+                    ),
+                  ))
+              .toList(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: darkGrey)),
+            child: const Text('Cancel', style: TextStyle(color: darkGrey)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -461,7 +479,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
               _saveSeatSelection();
             },
             style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-            child: const Text('Continue', style: TextStyle(color: Colors.white)),
+            child:
+                const Text('Continue', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -473,15 +492,15 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: backgroundColor,
-        title: Text(
+        title: const Text(
           'Error',
           style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
         ),
-        content: Text(message, style: TextStyle(color: textColor)),
+        content: Text(message, style: const TextStyle(color: textColor)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('OK', style: TextStyle(color: primaryColor)),
+            child: const Text('OK', style: TextStyle(color: primaryColor)),
           ),
         ],
       ),
@@ -493,7 +512,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.white),
+            const Icon(Icons.check_circle, color: Colors.white),
             const SizedBox(width: 8),
             Expanded(child: Text(message)),
           ],
@@ -515,7 +534,6 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
       body: CustomScrollView(
         slivers: [
           _buildAppBar(),
-
           if (_isLoading)
             SliverFillRemaining(child: _buildLoadingState())
           else if (_errorMessage != null)
@@ -544,16 +562,16 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
       backgroundColor: primaryColor,
       elevation: 0,
       flexibleSpace: FlexibleSpaceBar(
-        title: Text(
+        title: const Text(
           'Select Seats',
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         background: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -591,7 +609,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
   }
 
   Widget _buildBookingInfo() {
-    if (_currentBooking == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
+    if (_currentBooking == null)
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
 
     return SliverToBoxAdapter(
       child: Container(
@@ -599,14 +618,18 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [successColor.withOpacity(0.1), accentGreen.withOpacity(0.1)],
+            colors: [
+              successColor.withOpacity(0.1),
+              accentGreen.withOpacity(0.1)
+            ],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: successColor.withOpacity(0.3)),
         ),
         child: Row(
           children: [
-            Icon(Icons.confirmation_number, color: successColor, size: 20),
+            const Icon(Icons.confirmation_number,
+                color: successColor, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
@@ -614,7 +637,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                 children: [
                   Text(
                     'Booking: ${_currentBooking!.bookingReference}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: textColor,
@@ -622,7 +645,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                   ),
                   Text(
                     'Status: ${_currentBooking!.status.displayName}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       color: darkGrey,
                     ),
@@ -636,9 +659,9 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                 color: successColor,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(
+              child: const Text(
                 'SAVED',
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
@@ -652,9 +675,11 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
   }
 
   Widget _buildFlightInfo() {
-    final segments = _flightOffer['itineraries'][0]['segments'] as List<dynamic>;
+    final segments =
+        _flightOffer['itineraries'][0]['segments'] as List<dynamic>;
     final firstSegment = segments[0] as Map<String, dynamic>;
-    final flightNumber = '${firstSegment['carrierCode']}${firstSegment['number']}';
+    final flightNumber =
+        '${firstSegment['carrierCode']}${firstSegment['number']}';
 
     return SliverToBoxAdapter(
       child: Container(
@@ -679,7 +704,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                 color: primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.flight, color: primaryColor, size: 24),
+              child: const Icon(Icons.flight, color: primaryColor, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -696,8 +721,9 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('MMM dd, yyyy').format(DateTime.parse(_departureDate)),
-                    style: TextStyle(
+                    DateFormat('MMM dd, yyyy')
+                        .format(DateTime.parse(_departureDate)),
+                    style: const TextStyle(
                       fontSize: 12,
                       color: darkGrey,
                     ),
@@ -733,7 +759,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Select seats for:',
               style: TextStyle(
                 fontSize: 16,
@@ -756,11 +782,14 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                     onTap: () => setState(() => _currentPassengerIndex = index),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
                         gradient: isSelected
-                            ? LinearGradient(colors: [primaryColor, secondaryColor])
-                            : LinearGradient(colors: [Colors.white, Colors.white]),
+                            ? const LinearGradient(
+                                colors: [primaryColor, secondaryColor])
+                            : const LinearGradient(
+                                colors: [Colors.white, Colors.white]),
                         borderRadius: BorderRadius.circular(25),
                         border: Border.all(
                           color: hasSeat ? successColor : subtleGrey,
@@ -781,7 +810,9 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                         children: [
                           Icon(
                             hasSeat ? Icons.check_circle : Icons.person,
-                            color: isSelected ? Colors.white : (hasSeat ? successColor : darkGrey),
+                            color: isSelected
+                                ? Colors.white
+                                : (hasSeat ? successColor : darkGrey),
                             size: 16,
                           ),
                           const SizedBox(width: 6),
@@ -825,7 +856,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Filters & Preferences',
               style: TextStyle(
                 fontSize: 16,
@@ -838,7 +869,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
             // Deck selector
             Row(
               children: [
-                Text('Deck: ', style: TextStyle(color: darkGrey, fontSize: 14)),
+                const Text('Deck: ',
+                    style: TextStyle(color: darkGrey, fontSize: 14)),
                 ...(['Main', 'Upper'].map((deck) => Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
@@ -855,7 +887,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                         selectedColor: primaryColor.withOpacity(0.2),
                         backgroundColor: subtleGrey.withOpacity(0.3),
                         labelStyle: TextStyle(
-                          color: _selectedDeck == deck ? primaryColor : darkGrey,
+                          color:
+                              _selectedDeck == deck ? primaryColor : darkGrey,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -868,7 +901,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
             // Category filter
             Row(
               children: [
-                Text('Class: ', style: TextStyle(color: darkGrey, fontSize: 14)),
+                const Text('Class: ',
+                    style: TextStyle(color: darkGrey, fontSize: 14)),
                 Expanded(
                   child: Wrap(
                     spacing: 8,
@@ -878,14 +912,17 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                         selected: _selectedCategoryFilter == category,
                         onSelected: (selected) {
                           setState(() {
-                            _selectedCategoryFilter = selected ? category : null;
+                            _selectedCategoryFilter =
+                                selected ? category : null;
                           });
                           _filterSeats();
                         },
                         selectedColor: primaryColor.withOpacity(0.2),
                         backgroundColor: subtleGrey.withOpacity(0.3),
                         labelStyle: TextStyle(
-                          color: _selectedCategoryFilter == category ? primaryColor : darkGrey,
+                          color: _selectedCategoryFilter == category
+                              ? primaryColor
+                              : darkGrey,
                           fontWeight: FontWeight.w600,
                           fontSize: 12,
                         ),
@@ -938,7 +975,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
         const SizedBox(width: 6),
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 10,
             color: textColor,
             fontWeight: FontWeight.w600,
@@ -981,7 +1018,10 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [primaryColor.withOpacity(0.1), secondaryColor.withOpacity(0.1)],
+                  colors: [
+                    primaryColor.withOpacity(0.1),
+                    secondaryColor.withOpacity(0.1)
+                  ],
                 ),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
@@ -991,11 +1031,11 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.flight, color: primaryColor, size: 20),
+                  const Icon(Icons.flight, color: primaryColor, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Aircraft $_selectedDeck Deck',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: textColor,
@@ -1020,7 +1060,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           children: sortedRows.map((row) {
-                            final rowSeats = seatsByRow[row]! 
+                            final rowSeats = seatsByRow[row]!
                               ..sort((a, b) => a.column.compareTo(b.column));
                             return _buildSeatRow(row, rowSeats);
                           }).toList(),
@@ -1048,7 +1088,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
             alignment: Alignment.center,
             child: Text(
               '$row',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: darkGrey,
@@ -1069,7 +1109,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
             alignment: Alignment.center,
             child: Text(
               '$row',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
                 color: darkGrey,
@@ -1083,7 +1123,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
 
   Widget _buildSeatWidget(Seat seat) {
     final isSelected = _selectedSeats.values.contains(seat.id);
-    final isCurrentPassengerSeat = _selectedSeats[_currentPassengerIndex.toString()] == seat.id;
+    final isCurrentPassengerSeat =
+        _selectedSeats[_currentPassengerIndex.toString()] == seat.id;
 
     Color seatColor;
     if (isCurrentPassengerSeat) {
@@ -1129,7 +1170,9 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: (seat.status == SeatStatus.occupied) ? Colors.white70 : Colors.white,
+              color: (seat.status == SeatStatus.occupied)
+                  ? Colors.white70
+                  : Colors.white,
             ),
           ),
         ),
@@ -1160,10 +1203,10 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            const Row(
               children: [
                 Icon(Icons.check_circle, color: successColor, size: 20),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Text(
                   'Selected Seats',
                   style: TextStyle(
@@ -1175,7 +1218,6 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
               ],
             ),
             const SizedBox(height: 12),
-
             ..._selectedSeats.entries.map((entry) {
               final passengerIndex = int.parse(entry.key);
               final seatId = entry.value;
@@ -1222,7 +1264,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                           // Only display category now
                           Text(
                             seat.category.displayName,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 12,
                               color: darkGrey,
                             ),
@@ -1233,7 +1275,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                     if (price > 0)
                       Text(
                         'RM ${price.toStringAsFixed(0)}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: successColor,
                         ),
@@ -1260,7 +1302,10 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [successColor.withOpacity(0.1), accentGreen.withOpacity(0.1)],
+            colors: [
+              successColor.withOpacity(0.1),
+              accentGreen.withOpacity(0.1)
+            ],
           ),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: successColor.withOpacity(0.3)),
@@ -1270,7 +1315,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Seat Selection Fee',
                   style: TextStyle(
                     fontSize: 16,
@@ -1280,7 +1325,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                 ),
                 Text(
                   'RM ${totalCost.toStringAsFixed(2)}',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: successColor,
@@ -1289,7 +1334,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
               ],
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'This fee will be added to your total booking cost',
               style: TextStyle(
                 fontSize: 12,
@@ -1327,7 +1372,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                 children: [
                   Text(
                     '${_selectedSeats.length} of $_adults seats selected',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 12,
                       color: darkGrey,
                     ),
@@ -1335,7 +1380,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                   const SizedBox(height: 4),
                   Text(
                     'RM ${_calculateTotalSeatCost().toStringAsFixed(2)}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: successColor,
@@ -1350,7 +1395,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -1365,18 +1411,18 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                         strokeWidth: 2,
                       ),
                     )
-                  : Row(
+                  : const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
+                        Text(
                           'Save & Continue',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.save, size: 18),
+                        SizedBox(width: 8),
+                        Icon(Icons.save, size: 18),
                       ],
                     ),
             ),
@@ -1401,7 +1447,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                   height: 60,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [primaryColor, secondaryColor],
                     ),
                     boxShadow: [
@@ -1412,7 +1458,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                       ),
                     ],
                   ),
-                  child: const Icon(Icons.airline_seat_recline_normal, color: Colors.white, size: 32),
+                  child: const Icon(Icons.airline_seat_recline_normal,
+                      color: Colors.white, size: 32),
                 ),
               );
             },
@@ -1427,7 +1474,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
             ),
           ),
           const SizedBox(height: 6),
-          Text(
+          const Text(
             'Preparing the best seats for you',
             style: TextStyle(
               fontSize: 12,
@@ -1452,10 +1499,11 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
                 color: Colors.red.shade50,
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.error_outline, size: 56, color: Colors.red.shade700),
+              child: Icon(Icons.error_outline,
+                  size: 56, color: Colors.red.shade700),
             ),
             const SizedBox(height: 20),
-            Text(
+            const Text(
               'Unable to load seat map',
               style: TextStyle(
                 fontSize: 20,
@@ -1467,7 +1515,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
             Text(
               _errorMessage ?? 'Please try again',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
                 color: darkGrey,
               ),
@@ -1480,7 +1528,8 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

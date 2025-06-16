@@ -28,7 +28,8 @@ class StripeService {
   ///
   /// Amount must be provided in the smallest currency unit (e.g., cents).
   static Future<Map<String, dynamic>> createPaymentIntent({
-    required String amount, // e.g., "2999" for $29.99 USD (or equivalent in your currency’s smallest unit)
+    required String
+        amount, // e.g., "2999" for $29.99 USD (or equivalent in your currency’s smallest unit)
     required String currency,
     String? customerId,
     Map<String, dynamic>? metadata,
@@ -49,8 +50,8 @@ class StripeService {
         'automatic_payment_methods[enabled]': 'true',
         if (customerId != null) 'customer': customerId,
         if (metadata != null)
-          ...metadata.map((key, value) =>
-              MapEntry('metadata[$key]', value.toString())),
+          ...metadata.map(
+              (key, value) => MapEntry('metadata[$key]', value.toString())),
       },
     );
 
@@ -78,7 +79,7 @@ class StripeService {
       return result;
     } on StripeException catch (e) {
       // Rethrow the StripeException so caller can inspect error.code, error.localizedMessage, etc.
-      throw e;
+      rethrow;
     } catch (error) {
       throw Exception('Payment failed: $error');
     }
