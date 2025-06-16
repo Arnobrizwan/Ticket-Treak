@@ -22,11 +22,15 @@ import '../screens/user/booking/addon_selection_page.dart';
 
 
 
-import '../screens/flight_management_screen.dart'; // To be implemented
-import '../screens/booking_management_screen.dart'; // To be implemented
-import '../screens/refund_requests_screen.dart'; // To be implemented
-import '../screens/user_management_screen.dart'; // To be implemented
-import '../screens/settings_screen.dart'; // To be implemented
+import '../screens/flight_management_screen.dart'; 
+import '../screens/booking_management_screen.dart'; 
+import '../screens/refund_requests_screen.dart'; 
+import '../screens/user_management_screen.dart';
+import '../screens/settings_screen.dart'; 
+import '../screens/user_management_screen.dart';
+import '../screens/admin_analytics_screen.dart';
+
+
 
 
 class AppRoutes {
@@ -70,8 +74,8 @@ class AppRoutes {
   static const String refundRequests = '/refund-requests';
   static const String userManagement = '/user-management';
   static const String settings = '/settings';
-
-
+  static const String userManagement = '/user-management';
+  static const String adminAnalytics = '/admin-analytics';
 
 
   // --- Routes without arguments ---
@@ -93,12 +97,13 @@ class AppRoutes {
 
       // Admin Routes
         adminLogin: (context) => const AdminLoginScreen(),
-        adminDashboard: (context) => const AdminDashboardScreen(), // To be implemented
-        flightManagement: (context) => const FlightManagementScreen(), // Placeholder
-        bookingManagement: (context) => const BookingManagementScreen(), // Placeholder
-        refundRequests: (context) => const RefundRequestsScreen(), // Placeholder
-        userManagement: (context) => const UserManagementScreen(), // Placeholder
-        settings: (context) => const SettingsScreen(), // Placeholder
+        adminDashboard: (context) => const AdminDashboardScreen(), 
+        flightManagement: (context) => const FlightManagementScreen(), 
+        bookingManagement: (context) => const BookingManagementScreen(), 
+        refundRequests: (context) => const RefundRequestsScreen(), 
+        userManagement: (context) => const UserManagementScreen(), 
+        adminAnalytics: (context) => const AdminAnalyticsScreen(),
+        settings: (context) => const SettingsScreen(), 
       };
 
 
