@@ -59,12 +59,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             // Password Field
             TextField(
               controller: _passwordController,
+                obscureText: true,
               decoration: InputDecoration(
                 labelText: 'New Password',
                 labelStyle: TextStyle(color: Colors.grey[600]),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                 contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                obscureText: true,
               ),
             ),
             SizedBox(height: 40),
@@ -77,7 +77,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                primary: Color(0xFF3F3D9A), // Match your primary color
+                backgroundColor: Color(0xFF3F3D9A), // Match your primary color
               ),
               child: Text('Save Changes', style: TextStyle(fontSize: 16)),
             ),

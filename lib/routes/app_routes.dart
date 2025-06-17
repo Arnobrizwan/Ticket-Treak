@@ -26,7 +26,7 @@ import '../screens/admin/flights/flight_management_screen.dart';
 import '../screens/admin/bookings//booking_management_screen.dart'; 
 import '../screens/admin/refunds/refund_requests_screen.dart'; 
 import '../screens/admin/user_management_screen.dart';
-import '../screens/profile/settings_screen.dart'; 
+import '../screens/user/profile/settings_screen.dart'; 
 import '../screens/admin/user_management_screen.dart';
 import '../screens/admin/analytics/admin_analytics_screen.dart';
 

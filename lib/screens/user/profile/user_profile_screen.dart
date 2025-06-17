@@ -33,7 +33,7 @@ class UserProfileScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 15),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                primary: Color(0xFF3F3D9A), // Match your primary color
+                backgroundColor : Color(0xFF3F3D9A), // Match your primary color
               ),
               child: Text('Edit Profile', style: TextStyle(fontSize: 16)),
             ),
