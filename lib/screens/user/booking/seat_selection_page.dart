@@ -28,7 +28,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage>
   static const Color successColor = Color(0xFF8B5000); // Success
   static const Color warningColor = Color(0xFFD4A373); // Warning
 
-  // Services
+  // services
   final SeatService _seatService = SeatService();
   final FirebaseBookingService _bookingService = FirebaseBookingService();
 
