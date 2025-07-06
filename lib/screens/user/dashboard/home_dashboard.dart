@@ -160,7 +160,7 @@ class _HomeDashboardState extends State<HomeDashboard>
                             const SizedBox(height: 24),
 
                             // ─────────────────────────
-                            // Saved Flights Section
+                            // saved Flights Section
                             _buildSectionHeader(
                                 "Saved Flights", Icons.bookmark),
                             const SizedBox(height: 12),
