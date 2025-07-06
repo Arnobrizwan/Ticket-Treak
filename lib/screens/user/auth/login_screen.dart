@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // 1. Sign in with email and password:
+      // 1. sign in with email and password:
       UserCredential userCredential =
           await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
