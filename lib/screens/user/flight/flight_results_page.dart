@@ -26,7 +26,7 @@ class _FlightResultsPageState extends State<FlightResultsPage>
   static const Color successColor = Color(0xFF8B5000); // Success
   static const Color warningColor = Color(0xFFD4A373); // Warning
 
-  // State fields
+  // state fields
   bool _isLoading = true;
   String? _errorMessage;
 
