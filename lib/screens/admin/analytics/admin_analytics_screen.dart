@@ -251,7 +251,7 @@ class _AdminAnalyticsScreenState extends State<AdminAnalyticsScreen> {
   }
 }
 
-// Custom widget to handle chart display
+// custom widget to handle chart display
 class CodeBlock extends StatelessWidget {
   final String type;
   final String content;
