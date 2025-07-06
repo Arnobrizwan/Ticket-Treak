@@ -31,7 +31,7 @@ class _PaymentScreenState extends State<PaymentScreen>
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  // Form controllers for billing details
+  // form controllers for billing details
   final TextEditingController _cardHolderController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
