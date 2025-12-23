@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../routes/app_routes.dart';
+import '../../../routes/app_routes.dart';
 
 class RefundRequestsScreen extends StatefulWidget {
   const RefundRequestsScreen({super.key});
@@ -136,25 +136,21 @@ class _RefundRequestsScreenState extends State<RefundRequestsScreen> {
                   leading: Text('#${requestId.substring(0, 8)}'),
                   title: Text(request['passengerName'] ?? 'N/A'),
                   subtitle: Text('${request['flightCode'] ?? 'N/A'} → ${request['origin'] ?? 'N/A'} > ${request['destination'] ?? 'N/A'}'),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      request['status'] ?? 'Pending',
-                      style: TextStyle(color: statusColor),
-                    ),
-                  ),
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    AppRoutes.bookingDetail,
-                    arguments: request['bookingId'],
-                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          request['status'] ?? 'Pending',
+                          style: TextStyle(color: statusColor),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () => Navigator.pushNamed(
                           context,

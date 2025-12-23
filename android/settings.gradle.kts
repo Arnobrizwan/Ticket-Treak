@@ -24,8 +24,8 @@ plugins {
     // START: FlutterFire Configuration
     id("com.google.gms.google-services") version("4.3.15") apply false
     // END: FlutterFire Configuration
-    // FIX: Updated Kotlin Gradle plugin version to 2.0.0
-    id("org.jetbrains.kotlin.android") version "2.0.0" apply false // <-- CHANGED THIS LINE
+    // FIX: Updated Kotlin Gradle plugin version to 2.1.0
+    id("org.jetbrains.kotlin.android") version "2.1.0" apply false
 }
 
 include(":app")

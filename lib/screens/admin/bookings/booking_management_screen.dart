@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../routes/app_routes.dart';
+import '../../../routes/app_routes.dart';
 
 class BookingManagementScreen extends StatefulWidget {
   const BookingManagementScreen({super.key});
@@ -140,31 +140,28 @@ class _BookingManagementScreenState extends State<BookingManagementScreen> {
                   leading: Text('#${bookingId.substring(0, 8)}'),
                   title: Text(booking['passengerName'] ?? 'N/A'),
                   subtitle: Text('${booking['flightCode'] ?? 'N/A'} → ${booking['origin'] ?? 'N/A'} > ${booking['destination'] ?? 'N/A'}'),
-                  trailing: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text('\$${booking['price']?.toStringAsFixed(2) ?? '0.00'} USD'),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          booking['status'] ?? 'Confirmed',
-                          style: TextStyle(color: statusColor),
-                        ),
-                      ),
-                    ],
-                  ),
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    AppRoutes.bookingDetail,
-                    arguments: bookingId,
-                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('\$${booking['price']?.toStringAsFixed(2) ?? '0.00'} USD'),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: statusColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              booking['status'] ?? 'Confirmed',
+                              style: TextStyle(color: statusColor),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 8),
                       IconButton(
                         icon: const Icon(Icons.edit),
                         onPressed: () => _showEditBookingDialog(bookingId, booking),
@@ -175,6 +172,11 @@ class _BookingManagementScreenState extends State<BookingManagementScreen> {
                         onPressed: () => _confirmForceCancel(bookingId),
                       ),
                     ],
+                  ),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    AppRoutes.bookingDetail,
+                    arguments: bookingId,
                   ),
                 ),
               );

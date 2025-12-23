@@ -19,19 +19,15 @@ import '../screens/user/booking/payment_success_screen.dart';
 import '../screens/user/booking/seat_selection_page.dart';
 import '../screens/user/booking/addon_selection_page.dart';
 
-
-
-
-import '../screens/flight_management_screen.dart'; 
-import '../screens/booking_management_screen.dart'; 
-import '../screens/refund_requests_screen.dart'; 
-import '../screens/user_management_screen.dart';
-import '../screens/settings_screen.dart'; 
-import '../screens/user_management_screen.dart';
-import '../screens/admin_analytics_screen.dart';
-
-
-
+// Admin screen imports
+import '../screens/admin/login/admin_login_screen.dart';
+import '../screens/admin/dashboard/admin_dashboard.dart';
+import '../screens/admin/flights/flight_management_screen.dart';
+import '../screens/admin/bookings/booking_management_screen.dart';
+import '../screens/admin/refunds/refund_requests_screen.dart';
+import '../screens/admin/user_management_screen.dart';
+import '../screens/admin/analytics/admin_analytics_screen.dart';
+import '../screens/user/profile/settings_screen.dart';
 
 class AppRoutes {
   // --- Route names ---
@@ -62,11 +58,7 @@ class AppRoutes {
   static const String groupBooking = '/group-booking';
   static const String support = '/support';
 
-
-
-
-
-// Admin Routes
+  // Admin Routes
   static const String adminLogin = '/admin-login';
   static const String adminDashboard = '/admin-dashboard';
   static const String flightManagement = '/flight-management';
@@ -74,9 +66,7 @@ class AppRoutes {
   static const String refundRequests = '/refund-requests';
   static const String userManagement = '/user-management';
   static const String settings = '/settings';
-  static const String userManagement = '/user-management';
   static const String adminAnalytics = '/admin-analytics';
-
 
   // --- Routes without arguments ---
   static Map<String, WidgetBuilder> get routes {
@@ -93,24 +83,16 @@ class AppRoutes {
       myBookings: (context) => const MyBookingsScreen(),
       bookingHistory: (context) => const MyBookingsScreen(),
 
-
-
       // Admin Routes
-        adminLogin: (context) => const AdminLoginScreen(),
-        adminDashboard: (context) => const AdminDashboardScreen(), 
-        flightManagement: (context) => const FlightManagementScreen(), 
-        bookingManagement: (context) => const BookingManagementScreen(), 
-        refundRequests: (context) => const RefundRequestsScreen(), 
-        userManagement: (context) => const UserManagementScreen(), 
-        adminAnalytics: (context) => const AdminAnalyticsScreen(),
-        settings: (context) => const SettingsScreen(), 
-      };
+      adminLogin: (context) => const AdminLoginScreen(),
+      adminDashboard: (context) => const AdminDashboardScreen(), 
+      flightManagement: (context) => const FlightManagementScreen(), 
+      bookingManagement: (context) => const BookingManagementScreen(), 
+      refundRequests: (context) => const RefundRequestsScreen(), 
+      userManagement: (context) => const UserManagementScreen(), 
+      adminAnalytics: (context) => const AdminAnalyticsScreen(),
+      settings: (context) => const SettingsScreen(), 
 
-
-
-
-
-      
       // Placeholder screens...
       editProfile: (context) => Scaffold(
           appBar: AppBar(title: const Text('Edit Profile')),

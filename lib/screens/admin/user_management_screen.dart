@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../routes/app_routes.dart';
+import '../../routes/app_routes.dart';
 
 class UserManagementScreen extends StatefulWidget {
   const UserManagementScreen({super.key});
@@ -187,18 +187,19 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                         ),
                         title: Text(user['name'] ?? 'N/A'),
                         subtitle: Text(user['email'] ?? 'N/A'),
-                        trailing: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text('Role: $role', style: TextStyle(color: Colors.grey)),
-                            Text('Status: ${isActive ? 'Active' : 'Inactive'}',
-                                style: TextStyle(color: isActive ? Colors.green : Colors.red)),
-                          ],
-                        ),
-                        onTap: () => _showEditUserDialog(userId, user),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('Role: $role', style: TextStyle(color: Colors.grey)),
+                                Text('Status: ${isActive ? 'Active' : 'Inactive'}',
+                                    style: TextStyle(color: isActive ? Colors.green : Colors.red)),
+                              ],
+                            ),
+                            const SizedBox(width: 8),
                             IconButton(
                               icon: const Icon(Icons.edit),
                               onPressed: () => _showEditUserDialog(userId, user),
@@ -209,6 +210,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             ),
                           ],
                         ),
+                        onTap: () => _showEditUserDialog(userId, user),
                       ),
                     );
                   },

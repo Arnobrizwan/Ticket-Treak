@@ -57,7 +57,7 @@ android {
         applicationId = "com.example.ticket_trek"
 
         // Explicit minimum SDK version
-        minSdk = 23
+        minSdk = flutter.minSdkVersion
 
         // These can stay as Flutter-provided values
         targetSdk = flutter.targetSdkVersion
