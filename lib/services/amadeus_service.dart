@@ -4,9 +4,13 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-/// Replace these with your real Amadeus test/live credentials.
-const String _amadeusClientId = 'HdrxjwkMggMOlUf5qk4J3zTkmzWxNaAD';
-const String _amadeusClientSecret = '16BZleHCAGFL8cSF';
+/// Amadeus credentials are injected at compile time via --dart-define.
+/// There is intentionally NO hardcoded fallback: the app must be built with
+///   flutter build/run --dart-define=AMADEUS_CLIENT_ID=your_client_id \
+///                     --dart-define=AMADEUS_CLIENT_SECRET=your_client_secret
+const String _amadeusClientId = String.fromEnvironment('AMADEUS_CLIENT_ID');
+const String _amadeusClientSecret =
+    String.fromEnvironment('AMADEUS_CLIENT_SECRET');
 
 class AmadeusService {
   static const String _oauthEndpoint =

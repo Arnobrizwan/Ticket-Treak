@@ -10,9 +10,13 @@ class StripeService {
   static const String _publishableKey =
       'pk_test_51RFW5y2NnXdvWkYVoTAYTlbvMkuGViOrWihLyQ7d7M2drAxSN0aGoQ2Pry0JqP7fyimZoeVqxAb4iZbocG2imcLa009Sbj3xqD';
 
-  // Secret key (only for testing; remove and move to backend in production)
+  // Secret key is injected at compile time via --dart-define.
+  // There is intentionally NO hardcoded fallback: build the app with
+  //   flutter build/run --dart-define=STRIPE_SECRET_KEY=sk_test_...
+  // NOTE: shipping a Stripe secret key in a client app is only acceptable for
+  // test mode; in production, create PaymentIntents on a backend instead.
   static const String _secretKey =
-      'sk_test_51RFW5y2NnXdvWkYVjMqc1O9zPb39NfV87Gad49BNrKWj3Gw0POYrSSYxVxetHmi53Bx6mKRMjuA08sXieB3ClfKp00ipK3OAAs';
+      String.fromEnvironment('STRIPE_SECRET_KEY');
 
   // Test mode flag
   static const bool _isTestMode = true;
